@@ -59,6 +59,14 @@ export async function findMonthlyTargetsByUser(userId: string, month: number, ye
   })
 }
 
+export async function findAllVendorIds(): Promise<string[]> {
+  const vendors = await prisma.user.findMany({
+    where: { role: 'vendeur' },
+    select: { id: true },
+  })
+  return vendors.map((vendor) => vendor.id)
+}
+
 export async function upsertMonthlyTarget(
   userId: string,
   indicatorId: string,

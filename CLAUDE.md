@@ -1,6 +1,6 @@
-# VDB-Orange — Suivi des objectifs vendeurs
+# VDB-Orange — The Crew
 
-Application web mobile-first (PWA) pour gérer les objectifs et les tâches d'une boutique avec plusieurs vendeurs.
+Application web mobile-first (PWA) pour gérer les objectifs et les tâches d'une boutique avec plusieurs vendeurs. Nom de l'app : **The Crew**.
 
 ## Stack technique
 
@@ -17,6 +17,7 @@ Application web mobile-first (PWA) pour gérer les objectifs et les tâches d'un
 
 ```
 VDB-Orange/
+├── assets/            # Images sources (logo, favicon origin)
 ├── frontend/          # App React PWA
 ├── backend/           # API REST Express
 ├── docker-compose.yml # PostgreSQL + services

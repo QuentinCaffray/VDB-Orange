@@ -34,13 +34,13 @@ interface UserSeedData {
 // ─── Données de référence ──────────────────────────────────────────────────────
 
 const INDICATORS_TO_CREATE = [
-  { name: 'HD',              order: 1 },
-  { name: 'ABO',             order: 2 },
-  { name: 'Terminaux',       order: 3 },
-  { name: 'Challenge',       order: 4 },
-  { name: 'MP',              order: 5 },
-  { name: 'Parafoudre',      order: 6 },
-  { name: 'Divertissement',  order: 7 },
+  { name: 'HD',             type: 'daily' as const, order: 1 },
+  { name: 'ABO',            type: 'daily' as const, order: 2 },
+  { name: 'Terminaux',      type: 'daily' as const, order: 3 },
+  { name: 'Challenge',      type: 'daily' as const, order: 4 },
+  { name: 'MP',             type: 'daily' as const, order: 5 },
+  { name: 'Parafoudre',     type: 'daily' as const, order: 6 },
+  { name: 'Divertissement', type: 'daily' as const, order: 7 },
 ]
 
 const USERS_TO_CREATE: UserSeedData[] = [

@@ -4,10 +4,11 @@ import {
   recordSaleDeltaHandler,
   getMonthlyProgressHandler,
   setMonthlyTargetHandler,
+  setTargetForAllVendorsHandler,
 } from '../controllers/sales.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
-import { recordSaleDeltaSchema, setMonthlyTargetSchema } from '../types/sales.types'
+import { recordSaleDeltaSchema, setMonthlyTargetSchema, setTargetForAllVendorsSchema } from '../types/sales.types'
 
 const salesRouter = Router()
 
@@ -22,7 +23,10 @@ salesRouter.patch('/daily', validateBody(recordSaleDeltaSchema), recordSaleDelta
 // GET /sales/monthly?userId=ID&month=N&year=N — progression mensuelle d'un vendeur
 salesRouter.get('/monthly', getMonthlyProgressHandler)
 
-// PUT /sales/targets — définir ou modifier un objectif mensuel (admin)
+// PUT /sales/targets — définir ou modifier l'objectif mensuel d'un vendeur spécifique (admin)
 salesRouter.put('/targets', requireAdmin, validateBody(setMonthlyTargetSchema), setMonthlyTargetHandler)
+
+// PUT /sales/targets/all-vendors — définir le même objectif pour tous les vendeurs (admin)
+salesRouter.put('/targets/all-vendors', requireAdmin, validateBody(setTargetForAllVendorsSchema), setTargetForAllVendorsHandler)
 
 export default salesRouter

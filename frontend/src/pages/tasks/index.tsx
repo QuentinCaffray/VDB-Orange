@@ -62,7 +62,7 @@ export default function TasksPage() {
         <div className="px-5 pt-12 pb-4 flex items-start justify-between gap-4">
           <div>
             <h1 className="font-display text-[32px] font-semibold text-text-primary leading-tight m-0">
-              Vide de boutique
+              Tâches
             </h1>
             <p className="text-sm text-text-secondary mt-0.5 m-0">
               {formatTodayDate()}

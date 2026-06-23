@@ -4,6 +4,7 @@ import {
   findMonthlySalesByUser,
   findMonthlyTargetsByUser,
   upsertMonthlyTarget,
+  findAllVendorIds,
 } from '../repositories/sales.repository'
 import { findAllActiveIndicators } from '../repositories/indicator.repository'
 import { DailySaleEntry, MonthlyProgressEntry } from '../types/sales.types'
@@ -71,6 +72,18 @@ export async function getMonthlyProgress(
     totalSales: salesByIndicatorId.get(indicator.id) ?? 0,
     target: targetByIndicatorId.get(indicator.id) ?? null,
   }))
+}
+
+export async function setTargetForAllVendors(
+  indicatorId: string,
+  month: number,
+  year: number,
+  target: number,
+): Promise<void> {
+  const vendorIds = await findAllVendorIds()
+  await Promise.all(
+    vendorIds.map((vendorId) => upsertMonthlyTarget(vendorId, indicatorId, month, year, target)),
+  )
 }
 
 export async function setMonthlyTarget(

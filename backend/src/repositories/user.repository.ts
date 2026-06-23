@@ -12,6 +12,13 @@ export async function findUserById(userId: string) {
   })
 }
 
+export async function findAllUsers() {
+  return prisma.user.findMany({
+    select: { id: true, cuid: true, name: true, role: true, color: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
 export async function updateUserPassword(
   userId: string,
   hashedNewPassword: string,

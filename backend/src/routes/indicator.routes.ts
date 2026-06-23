@@ -3,6 +3,7 @@ import {
   getAllIndicatorsHandler,
   createIndicatorHandler,
   updateIndicatorHandler,
+  deleteIndicatorHandler,
 } from '../controllers/indicator.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
@@ -18,7 +19,10 @@ indicatorRouter.get('/', getAllIndicatorsHandler)
 // POST /indicators — créer un indicateur (admin)
 indicatorRouter.post('/', requireAdmin, validateBody(createIndicatorSchema), createIndicatorHandler)
 
-// PATCH /indicators/:id — modifier nom / ordre / visibilité (admin)
+// PATCH /indicators/:id — modifier nom / type / ordre / visibilité (admin)
 indicatorRouter.patch('/:id', requireAdmin, validateBody(updateIndicatorSchema), updateIndicatorHandler)
+
+// DELETE /indicators/:id — désactiver un indicateur (soft delete, admin)
+indicatorRouter.delete('/:id', requireAdmin, deleteIndicatorHandler)
 
 export default indicatorRouter

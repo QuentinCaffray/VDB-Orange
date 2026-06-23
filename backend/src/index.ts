@@ -5,6 +5,7 @@ import authRouter from './routes/auth.routes'
 import taskRouter from './routes/task.routes'
 import indicatorRouter from './routes/indicator.routes'
 import salesRouter from './routes/sales.routes'
+import userRouter from './routes/user.routes'
 import { globalErrorHandler } from './middlewares/error.middleware'
 
 dotenv.config()
@@ -20,6 +21,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/tasks', taskRouter)
 app.use('/api/indicators', indicatorRouter)
 app.use('/api/sales', salesRouter)
+app.use('/api/users', userRouter)
 
 // ─── Santé ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_request, response) => {

@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
+import { useAllUsers } from '../../features/users/hooks/useUsers'
 
 const SIDEBAR_WIDTH = 240
 
@@ -51,6 +52,8 @@ const navItems = [
 
 export default function Sidebar() {
   const { currentUser } = useAuthContext()
+  const { data: allUsers = [] } = useAllUsers()
+  const vendors = allUsers.filter((user) => user.role === 'vendeur')
 
   return (
     // hidden sur mobile, affiché en flex colonne sur desktop
@@ -94,7 +97,7 @@ export default function Sidebar() {
         </div>
         <div>
           <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-primary)', margin: 0, lineHeight: 1.2 }}>
-            VDB Orange
+            The Crew
           </p>
           <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
             Sallanches
@@ -134,6 +137,30 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      {/* Légende couleurs vendeurs */}
+      {vendors.length > 0 && (
+        <div
+          style={{
+            padding: '14px 20px',
+            borderTop: '1px solid var(--color-border-soft)',
+          }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px 0' }}>
+            Équipe
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 4px' }}>
+            {vendors.map((vendor) => (
+              <div key={vendor.id} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: vendor.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {vendor.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Utilisateur connecté */}
       {currentUser && (
         <div
@@ -162,9 +189,23 @@ export default function Sidebar() {
             </span>
           </div>
           <div style={{ overflow: 'hidden' }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentUser.name}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.name}
+              </p>
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: currentUser.role === 'admin' ? '#FF7900' : 'var(--color-text-tertiary)',
+                background: currentUser.role === 'admin' ? '#FFF3E6' : 'var(--color-surface)',
+                padding: '1px 6px',
+                borderRadius: 6,
+                flexShrink: 0,
+                textTransform: 'capitalize',
+              }}>
+                {currentUser.role}
+              </span>
+            </div>
             <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
               {currentUser.cuid}
             </p>

@@ -10,6 +10,7 @@ import HistoryPage from './pages/history'
 import ObjectivesPage from './pages/objectives'
 import TeamPage from './pages/team'
 import ProfilePage from './pages/profile'
+import AdminManageIndicatorsPage from './pages/admin/indicators'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/objectives" element={<ObjectivesPage />} />
               <Route path="/team" element={<TeamPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
             </Route>
           </Route>
         </Routes>

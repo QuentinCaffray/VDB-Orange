@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { RecordSaleDeltaInput, SetMonthlyTargetInput } from '../types/sales.types'
+import { RecordSaleDeltaInput, SetMonthlyTargetInput, SetTargetForAllVendorsInput } from '../types/sales.types'
 import * as salesService from '../services/sales.service'
 
 export async function getDailySalesHandler(
@@ -46,6 +46,20 @@ export async function getMonthlyProgressHandler(
 
     const progress = await salesService.getMonthlyProgress(targetUserId, targetMonth, targetYear)
     response.json(progress)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function setTargetForAllVendorsHandler(
+  request: Request<{}, {}, SetTargetForAllVendorsInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { indicatorId, month, year, target } = request.body
+    await salesService.setTargetForAllVendors(indicatorId, month, year, target)
+    response.status(204).send()
   } catch (error) {
     next(error)
   }

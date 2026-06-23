@@ -17,8 +17,16 @@ export const setMonthlyTargetSchema = z.object({
   target: z.number().int().min(0, 'L\'objectif doit être positif'),
 })
 
+export const setTargetForAllVendorsSchema = z.object({
+  indicatorId: z.string().min(1, 'Indicateur requis'),
+  month: z.number().int().min(1).max(12),
+  year: z.number().int().min(2024),
+  target: z.number().int().min(0, "L'objectif doit être positif"),
+})
+
 export type RecordSaleDeltaInput = z.infer<typeof recordSaleDeltaSchema>
 export type SetMonthlyTargetInput = z.infer<typeof setMonthlyTargetSchema>
+export type SetTargetForAllVendorsInput = z.infer<typeof setTargetForAllVendorsSchema>
 
 // Une vente journalière d'un vendeur pour un indicateur
 export interface DailySaleEntry {

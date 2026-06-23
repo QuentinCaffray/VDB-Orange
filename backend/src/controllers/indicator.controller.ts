@@ -21,8 +21,8 @@ export async function createIndicatorHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { name, order } = request.body
-    const newIndicator = await indicatorService.createIndicator(name, order)
+    const { name, type, order } = request.body
+    const newIndicator = await indicatorService.createIndicator(name, type ?? 'daily', order)
     response.status(201).json(newIndicator)
   } catch (error) {
     next(error)
@@ -38,6 +38,20 @@ export async function updateIndicatorHandler(
     const indicatorId = request.params.id
     const updatedIndicator = await indicatorService.updateIndicator(indicatorId, request.body)
     response.json(updatedIndicator)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function deleteIndicatorHandler(
+  request: Request<{ id: string }>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const indicatorId = request.params.id
+    await indicatorService.deleteIndicator(indicatorId)
+    response.status(204).send()
   } catch (error) {
     next(error)
   }
