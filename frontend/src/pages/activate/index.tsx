@@ -22,7 +22,7 @@ type ActivateFormValues = z.infer<typeof activateFormSchema>
 
 export default function ActivatePage() {
   const navigate = useNavigate()
-  const { handleLoginSuccess } = useAuthContext()
+  const { currentUser, handleLoginSuccess } = useAuthContext()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -51,58 +51,63 @@ export default function ActivatePage() {
   }
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{ background: 'linear-gradient(170deg, #FF7900, #FF9B3D)' }}
-    >
-      {/* Hero */}
-      <div className="flex flex-col items-center pt-16 pb-8 px-6 gap-5">
-        <div
-          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center"
-          style={{ boxShadow: '0 8px 18px rgba(0,0,0,0.15)' }}
+    <div className="min-h-dvh flex flex-col" style={{ background: 'var(--color-app-bg)' }}>
+
+      {/* Header avec retour */}
+      <div className="flex items-center px-4 pt-12 pb-4">
+        <button
+          onClick={() => navigate('/login')}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ background: 'var(--color-surface)' }}
+          aria-label="Retour à la connexion"
         >
-          <span className="text-2xl font-black" style={{ color: '#FF7900' }}>O</span>
-        </div>
-        <h1
-          className="text-4xl font-semibold text-white"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          Bienvenue 👋
-        </h1>
+          <ChevronLeftIcon />
+        </button>
       </div>
 
-      {/* Carte d'activation */}
-      <div
-        className="flex-1 rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-6"
-        style={{
-          background: 'var(--color-card)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
-        }}
-      >
-        {/* Bandeau informatif */}
-        <div
-          className="px-4 py-3 rounded-2xl"
-          style={{ background: '#FFF3E6', border: '1px solid #FFD4A3' }}
-        >
-          <p className="text-sm font-semibold" style={{ color: '#C25E00' }}>
-            Première connexion — ce mot de passe remplace celui fourni par la direction
+      {/* Contenu */}
+      <div className="flex-1 px-6 pb-10 flex flex-col gap-6">
+
+        {/* Titre personnalisé */}
+        <div className="flex flex-col gap-1">
+          <h1
+            className="text-4xl font-semibold"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+          >
+            Bienvenue, {currentUser?.name} !
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            Pour sécuriser votre accès, choisissez un mot de passe personnel.
           </p>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Choisir mon mot de passe
-          </h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            Choisissez un mot de passe personnel et sécurisé
+        {/* Bandeau informatif */}
+        <div
+          className="flex items-start gap-3 px-4 py-3 rounded-2xl"
+          style={{ background: '#FFF3E6' }}
+        >
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: '#FF7900' }}
+          >
+            <span className="text-white text-xs font-black">!</span>
+          </div>
+          <p className="text-sm font-semibold leading-snug" style={{ color: '#C25E00' }}>
+            Ce mot de passe remplace celui fourni par la direction.
           </p>
         </div>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+
           {/* Nouveau mot de passe */}
           <div className="flex flex-col gap-2">
+            <label
+              className="text-xs font-bold tracking-widest uppercase"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Nouveau mot de passe
+            </label>
             <PasswordInput
-              label="Nouveau mot de passe"
               error={errors.newPassword?.message}
               {...register('newPassword')}
             />
@@ -112,11 +117,18 @@ export default function ActivatePage() {
           </div>
 
           {/* Confirmation */}
-          <PasswordInput
-            label="Confirmer le mot de passe"
-            error={errors.confirmPassword?.message}
-            {...register('confirmPassword')}
-          />
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-xs font-bold tracking-widest uppercase"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Confirmer
+            </label>
+            <PasswordInput
+              error={errors.confirmPassword?.message}
+              {...register('confirmPassword')}
+            />
+          </div>
 
           {/* Erreur serveur */}
           {serverError && (
@@ -144,5 +156,13 @@ export default function ActivatePage() {
         </form>
       </div>
     </div>
+  )
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
   )
 }

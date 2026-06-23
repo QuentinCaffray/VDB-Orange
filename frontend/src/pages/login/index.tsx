@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,7 +7,8 @@ import { loginWithCuid } from '../../features/auth/api'
 import { useAuthContext } from '../../context/AuthContext'
 import PasswordInput from '../../components/ui/PasswordInput'
 
-// Format CUID Orange : 4 lettres majuscules + 4 chiffres
+const STORE_NAME = 'Boutique de Sallanches'
+
 const CUID_REGEX = /^[A-Z]{4}[0-9]{4}$/
 
 const loginFormSchema = z.object({
@@ -58,57 +59,65 @@ export default function LoginPage() {
       style={{ background: 'linear-gradient(170deg, #FF7900, #FF9B3D)' }}
     >
       {/* Hero */}
-      <div className="flex flex-col items-center pt-16 pb-8 px-6 gap-5">
+      <div className="flex flex-col items-center pt-14 pb-10 px-6 gap-4">
         <div
           className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center"
           style={{ boxShadow: '0 8px 18px rgba(0,0,0,0.15)' }}
         >
           <span className="text-2xl font-black" style={{ color: '#FF7900' }}>O</span>
         </div>
-        <h1
-          className="text-4xl font-semibold text-white"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          Bonjour 👋
-        </h1>
+        <div className="flex flex-col items-center gap-1">
+          <h1
+            className="text-4xl font-semibold text-white"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Bonjour 👋
+          </h1>
+          <p
+            className="text-lg text-white/80"
+            style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic' }}
+          >
+            {STORE_NAME}
+          </p>
+        </div>
       </div>
 
       {/* Carte de connexion */}
       <div
-        className="flex-1 rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-6"
+        className="flex-1 rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-5"
         style={{
           background: 'var(--color-card)',
           boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
         }}
       >
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Connexion
-          </h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            Entrez votre identifiant et mot de passe
-          </p>
-        </div>
-
         <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+
           {/* Champ CUID */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            <label
+              className="text-xs font-bold tracking-widest uppercase"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
               Identifiant (CUID)
             </label>
-            <input
-              {...register('cuid')}
-              onChange={handleCuidChange}
-              placeholder="ex: LERN5042"
-              autoCapitalize="characters"
-              autoCorrect="off"
-              className="w-full px-4 py-3 rounded-[14px] text-sm font-semibold tracking-widest outline-none transition-colors uppercase"
-              style={{
-                background: 'var(--color-surface)',
-                color: 'var(--color-text-primary)',
-                border: errors.cuid ? '1.5px solid var(--color-danger)' : '1.5px solid transparent',
-              }}
-            />
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <PersonIcon />
+              </div>
+              <input
+                {...register('cuid')}
+                onChange={handleCuidChange}
+                placeholder="LERN5042"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                className="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-bold tracking-widest outline-none uppercase"
+                style={{
+                  background: 'var(--color-surface)',
+                  color: 'var(--color-text-primary)',
+                  border: errors.cuid ? '1.5px solid var(--color-danger)' : '1.5px solid transparent',
+                }}
+              />
+            </div>
             {errors.cuid && (
               <p className="text-xs font-semibold" style={{ color: 'var(--color-danger)' }}>
                 {errors.cuid.message}
@@ -117,11 +126,18 @@ export default function LoginPage() {
           </div>
 
           {/* Champ mot de passe */}
-          <PasswordInput
-            label="Mot de passe"
-            error={errors.password?.message}
-            {...register('password')}
-          />
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-xs font-bold tracking-widest uppercase"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Mot de passe
+            </label>
+            <PasswordInput
+              error={errors.password?.message}
+              {...register('password')}
+            />
+          </div>
 
           {/* Erreur serveur */}
           {serverError && (
@@ -137,7 +153,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base mt-2 transition-opacity"
+            className="w-full py-4 rounded-2xl text-white font-bold text-base mt-1 transition-opacity"
             style={{
               background: '#FF7900',
               boxShadow: '0 8px 18px rgba(255,121,0,0.3)',
@@ -148,10 +164,23 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-          Identifiant fourni par la direction
+        {/* Lien première connexion */}
+        <p className="text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          Première connexion ?{' '}
+          <Link to="/login" className="font-bold" style={{ color: '#FF7900' }}>
+            Activer mon compte
+          </Link>
         </p>
       </div>
     </div>
+  )
+}
+
+function PersonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B0A89F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
   )
 }
