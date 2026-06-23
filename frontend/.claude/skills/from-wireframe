@@ -1,0 +1,14 @@
+---
+name: from-wireframe
+description: Implémente une page React à partir de la description d'un wireframe
+---
+
+L'utilisateur va décrire ou partager un wireframe de la page `$ARGUMENTS`.
+
+1. Analyse le wireframe et identifie : les composants UI nécessaires, les données à fetcher, les interactions utilisateur
+2. Génère la page dans `src/pages/$ARGUMENTS/index.tsx` en respectant scrupuleusement le wireframe
+3. Crée les composants spécifiques dans `src/features/$ARGUMENTS/components/`
+4. Utilise exclusivement Tailwind CSS, en mobile-first (375px)
+5. Les données sont mockées avec des valeurs réalistes si l'API n'existe pas encore
+
+Priorités de fidélité au wireframe : layout > hiérarchie visuelle > typographie > interactions.

@@ -1,0 +1,17 @@
+---
+name: new-feature
+description: Scaffolde une nouvelle feature backend (route + controller + service + repository + types)
+---
+
+Crée le scaffolding complet pour la feature `$ARGUMENTS` dans le backend Express/TypeScript/Prisma.
+
+Génère dans `src/` :
+1. `routes/$ARGUMENTS.routes.ts` — définition des routes Express avec les verbes HTTP
+2. `controllers/$ARGUMENTS.controller.ts` — handlers qui valident avec Zod et délèguent au service
+3. `services/$ARGUMENTS.service.ts` — logique métier pure
+4. `repositories/$ARGUMENTS.repository.ts` — accès Prisma uniquement
+5. `types/$ARGUMENTS.types.ts` — interfaces et types TypeScript
+
+Puis enregistre la route dans `src/index.ts`.
+
+Respecte les conventions du CLAUDE.md backend : validation Zod en entrée, erreurs via next(error), pas de prisma dans les services.

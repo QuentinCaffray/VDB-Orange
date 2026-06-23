@@ -1,0 +1,11 @@
+---
+name: prisma-migrate
+description: Génère et applique une migration Prisma après modification du schema
+---
+
+1. Affiche le diff du `prisma/schema.prisma` pour valider les changements
+2. Génère la migration : `npx prisma migrate dev --name $ARGUMENTS`
+3. Regénère le client : `npx prisma generate`
+4. Vérifie que les types TypeScript générés correspondent aux nouveaux modèles
+
+Si $ARGUMENTS est vide, demande un nom de migration descriptif avant de continuer.

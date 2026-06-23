@@ -1,0 +1,21 @@
+---
+name: new-feature
+description: Scaffolde une nouvelle feature frontend (page + composants + hooks + api)
+---
+
+Crée le scaffolding complet pour la feature `$ARGUMENTS` dans le frontend React/TypeScript.
+
+Génère dans `src/features/$ARGUMENTS/` :
+1. `components/` — composants React spécifiques à cette feature
+2. `hooks/use$ARGUMENTS.ts` — hook TanStack Query (useQuery / useMutation)
+3. `api.ts` — fonctions fetch via l'instance axios configurée
+
+Crée aussi `src/pages/$ARGUMENTS/index.tsx` — page principale qui assemble les composants.
+
+Enregistre la route dans le router React Router.
+
+Conventions à respecter :
+- Mobile-first : breakpoint 375px en priorité
+- Touch targets 44px minimum
+- Props typées avec interface `[Composant]Props`
+- Pas de logique métier dans les composants `ui/`
