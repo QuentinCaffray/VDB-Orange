@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import authRouter from './routes/auth.routes'
+import taskRouter from './routes/task.routes'
 import { globalErrorHandler } from './middlewares/error.middleware'
 
 dotenv.config()
@@ -14,6 +15,7 @@ app.use(express.json())
 
 // ─── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRouter)
+app.use('/api/tasks', taskRouter)
 
 // ─── Santé ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_request, response) => {

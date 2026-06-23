@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -8,7 +8,6 @@ import { useAuthContext } from '../../context/AuthContext'
 import PasswordInput from '../../components/ui/PasswordInput'
 
 const STORE_NAME = 'Boutique de Sallanches'
-
 const CUID_REGEX = /^[A-Z]{4}[0-9]{4}$/
 
 const loginFormSchema = z.object({
@@ -31,9 +30,7 @@ export default function LoginPage() {
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
-  })
+  } = useForm<LoginFormValues>({ resolver: zodResolver(loginFormSchema) })
 
   function handleCuidChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setValue('cuid', event.target.value.toUpperCase(), { shouldValidate: true })
@@ -54,123 +51,86 @@ export default function LoginPage() {
   }
 
   return (
+    // Fond orange — gradient trop spécifique pour une classe Tailwind, inline style justifié
     <div
-      className="h-dvh flex flex-col overflow-hidden"
+      className="min-h-dvh flex items-start justify-center"
       style={{ background: 'linear-gradient(170deg, #FF7900, #FF9B3D)' }}
     >
-      {/* Hero */}
-      <div className="shrink-0 flex flex-col items-center pt-14 pb-8 px-6 gap-4">
-        <div
-          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center"
-          style={{ boxShadow: '0 8px 18px rgba(0,0,0,0.15)' }}
-        >
-          <span className="text-2xl font-black" style={{ color: '#FF7900' }}>O</span>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <h1
-            className="text-4xl font-semibold text-white"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Bonjour 👋
-          </h1>
-          <p
-            className="text-lg text-white/80"
-            style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic' }}
-          >
-            {STORE_NAME}
-          </p>
-        </div>
-      </div>
+      {/* Conteneur : mobile plein écran, desktop carte centrée (max 480px) */}
+      {/* grid-rows-[auto_1fr] garantit que la carte blanche remplit tout l'espace restant */}
+      <div className="w-full max-w-[480px] min-h-dvh grid grid-rows-[auto_1fr]">
 
-      {/* Carte de connexion */}
-      <div
-        className="flex-1 overflow-y-auto rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-5"
-        style={{
-          background: 'var(--color-card)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
-        }}
-      >
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+        {/* Hero — taille naturelle (auto) */}
+        <div className="flex flex-col items-center pt-14 pb-8 px-6 gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,0.15)]">
+            <span className="text-2xl font-black text-brand">O</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <h1 className="font-display text-[40px] font-semibold text-white m-0">
+              Bonjour 👋
+            </h1>
+            <p className="font-display text-xl italic text-white/85 m-0">
+              {STORE_NAME}
+            </p>
+          </div>
+        </div>
 
-          {/* Champ CUID */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              className="text-xs font-bold tracking-widest uppercase"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Identifiant (CUID)
-            </label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <PersonIcon />
+        {/* Carte blanche — 1fr = remplit tout l'espace restant */}
+        <div className="bg-white rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-5 overflow-y-auto">
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+
+            {/* Champ CUID */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold tracking-widest uppercase text-text-secondary">
+                Identifiant (CUID)
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                  <PersonIcon />
+                </div>
+                <input
+                  {...register('cuid')}
+                  onChange={handleCuidChange}
+                  placeholder="LERN5042"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-bold tracking-[0.12em] uppercase outline-none bg-surface text-text-primary border-[1.5px] ${errors.cuid ? 'border-danger' : 'border-transparent'}`}
+                />
               </div>
-              <input
-                {...register('cuid')}
-                onChange={handleCuidChange}
-                placeholder="LERN5042"
-                autoCapitalize="characters"
-                autoCorrect="off"
-                className="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-bold tracking-widest outline-none uppercase"
-                style={{
-                  background: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  border: errors.cuid ? '1.5px solid var(--color-danger)' : '1.5px solid transparent',
-                }}
-              />
+              {errors.cuid && (
+                <p className="text-xs font-semibold text-danger m-0">{errors.cuid.message}</p>
+              )}
             </div>
-            {errors.cuid && (
-              <p className="text-xs font-semibold" style={{ color: 'var(--color-danger)' }}>
-                {errors.cuid.message}
+
+            {/* Champ mot de passe */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold tracking-widest uppercase text-text-secondary">
+                Mot de passe
+              </label>
+              <PasswordInput error={errors.password?.message} {...register('password')} />
+            </div>
+
+            {/* Erreur serveur */}
+            {serverError && (
+              <p className="text-sm font-semibold text-center py-2 px-4 rounded-xl text-danger bg-[#FDF2F2] m-0">
+                {serverError}
               </p>
             )}
-          </div>
 
-          {/* Champ mot de passe */}
-          <div className="flex flex-col gap-1.5">
-            <label
-              className="text-xs font-bold tracking-widest uppercase"
-              style={{ color: 'var(--color-text-secondary)' }}
+            {/* Bouton connexion */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 mt-2 rounded-2xl bg-brand text-white font-bold text-base shadow-[0_8px_18px_rgba(255,121,0,0.3)] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
             >
-              Mot de passe
-            </label>
-            <PasswordInput
-              error={errors.password?.message}
-              {...register('password')}
-            />
-          </div>
+              {isSubmitting ? 'Connexion…' : 'Se connecter'}
+            </button>
+          </form>
 
-          {/* Erreur serveur */}
-          {serverError && (
-            <p
-              className="text-sm font-semibold text-center py-2 px-4 rounded-xl"
-              style={{ color: 'var(--color-danger)', background: '#FDF2F2' }}
-            >
-              {serverError}
-            </p>
-          )}
-
-          {/* Bouton connexion */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base mt-1 transition-opacity"
-            style={{
-              background: '#FF7900',
-              boxShadow: '0 8px 18px rgba(255,121,0,0.3)',
-              opacity: isSubmitting ? 0.7 : 1,
-            }}
-          >
-            {isSubmitting ? 'Connexion…' : 'Se connecter'}
-          </button>
-        </form>
-
-        {/* Lien première connexion */}
-        <p className="text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          Première connexion ?{' '}
-          <Link to="/login" className="font-bold" style={{ color: '#FF7900' }}>
-            Activer mon compte
-          </Link>
-        </p>
+          <p className="text-center text-[13px] text-text-tertiary m-0 leading-relaxed">
+            Première connexion ? Utilisez les identifiants fournis par la direction — vous serez invité à définir votre mot de passe.
+          </p>
+        </div>
       </div>
     </div>
   )
