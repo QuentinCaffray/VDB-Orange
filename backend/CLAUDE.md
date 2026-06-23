@@ -52,7 +52,7 @@ PORT=3001
 NODE_ENV=development
 ```
 
-## Conventions
+## Conventions d'architecture
 
 - Une route = un fichier dans `routes/`
 - Les controllers ne contiennent pas de logique métier, ils délèguent aux services
@@ -60,9 +60,52 @@ NODE_ENV=development
 - Toujours valider les inputs avec Zod avant d'entrer dans un controller
 - Les erreurs remontent via `next(error)` vers le middleware error handler global
 
+## Conventions de lisibilité (priorité absolue)
+
+### Nommage
+```typescript
+// Bien — nom complet et explicite
+async function findTasksByStatus(status: TaskStatus): Promise<Task[]> { ... }
+
+// Mal — abréviation opaque
+async function findTasks(s: TaskStatus) { ... }
+```
+
+### Types explicites partout
+```typescript
+// Bien
+async function createTask(data: CreateTaskInput): Promise<Task> { ... }
+
+// Mal — retour implicite
+async function createTask(data: CreateTaskInput) { ... }
+```
+
+### Constantes nommées
+```typescript
+// Bien
+const BCRYPT_SALT_ROUNDS = 10
+const JWT_EXPIRY_SECONDS = 60 * 60 // 1 heure
+
+// Mal
+await bcrypt.hash(password, 10)
+```
+
+### Pas de ternaires imbriqués
+```typescript
+// Bien
+const isOwner = task.assigneeId === currentUserId
+const isAdmin = currentUserRole === 'admin'
+const canMarkAsDone = isOwner || isAdmin
+
+// Mal
+const canMarkAsDone = task.assigneeId === currentUserId || currentUserRole === 'admin'
+```
+
 ## Modèles principaux (Prisma)
 
-- `User` — vendeur ou manager de la boutique
-- `Objective` — objectif assigné à un vendeur sur une période
-- `Task` — tâche kanban avec statut et assignation
-- `Board` — tableau kanban (colonnes configurables)
+- `User` — vendeur ou manager de la boutique (rôle : `vendeur` | `admin`)
+- `Task` — tâche kanban avec statut (`todo` | `doing` | `done`) et assignation
+- `Indicator` — indicateur de vente (HD, ABO, Terminaux…)
+- `DailySale` — vente saisie par un vendeur pour un indicateur à une date
+- `MonthlyTarget` — objectif mensuel par vendeur et par indicateur
+- `TeamNote` — notes publiques et privées de l'encadrement sur un vendeur
