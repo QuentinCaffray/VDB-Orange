@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/layout/ProtectedRoute'
+import ActivateRoute from './components/layout/ActivateRoute'
 import PageWrapper from './components/layout/PageWrapper'
 import LoginPage from './pages/login'
 import ActivatePage from './pages/activate'
@@ -16,7 +17,11 @@ export default function App() {
         <Routes>
           {/* Routes publiques */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/activate" element={<ActivatePage />} />
+
+          {/* Activation — uniquement après login si isFirstLogin */}
+          <Route element={<ActivateRoute />}>
+            <Route path="/activate" element={<ActivatePage />} />
+          </Route>
 
           {/* Routes protégées — redirige vers /login si non authentifié */}
           <Route element={<ProtectedRoute />}>

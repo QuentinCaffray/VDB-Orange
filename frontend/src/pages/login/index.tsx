@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -148,16 +148,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Lien première connexion */}
-        <p className="text-center text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          Première connexion ?{' '}
-          <Link
-            to="/activate"
-            className="font-bold"
-            style={{ color: '#FF7900' }}
-          >
-            Activer mon compte
-          </Link>
+        <p className="text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+          Identifiant fourni par la direction
         </p>
       </div>
     </div>

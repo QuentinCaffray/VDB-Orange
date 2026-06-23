@@ -85,13 +85,13 @@ export default function ActivatePage() {
           style={{ background: '#FFF3E6', border: '1px solid #FFD4A3' }}
         >
           <p className="text-sm font-semibold" style={{ color: '#C25E00' }}>
-            Ce mot de passe remplace celui fourni par la direction
+            Première connexion — ce mot de passe remplace celui fourni par la direction
           </p>
         </div>
 
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Activer mon compte
+            Choisir mon mot de passe
           </h2>
           <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Choisissez un mot de passe personnel et sécurisé
