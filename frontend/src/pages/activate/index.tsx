@@ -51,7 +51,7 @@ export default function ActivatePage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: 'var(--color-app-bg)' }}>
+    <div className="h-dvh flex flex-col overflow-y-auto" style={{ background: 'var(--color-app-bg)' }}>
 
       {/* Header avec retour */}
       <div className="flex items-center px-4 pt-12 pb-4">

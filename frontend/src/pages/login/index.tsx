@@ -55,11 +55,11 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-dvh flex flex-col"
+      className="h-dvh flex flex-col overflow-hidden"
       style={{ background: 'linear-gradient(170deg, #FF7900, #FF9B3D)' }}
     >
       {/* Hero */}
-      <div className="flex flex-col items-center pt-14 pb-10 px-6 gap-4">
+      <div className="shrink-0 flex flex-col items-center pt-14 pb-8 px-6 gap-4">
         <div
           className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center"
           style={{ boxShadow: '0 8px 18px rgba(0,0,0,0.15)' }}
@@ -84,7 +84,7 @@ export default function LoginPage() {
 
       {/* Carte de connexion */}
       <div
-        className="flex-1 rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-5"
+        className="flex-1 overflow-y-auto rounded-t-3xl px-6 pt-8 pb-10 flex flex-col gap-5"
         style={{
           background: 'var(--color-card)',
           boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
