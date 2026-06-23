@@ -1,0 +1,13 @@
+{
+  "name": "vdb-orange",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"DB,BACK,FRONT\" --prefix-colors \"blue,yellow,green\" \"docker compose up\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "db": "docker compose up -d",
+    "db:stop": "docker compose down",
+    "db:reset": "cd backend && npx prisma migrate reset --force"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
