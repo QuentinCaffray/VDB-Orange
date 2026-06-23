@@ -4,6 +4,9 @@ import {
   createTask as createTaskInDatabase,
   assignTaskToUser,
   markTaskAsDone as markTaskAsDoneInDatabase,
+  releaseTask as releaseTaskInDatabase,
+  findTasksDoneOnDate,
+  findDoneTaskDatesInMonth,
   deleteTask as deleteTaskFromDatabase,
 } from '../repositories/task.repository'
 import { TaskResponse } from '../types/task.types'
@@ -89,6 +92,52 @@ export async function completeTask(
 
   const updatedTask = await markTaskAsDoneInDatabase(taskId)
   return formatTaskResponse(updatedTask)
+}
+
+export async function releaseTask(
+  taskId: string,
+  currentUserId: string,
+  currentUserRole: Role,
+): Promise<TaskResponse> {
+  const task = await findTaskById(taskId)
+
+  if (!task) {
+    throw new AppError('Tâche introuvable', 404)
+  }
+
+  if (task.status !== TaskStatus.doing) {
+    throw new AppError('Seule une tâche en cours peut être remise à disposition', 409)
+  }
+
+  const isAssignee = task.assigneeId === currentUserId
+  const isAdmin = currentUserRole === Role.admin
+  const isAllowedToRelease = isAssignee || isAdmin
+
+  if (!isAllowedToRelease) {
+    throw new AppError('Seul l\'assigné ou un admin peut remettre cette tâche à disposition', 403)
+  }
+
+  const updatedTask = await releaseTaskInDatabase(taskId)
+  return formatTaskResponse(updatedTask)
+}
+
+export async function getTaskHistoryForDate(dateString: string): Promise<TaskResponse[]> {
+  const [year, month, day] = dateString.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  const tasks = await findTasksDoneOnDate(date)
+  return tasks.map(formatTaskResponse)
+}
+
+export async function getActiveDatesForMonth(month: number, year: number): Promise<string[]> {
+  const tasks = await findDoneTaskDatesInMonth(month, year)
+
+  const uniqueDateStrings = new Set(
+    tasks
+      .filter((task) => task.doneAt !== null)
+      .map((task) => task.doneAt!.toISOString().split('T')[0]),
+  )
+
+  return Array.from(uniqueDateStrings).sort()
 }
 
 export async function deleteTask(taskId: string): Promise<void> {

@@ -6,6 +6,7 @@ import PageWrapper from './components/layout/PageWrapper'
 import LoginPage from './pages/login'
 import ActivatePage from './pages/activate'
 import TasksPage from './pages/tasks'
+import HistoryPage from './pages/history'
 import ObjectivesPage from './pages/objectives'
 import TeamPage from './pages/team'
 import ProfilePage from './pages/profile'
@@ -28,6 +29,7 @@ export default function App() {
             <Route element={<PageWrapper />}>
               <Route index element={<Navigate to="/tasks" replace />} />
               <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/history" element={<HistoryPage />} />
               <Route path="/objectives" element={<ObjectivesPage />} />
               <Route path="/team" element={<TeamPage />} />
               <Route path="/profile" element={<ProfilePage />} />

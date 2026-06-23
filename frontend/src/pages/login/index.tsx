@@ -63,7 +63,7 @@ export default function LoginPage() {
         {/* Hero — taille naturelle (auto) */}
         <div className="flex flex-col items-center pt-14 pb-8 px-6 gap-4">
           <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,0.15)]">
-            <span className="text-2xl font-black text-brand">O</span>
+            <span className="text-2xl font-black text-brand">🍊</span>
           </div>
           <div className="flex flex-col items-center gap-1">
             <h1 className="font-display text-[40px] font-semibold text-white m-0">

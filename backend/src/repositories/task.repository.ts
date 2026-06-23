@@ -49,6 +49,35 @@ export async function markTaskAsDone(taskId: string) {
   })
 }
 
+export async function releaseTask(taskId: string) {
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { assigneeId: null, status: TaskStatus.todo },
+    include: { assignee: { select: ASSIGNEE_SELECT } },
+  })
+}
+
+export async function findTasksDoneOnDate(date: Date) {
+  const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
+  const startOfNextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0)
+
+  return prisma.task.findMany({
+    where: { status: TaskStatus.done, doneAt: { gte: startOfDay, lt: startOfNextDay } },
+    include: { assignee: { select: ASSIGNEE_SELECT } },
+    orderBy: { doneAt: 'asc' },
+  })
+}
+
+export async function findDoneTaskDatesInMonth(month: number, year: number) {
+  const startOfMonth = new Date(year, month - 1, 1)
+  const startOfNextMonth = new Date(year, month, 1)
+
+  return prisma.task.findMany({
+    where: { status: TaskStatus.done, doneAt: { gte: startOfMonth, lt: startOfNextMonth } },
+    select: { doneAt: true },
+  })
+}
+
 export async function deleteTask(taskId: string) {
   return prisma.task.delete({ where: { id: taskId } })
 }

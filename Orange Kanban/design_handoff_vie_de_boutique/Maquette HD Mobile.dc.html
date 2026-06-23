@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=Caveat:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; font-family:'Nunito',sans-serif; -webkit-font-smoothing:antialiased; }
+  </style>
+</helmet>
+
+<div style="width:max-content; min-width:100%; min-height:100vh; box-sizing:border-box; padding:48px; background:#ECE6DF;">
+
+  <!-- PAGE TITLE -->
+  <div style="margin-bottom:40px;">
+    <div style="font-family:'Caveat',cursive; font-size:44px; font-weight:700; color:#1A1A1A; line-height:1;">Vie de Boutique</div>
+    <div style="font-family:'Nunito'; font-size:16px; font-weight:700; color:#FF7900; margin-top:6px;">Maquette haute fidélité · Mobile · Orange Boutique</div>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+      <span style="background:#FF7900; color:#fff; font-size:13px; font-weight:800; padding:5px 12px; border-radius:20px;">Caveat + Nunito</span>
+      <span style="background:#fff; color:#444; font-size:13px; font-weight:700; padding:5px 12px; border-radius:20px; border:1px solid #DFD7CD;">10 vendeurs</span>
+      <span style="background:#fff; color:#444; font-size:13px; font-weight:700; padding:5px 12px; border-radius:20px; border:1px solid #DFD7CD;">iPhone · 390pt</span>
+    </div>
+  </div>
+
+  <!-- ════════ SECTION : AUTH ════════ -->
+  <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; margin:8px 0 4px;">Connexion</div>
+  <div style="font-family:'Nunito'; font-size:14px; font-weight:600; color:#9A9088; margin-bottom:24px;">Identifiant CUID + mot de passe · première connexion = définition du mot de passe perso</div>
+
+  
+
+  <!-- ════════ SECTION : TÂCHES ════════ -->
+  <div style="display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap; margin-bottom:56px;">
+
+    <!-- SCREEN: Connexion -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Connexion</div>
+      <div style="width:300px; height:620px; background:linear-gradient(170deg,#FF7900,#FF9B3D); border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column; position:relative;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#fff;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#fff; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 30px 28px 0; position: relative">
+          <div style="width:62px; height:62px; background:#fff; border-radius:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.18); margin-bottom:20px;">
+            <div style="width:34px; height:34px; background:#FF7900; border-radius:9px;"></div>
+          </div>
+          <div style="font-family:'Caveat',cursive; font-size:42px; font-weight:700; color:#fff; line-height:0.95;">Bonjour 👋</div>
+          
+
+          <div style="margin-top:auto; background:#fff; border-radius:26px 26px 0 0; margin:auto -28px 0; padding:26px 28px 28px; box-shadow:0 -8px 24px rgba(0,0,0,0.12);">
+            <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Identifiant (CUID)</div>
+            <div style="background:#F5F1EC; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; color:#1A1A1A; margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2B8AD" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+              LERN5042
+            </div>
+            <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Mot de passe</div>
+            <div style="background:#F5F1EC; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; color:#1A1A1A; margin-bottom:22px; display:flex; align-items:center; justify-content:space-between;">
+              <span style="letter-spacing:3px; color:#1A1A1A;">••••••••</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2B8AD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <div style="background:#FF7900; color:#fff; text-align:center; padding:16px; border-radius:16px; font-size:17px; font-weight:800; box-shadow:0 8px 18px rgba(255,121,0,0.35);">Se connecter</div>
+            <div style="text-align:center; margin-top:16px; font-size:14px; font-weight:700; color:#9A9088;">Première connexion ? <span style="color:#FF7900;">Activer mon compte</span></div>
+          </div>
+        <p style="margin: 0; font-size: 24px; line-height: 1.1; position: absolute; left: 30px; top: 165px; font-family: Caveat; width: 241px; height: 47px; font-weight: 500; color: #464646">Boutique de Sallanches</p></div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Première connexion -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Première connexion</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 24px 0; display:flex; align-items:center; gap:14px;">
+          <div style="width:38px; height:38px; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+          </div>
+        </div>
+        <div style="flex:1; padding:18px 26px 0; display:flex; flex-direction:column;">
+          <div style="font-family:'Caveat',cursive; font-size:38px; font-weight:700; color:#1A1A1A; line-height:0.95;">Bienvenue, Léa !</div>
+          <div style="font-size:14px; font-weight:600; color:#9A9088; margin-top:6px; line-height:1.4;">Pour sécuriser votre accès, choisissez un mot de passe personnel.</div>
+
+          <div style="background:#FFF1E3; border-radius:16px; padding:14px 16px; margin-top:20px; display:flex; gap:12px; align-items:flex-start;">
+            <div style="width:26px; height:26px; border-radius:50%; background:#FF7900; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+            </div>
+            <div style="font-size:13px; font-weight:700; color:#B05500; line-height:1.4;">Ce mot de passe remplace celui fourni par la direction.</div>
+          </div>
+
+          <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin:22px 0 6px;">Nouveau mot de passe</div>
+          <div style="background:#fff; border:2px solid #FF7900; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; color:#1A1A1A; letter-spacing:3px;">••••••••</div>
+          <div style="display:flex; gap:5px; margin-top:10px;">
+            <div style="flex:1; height:6px; border-radius:3px; background:#22A650;"></div>
+            <div style="flex:1; height:6px; border-radius:3px; background:#22A650;"></div>
+            <div style="flex:1; height:6px; border-radius:3px; background:#22A650;"></div>
+            <div style="flex:1; height:6px; border-radius:3px; background:#E4DCD2;"></div>
+          </div>
+          <div style="font-size:12px; font-weight:700; color:#22A650; margin-top:6px;">Bon mot de passe 💪</div>
+
+          <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin:18px 0 6px;">Confirmer</div>
+          <div style="background:#fff; border:2px solid #E4DCD2; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; color:#1A1A1A; letter-spacing:3px;">••••••••</div>
+
+          <div style="margin-top:auto; background:#FF7900; color:#fff; text-align:center; padding:16px; border-radius:16px; font-size:17px; font-weight:800; box-shadow:0 8px 18px rgba(255,121,0,0.3); margin-bottom:24px;">Activer mon compte</div>
+        </div>
+      </div>
+    </div>
+  </div><div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; margin:8px 0 4px;">Tâches — Vie de boutique</div>
+  <div style="font-family:'Nunito'; font-size:14px; font-weight:600; color:#9A9088; margin-bottom:24px;">Colonnes À faire / En cours / Fait · calendrier à gauche du bouton + · chacun s'attribue une tâche</div>
+
+  <div style="display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap; margin-bottom:56px;">
+
+    <!-- SCREEN: Tâches (kanban) -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Mes tâches du jour</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <!-- header -->
+        <div style="padding:6px 20px 14px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Vie de boutique</div>
+              <div style="font-size:13px; font-weight:700; color:#9A9088; margin-top:2px;">Jeudi 11 juin</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <div style="width:42px; height:42px; border-radius:14px; background:#fff; box-shadow:0 3px 10px rgba(0,0,0,0.07); display:flex; align-items:center; justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="3"></rect><path d="M4 10h16M8 3v4M16 3v4"></path></svg>
+              </div>
+              <div style="width:42px; height:42px; border-radius:14px; background:#FF7900; box-shadow:0 6px 14px rgba(255,121,0,0.32); display:flex; align-items:center; justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- column tabs -->
+        <div style="display:flex; gap:7px; padding:0 18px 10px; flex-shrink:0;">
+          <div style="flex:1; text-align:center; padding:7px 0; background:#1A1A1A; color:#fff; border-radius:11px; font-size:12px; font-weight:800;">À faire · 3</div>
+          <div style="flex:1; text-align:center; padding:7px 0; background:#fff; color:#9A9088; border-radius:11px; font-size:12px; font-weight:800; border:1px solid #ECE4DA;">En cours · 2</div>
+          <div style="flex:1; text-align:center; padding:7px 0; background:#fff; color:#9A9088; border-radius:11px; font-size:12px; font-weight:800; border:1px solid #ECE4DA;">Fait · 5</div>
+        </div>
+        <!-- cards -->
+        <div style="flex:1; overflow:hidden; padding:2px 18px 12px; display:flex; flex-direction:column; gap:11px;">
+          <!-- card 1 -->
+          <div style="background:#fff; border-radius:18px; padding:14px 15px; box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+            <div style="font-size:16px; font-weight:800; color:#1A1A1A; margin:2px 0 12px; line-height:1.2;">Retour piloté</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#B0A89F;">Non attribuée</span>
+              <span style="background:#FF7900; color:#fff; font-size:12px; font-weight:800; padding:7px 16px; border-radius:11px; box-shadow:0 4px 10px rgba(255,121,0,0.28); white-space:nowrap;">Prendre</span>
+            </div>
+          </div>
+          <!-- card 2 -->
+          <div style="background:#fff; border-radius:18px; padding:14px 15px; box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+            <div style="font-size:16px; font-weight:800; color:#1A1A1A; margin:2px 0 12px; line-height:1.2;">Mise à jour des étiquettes prix</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#B0A89F;">Non attribuée</span>
+              <span style="background:#FF7900; color:#fff; font-size:12px; font-weight:800; padding:7px 16px; border-radius:11px; box-shadow:0 4px 10px rgba(255,121,0,0.28); white-space:nowrap;">Prendre</span>
+            </div>
+          </div>
+          <!-- card 3 assigned -->
+          <div style="background:#fff; border-radius:18px; padding:14px 15px; box-shadow:0 4px 14px rgba(0,0,0,0.05); opacity:0.96;">
+            <div style="font-size:16px; font-weight:800; color:#1A1A1A; margin:2px 0 12px; line-height:1.2;">Réorganiser les accessoires</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#B0A89F;">Non attribuée</span>
+              <span style="background:#FF7900; color:#fff; font-size:12px; font-weight:800; padding:7px 16px; border-radius:11px; box-shadow:0 4px 10px rgba(255,121,0,0.28); white-space:nowrap;">Prendre</span>
+            </div>
+          </div>
+        </div>
+        <!-- bottom nav -->
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:800;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:700;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Ajout tâche bottom sheet -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Nouvelle tâche</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column; position:relative;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <!-- dimmed bg -->
+        <div style="flex:1; padding:6px 20px 0; opacity:0.4;">
+          <div style="font-family: 'Caveat',cursive; font-size: 30px; font-weight: 700; color: #1A1A1A">Vie de boutique</div>
+          <div style="background:#fff; border-radius:16px; height:70px; margin-top:14px;"></div>
+          <div style="background:#fff; border-radius:16px; height:70px; margin-top:11px;"></div>
+        </div>
+        <!-- overlay -->
+        <div style="position: absolute; inset: 0; background: rgba(26,26,26,0.45); border-radius: 38px; left: -19px; top: -7px"></div>
+        <!-- sheet -->
+        <div style="position:absolute; left:0; right:0; bottom:0; background:#fff; border-radius:30px 30px 38px 38px; padding:14px 22px 26px; box-shadow:0 -10px 40px rgba(0,0,0,0.25);">
+          <div style="width:42px; height:5px; border-radius:3px; background:#E4DCD2; margin:0 auto 16px;"></div>
+          <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Nouvelle tâche</div>
+          <div style="font-size:13px; font-weight:600; color:#9A9088; margin:2px 0 18px;">Visible par toute l'équipe</div>
+
+          <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Titre</div>
+          <div style="background:#F5F1EC; border-radius:14px; padding:14px 16px; font-size:15px; font-weight:700; color:#1A1A1A; margin-bottom:18px;">Nettoyer la vitrine principale</div>
+
+          <div style="font-size:12px; font-weight:800; color:#9A9088; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Description <span style="font-weight:600; text-transform:none; color:#C2B8AD;">(optionnel)</span></div>
+          <div style="background:#F5F1EC; border-radius:14px; padding:14px 16px; font-size:14px; font-weight:600; color:#B0A89F; margin-bottom:18px; min-height:44px;">Ajouter un détail…</div>
+
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1; text-align:center; padding:15px; border-radius:15px; background:#F5F1EC; color:#8A8078; font-size:15px; font-weight:800;">Annuler</div>
+            <div style="flex:1.6; text-align:center; padding:15px; border-radius:15px; background:#FF7900; color:#fff; font-size:15px; font-weight:800; box-shadow:0 8px 18px rgba(255,121,0,0.3);">Créer la tâche</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Calendrier -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Historique (calendrier)</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 12px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Historique</div>
+            <div style="font-size:13px; font-weight:700; color:#9A9088;">Ce qui a été fait, et quand</div>
+          </div>
+          <span style="background:#FFF1E3; color:#B05500; font-size:11px; font-weight:800; padding:5px 11px; border-radius:10px; display:flex; align-items:center; gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            Lecture
+          </span>
+        </div>
+        <!-- calendar card -->
+        <div style="margin:0 18px; background:#fff; border-radius:20px; padding:14px 14px 16px; box-shadow:0 4px 14px rgba(0,0,0,0.05); flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <span style="font-size:15px; font-weight:800; color:#1A1A1A;">Juin 2026</span>
+            <span style="display:flex; gap:14px; color:#C2B8AD; font-weight:800;">‹ ›</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:6px;">
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">L</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">M</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">M</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">J</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">V</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">S</div>
+            <div style="text-align:center; font-size:10px; font-weight:800; color:#C2B8AD;">D</div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; font-size:12px; font-weight:700;">
+            <div style="text-align:center; padding:6px 0; color:#1A1A1A;">1</div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">2<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">3<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">4<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">5<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; color:#C2B8AD;">6</div>
+            <div style="text-align:center; padding:6px 0; color:#C2B8AD;">7</div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">8<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">9<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#E6F6EC; color:#1A1A1A; position:relative;">10<span style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:#22A650;"></span></div>
+            <div style="text-align:center; padding:6px 0; border-radius:9px; background:#FF7900; color:#fff;">11</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">12</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">13</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">14</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">15</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">16</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">17</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">18</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">19</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">20</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">21</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">22</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">23</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">24</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">25</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">26</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">27</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">28</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">29</div>
+            <div style="text-align:center; padding:6px 0; color:#D8CFC5;">30</div>
+          </div>
+        </div>
+        <!-- day detail -->
+        <div style="flex:1; overflow:hidden; padding:14px 18px 0;">
+          <div style="font-size:13px; font-weight:800; color:#9A9088; margin-bottom:10px;">Jeudi 11 juin · 2 tâches</div>
+          <div style="background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); margin-bottom:10px; display:flex; align-items:center; gap:12px;">
+            <div style="width:34px; height:34px; border-radius:11px; background:#E6F6EC; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22A650" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4 4 10-10"></path></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:14px; font-weight:800; color:#1A1A1A;">Nettoyage vitrine</div>
+              <div style="font-size:12px; font-weight:700; color:#9A9088;">Léa R. · 9h30</div>
+            </div>
+          </div>
+          <div style="background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; align-items:center; gap:12px;">
+            <div style="width:34px; height:34px; border-radius:11px; background:#E6F6EC; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22A650" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4 4 10-10"></path></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:14px; font-weight:800; color:#1A1A1A;">Retour piloté</div>
+              <div style="font-size:12px; font-weight:700; color:#9A9088;">Paul T. · 11h15</div>
+            </div>
+          </div>
+        </div>
+        <!-- bottom nav (calendrier is reached from tasks, keep Tâches active) -->
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:800;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:700;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ SECTION : OBJECTIFS ════════ -->
+  <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; margin:8px 0 4px;">Objectifs</div>
+  <div style="font-family:'Nunito'; font-size:14px; font-weight:600; color:#9A9088; margin-bottom:24px;">Onglets « Je pointe » (steppers) &amp; « Équipe » (jauges colorées par vendeur) · suivi du mois · vue admin</div>
+
+  <div style="display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap; margin-bottom:56px;">
+
+    <!-- SCREEN: Objectif Jour · Je pointe -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Jour · « Je pointe »</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 8px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Objectifs</div>
+            <div style="font-size:13px; font-weight:700; color:#9A9088;">Toi : Léa · Jeu. 11 juin</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; background:#EAF8EF; border-radius:11px; padding:6px 11px;">
+            <span style="width:18px; height:18px; border-radius:50%; background:#57C77E; color:#fff; font-size:9px; font-weight:800; display:flex; align-items:center; justify-content:center;">LR</span>
+            <span style="font-size:12px; font-weight:800; color:#1A8A48;">10</span>
+          </div>
+        </div>
+        <div style="padding:4px 22px 8px; flex-shrink:0; display:flex; gap:7px;">
+          <div style="padding:7px 20px; background:#FF7900; color:#fff; border-radius:11px; font-size:13px; font-weight:800; ">Jour</div>
+          <div style="padding:7px 20px; background:#fff; color:#9A9088; border-radius:11px; font-size:13px; font-weight:800; border:1px solid #ECE4DA;">Mois</div>
+        </div>
+        <div style="padding:0 22px 10px; flex-shrink:0;">
+          <div style="background:#EFE8E0; border-radius:12px; padding:3px; display:flex;">
+            <div style="flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:800; background:#fff; color:#1A1A1A; box-shadow:0 2px 6px rgba(0,0,0,0.08);">✎ Je pointe</div>
+            <div style="flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:800; color:#9A9088;">Équipe</div>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:0 18px 8px;">
+          <div style="background:#fff; border-radius:18px; box-shadow:0 4px 14px rgba(0,0,0,0.05); overflow:hidden;">
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">HD</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 18</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">1</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">ABO</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 27</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">2</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Terminaux</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 17</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">3</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Challenge</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 13</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">0</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">MP</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 11</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">1</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F4EEE7;">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Parafoudre</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 8</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">2</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px; display:flex; align-items:center; gap:10px; ">
+        <div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Divertissement</div><div style="font-size:11px; font-weight:700; color:#B0A89F;">équipe : 17</div></div>
+        <div style="display:flex; align-items:center; gap:7px; flex-shrink:0;">
+          <div style="width:34px; height:34px; border-radius:11px; border:1.5px solid #E4DCD2; background:#fff; color:#C2B8AD; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">−</div>
+          <div style="min-width:38px; height:34px; border-radius:11px; background:#EAF8EF; border:1.5px solid #57C77E; color:#1A1A1A; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1;">1</div>
+          <div style="width:34px; height:34px; border-radius:11px; background:#57C77E; color:#fff; font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; box-shadow:0 4px 10px rgba(87,199,126,0.35);">+</div>
+        </div>
+      </div>
+          </div>
+        </div>
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:800;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+      <div style="width:300px; font-size:13px; font-weight:600; color:#7A7066; line-height:1.5; margin-top:12px;">Chaque <b style="color:#57C77E">+</b> ajoute une vente à <i>ta</i> couleur. Tu peux corriger ta valeur avec <b>−</b> / <b>+</b>.</div>
+    </div>
+
+    <!-- SCREEN: Objectif Jour · Équipe -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Jour · « Équipe »</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 8px; flex-shrink:0;">
+          <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Objectifs</div>
+          <div style="font-size:13px; font-weight:700; color:#9A9088;">Vue équipe · qui a vendu quoi aujourd'hui</div>
+        </div>
+        <div style="padding:4px 22px 8px; flex-shrink:0; display:flex; gap:7px;">
+          <div style="padding:7px 20px; background:#FF7900; color:#fff; border-radius:11px; font-size:13px; font-weight:800; ">Jour</div>
+          <div style="padding:7px 20px; background:#fff; color:#9A9088; border-radius:11px; font-size:13px; font-weight:800; border:1px solid #ECE4DA;">Mois</div>
+        </div>
+        <div style="padding:0 22px 10px; flex-shrink:0;">
+          <div style="background:#EFE8E0; border-radius:12px; padding:3px; display:flex;">
+            <div style="flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:800; color:#9A9088;">✎ Je pointe</div>
+            <div style="flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:13px; font-weight:800; background:#fff; color:#1A1A1A; box-shadow:0 2px 6px rgba(0,0,0,0.08);">Équipe</div>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:0 18px 6px; display:flex; flex-direction:column;">
+          <div style="background:#fff; border-radius:18px; box-shadow:0 4px 14px rgba(0,0,0,0.05); overflow:hidden;">
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">HD</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">18</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:3; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:2; min-width:16px; background:#58A6FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">1</div><div style="flex:4; min-width:16px; background:#F2B14B; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">4</div><div style="flex:2; min-width:16px; background:#FF8A73; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:3; min-width:16px; background:#FF8FB8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:2; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div></div>
+      </div>
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">ABO</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">27</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:5; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">5</div><div style="flex:3; min-width:16px; background:#58A6FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:2; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">2</div><div style="flex:4; min-width:16px; background:#B57BE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">4</div><div style="flex:2; min-width:16px; background:#FF8A73; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:3; min-width:16px; background:#46CBB0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:5; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">5</div><div style="flex:3; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div></div>
+      </div>
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Terminaux</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">17</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:2; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:3; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">3</div><div style="flex:2; min-width:16px; background:#F2B14B; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#B57BE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#46CBB0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#FF8FB8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:3; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:3; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div></div>
+      </div>
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Challenge</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">13</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:1; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#58A6FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:3; min-width:16px; background:#F2B14B; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:1; min-width:16px; background:#B57BE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#FF8A73; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#FF8FB8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div></div>
+      </div>
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">MP</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">11</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:2; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#58A6FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:1; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">1</div><div style="flex:2; min-width:16px; background:#B57BE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#FF8A73; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:1; min-width:16px; background:#46CBB0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#FF8FB8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div></div>
+      </div>
+      <div style="padding:8px 14px; border-bottom:1px solid #F4EEE7;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Parafoudre</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">8</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:1; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">2</div><div style="flex:1; min-width:16px; background:#F2B14B; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:1; min-width:16px; background:#FF8A73; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:1; min-width:16px; background:#FF8FB8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div></div>
+      </div>
+      <div style="padding:8px 14px; ">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Divertissement</span>
+          <span style="font-size:11px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">16</b> total</span>
+        </div>
+        <div style="height:20px; border-radius:7px; overflow:hidden; display:flex; background:#F0EAE3;"><div style="flex:3; min-width:16px; background:#FF7900; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:2; min-width:16px; background:#58A6FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#57C77E; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6), inset 0 0 0 2px rgba(0,0,0,0.32);">1</div><div style="flex:2; min-width:16px; background:#F2B14B; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:3; min-width:16px; background:#B57BE8; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">3</div><div style="flex:2; min-width:16px; background:#46CBB0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div><div style="flex:1; min-width:16px; background:#8C8AF0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">1</div><div style="flex:2; min-width:16px; background:#B6D957; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:#1A1A1A; box-shadow:inset -1.5px 0 0 rgba(255,255,255,0.6);">2</div></div>
+      </div>
+          </div>
+          <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px 9px; align-items:center; padding:0 2px;">
+            <span style="font-size:9px; font-weight:800; color:#B0A89F; letter-spacing:0.4px;">QUI :</span>
+            <div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#FF7900; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Marie</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#58A6FF; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Sophie</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#57C77E; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Léa (toi)</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#F2B14B; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Paul</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#B57BE8; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Emma</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#FF8A73; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Lucas</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#46CBB0; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Chloé</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#FF8FB8; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Thomas</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#8C8AF0; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Inès</span></div><div style="display:flex; align-items:center; gap:4px;"><div style="width:9px; height:9px; border-radius:50%; background:#B6D957; flex-shrink:0;"></div><span style="font-size:10px; font-weight:700; color:#8A8078;">Noah</span></div>
+          </div>
+        </div>
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:800;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+      <div style="width:300px; font-size:13px; font-weight:600; color:#7A7066; line-height:1.5; margin-top:12px;">Jauge empilée = total de l'équipe, chaque segment à la <b>couleur du vendeur</b>. Le contour foncé, c'est <b style="color:#57C77E">toi</b>.</div>
+    </div>
+
+    <!-- SCREEN: Objectif Mois (vendeur) -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Mois · ma progression</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 8px; flex-shrink:0;">
+          <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.9;">Ma progression</div>
+          <div style="font-size:13px; font-weight:700; color:#9A9088;">Juin 2026 · 52 / 81 objectifs</div>
+        </div>
+        <div style="padding:0 22px 10px; flex-shrink:0; display:flex; gap:7px;">
+          <div style="padding:7px 18px; background:#fff; color:#9A9088; border-radius:11px; font-size:13px; font-weight:800; border:1px solid #ECE4DA;">Jour</div>
+          <div style="padding:7px 18px; background:#FF7900; color:#fff; border-radius:11px; font-size:13px; font-weight:800;">Mois</div>
+        </div>
+        <!-- indicator progress -->
+        <div style="flex:1; overflow:hidden; padding:6px 20px 0;">
+          <div style="display:flex; flex-direction:column; gap:13px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">HD</span>
+                <span style="font-size:12px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">4</b> / 8</span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:50%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">ABO</span>
+                <span style="font-size:12px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">8</b> / 12</span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:66%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Terminaux</span>
+                <span style="font-size:12px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">12</b> / 15</span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:80%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Parafoudre</span>
+                <span style="font-size:12px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">8</b> / 10</span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:80%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Challenge <span style="font-size:10px; color:#fff; background:#FF7900; padding:1px 7px; border-radius:6px;">en cours</span></span>
+                <span style="font-size:12px; font-weight:700; color:#9A9088;"><b style="color:#1A1A1A; font-size:14px;">0</b> / 5</span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:4%; height:100%; background:#FFC58A; border-radius:5px;"></div></div>
+            </div>
+          </div>
+          <div style="text-align:center; font-size:11px; font-weight:700; color:#C2B8AD; margin-top:12px;">🔒 Objectifs fixés par la direction</div>
+        </div>
+        <!-- bottom nav -->
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:800;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Objectif Mois (admin) -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#C25E00; margin-bottom:10px; text-align:center;">Mois · vue admin 🔒</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #FF7900; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(255,121,0,0.25); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 10px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-family:'Caveat',cursive; font-size:28px; font-weight:700; color:#1A1A1A; line-height:0.9;">Objectifs du mois</div>
+            <span style="background:#FFF1E3; color:#C25E00; font-size:10px; font-weight:800; padding:4px 9px; border-radius:9px;">ADMIN</span>
+          </div>
+          <!-- vendor dropdown -->
+          <div style="margin-top:12px; background:#fff; border:2px solid #FF7900; border-radius:14px; padding:9px 12px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(255,121,0,0.12);">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <span style="width:30px; height:30px; border-radius:50%; background:#57C77E; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">LR</span>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#1A1A1A; line-height:1;">Léa R.</div>
+                <div style="font-size:11px; font-weight:700; color:#9A9088;">Vendeuse</div>
+              </div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF7900" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+          <!-- admin actions -->
+          <div style="margin-top:10px;">
+            <div style="background:#FF7900; color:#fff; border-radius:12px; padding:12px; text-align:center; font-size:14px; font-weight:800; box-shadow:0 5px 12px rgba(255,121,0,0.28); display:flex; align-items:center; justify-content:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16z"></path></svg>
+              Modifier les objectifs
+            </div>
+          </div>
+        </div>
+        <!-- progress (editable) -->
+        <div style="flex:1; overflow:hidden; padding:6px 20px 0;">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">HD</span>
+                <span style="display:flex; align-items:center; gap:6px;"><span style="font-size:12px; font-weight:700; color:#9A9088;">4 /</span><span style="background:#fff; border:1.5px solid #FF7900; border-radius:7px; padding:1px 9px; font-size:13px; font-weight:800; color:#1A1A1A;">8</span></span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:50%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">ABO</span>
+                <span style="display:flex; align-items:center; gap:6px;"><span style="font-size:12px; font-weight:700; color:#9A9088;">8 /</span><span style="background:#fff; border:1.5px solid #FF7900; border-radius:7px; padding:1px 9px; font-size:13px; font-weight:800; color:#1A1A1A;">12</span></span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:66%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Terminaux</span>
+                <span style="display:flex; align-items:center; gap:6px;"><span style="font-size:12px; font-weight:700; color:#9A9088;">12 /</span><span style="background:#fff; border:1.5px solid #FF7900; border-radius:7px; padding:1px 9px; font-size:13px; font-weight:800; color:#1A1A1A;">15</span></span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:80%; height:100%; background:#22A650; border-radius:5px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">
+                <span style="font-size:13px; font-weight:800; color:#1A1A1A;">Assurances <span style="font-size:9px; color:#2A6FAF; background:#E8F0FF; padding:1px 6px; border-radius:5px;">mois</span></span>
+                <span style="display:flex; align-items:center; gap:6px;"><span style="font-size:12px; font-weight:700; color:#9A9088;">4 /</span><span style="background:#fff; border:1.5px solid #FF7900; border-radius:7px; padding:1px 9px; font-size:13px; font-weight:800; color:#1A1A1A;">6</span></span>
+              </div>
+              <div style="height:9px; border-radius:5px; background:#EDE5DB; overflow:hidden;"><div style="width:66%; height:100%; background:#57C77E; border-radius:5px;"></div></div>
+            </div>
+          </div>
+          </div><div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:800;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+        </div>
+        <!-- bottom nav -->
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ SECTION : SUIVI & PROFIL ════════ -->
+  <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; margin:8px 0 4px;">Suivi équipe &amp; Profil</div>
+  <div style="font-family:'Nunito'; font-size:14px; font-weight:600; color:#9A9088; margin-bottom:24px;">Notes partagées avec le vendeur + zone privée direction (démarcation douce) · profil &amp; gestion des comptes</div>
+
+  <div style="display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap; margin-bottom:40px;">
+
+    <!-- SCREEN: Suivi équipe (fiche vendeur) -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#C25E00; margin-bottom:10px; text-align:center;">Fiche de suivi 🔒</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #FF7900; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(255,121,0,0.25); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 10px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-family:'Caveat',cursive; font-size:28px; font-weight:700; color:#1A1A1A; line-height:0.9;">Suivi équipe</div>
+            <span style="background:#FFF1E3; color:#C25E00; font-size:10px; font-weight:800; padding:4px 9px; border-radius:9px;">ADMIN</span>
+          </div>
+          <!-- vendor selector -->
+          <div style="margin-top:12px; background:#fff; border:1.5px solid #ECE4DA; border-radius:14px; padding:9px 12px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:9px;">
+              <span style="width:30px; height:30px; border-radius:50%; background:#57C77E; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">LR</span>
+              <div style="font-size:14px; font-weight:800; color:#1A1A1A;">Léa R.</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B0A89F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:2px 20px 0; display:flex; flex-direction:column; gap:13px;">
+          <!-- PUBLIC: points à améliorer -->
+          <div style="background:#fff; border-radius:18px; padding:14px 15px; box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;">
+              <span style="font-size:14px; font-weight:800; color:#1A1A1A;">Points à améliorer</span>
+              
+            </div>
+            <div style="font-size:13px; font-weight:600; color:#5A5048; line-height:1.5;">Très bon accueil client 👏 Travailler l'argumentaire MP&nbsp;<b style="color: rgb(26, 26, 26);"></b>et penser à proposer l'assurance avec chaque terminal.</div>
+          </div>
+          <!-- PUBLIC: challenge -->
+          <div style="background:#fff; border-radius:18px; padding:14px 15px; box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:800; color:#1A1A1A;">🏆 Challenge fibre</span>
+              <span style="font-size:12px; font-weight:800; color:#FF7900;">9 / 15</span>
+            </div>
+            <div style="height:10px; border-radius:5px; background:#F0E8DE; overflow:hidden;"><div style="width:60%; height:100%; background:linear-gradient(90deg,#FF7900,#FFA94D); border-radius:5px;"></div></div>
+            <div style="font-size:12px; font-weight:700; color:#9A9088; margin-top:7px;">Bien partie pour le début du mois !</div>
+          </div>
+          <!-- PRIVATE: subtle demarcation -->
+          <div style="background:#F3F5F8; border:1px dashed #C9D2DA; border-radius:18px; padding:14px 15px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;">
+              <span style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:800; color:#5B6B7B;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8595A6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                Notes privées
+              </span>
+              <span style="font-size:10px; font-weight:800; color:#8595A6;">Direction uniquement</span>
+            </div>
+            <div style="font-size:13px; font-weight:600; color:#6B7787; line-height:1.5;">Évolution possible sur le taux d'accessoires et l'assu qui est terrible. En parler à l'entretien de juillet. Ne pas évoquer avant la fin du mois.</div>
+            <div style="display:flex; align-items:center; gap:5px; margin-top:10px; font-size:11px; font-weight:700; color:#9AA7B5;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16z"></path></svg>
+              Non visible par la vendeuse
+            </div>
+          </div>
+        </div>
+        <!-- bottom nav (Suivi active) -->
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:700;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:800;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Profil</span>
+          </div>
+        </div>
+      </div>
+      <div style="width:300px; font-size:13px; font-weight:600; color:#7A7066; line-height:1.5; margin-top:12px;">La zone <b style="color:#5B6B7B;">grise pointillée</b> = privé direction. Démarcation douce, sans rouge agressif.</div>
+    </div>
+
+    <!-- SCREEN: Profil -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#5A5048; margin-bottom:10px; text-align:center;">Profil</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #1A1A1A; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <!-- profile hero -->
+        <div style="padding:8px 22px 16px; flex-shrink:0; display:flex; align-items:center; gap:14px;">
+          <div style="width:62px; height:62px; border-radius:22px; background:#57C77E; color:#fff; font-family:'Caveat',cursive; font-size:30px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(87,199,126,0.35);">LR</div>
+          <div>
+            <div style="font-family:'Caveat',cursive; font-size:30px; font-weight:700; color:#1A1A1A; line-height:0.85;">Léa Renaud</div>
+            <div style="font-size:13px; font-weight:700; color:#9A9088; margin-top:3px;">Vendeuse · CUID LERN5042</div>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:0 20px;">
+          <div style="font-size:11px; font-weight:800; color:#B0A89F; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px;">Compte</div>
+          <div style="background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.04); overflow:hidden; margin-bottom:18px;">
+            <div style="padding:13px 15px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #F4EEE7;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FF7900" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              <span style="flex:1; font-size:14px; font-weight:800; color:#1A1A1A;">Changer mon mot de passe</span>
+              <span style="color:#C2B8AD; font-weight:800;">›</span>
+            </div>
+            <div style="padding:13px 15px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #F4EEE7;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FF7900" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+              <span style="flex:1; font-size:14px; font-weight:800; color:#1A1A1A;">Mes informations</span>
+              <span style="color:#C2B8AD; font-weight:800;">›</span>
+            </div>
+            <div style="padding:13px 15px; display:flex; align-items:center; gap:12px;">
+              <span style="width:19px; height:19px; border-radius:6px; background:#57C77E; flex-shrink:0;"></span>
+              <span style="flex:1; font-size:14px; font-weight:800; color:#1A1A1A;">Ma couleur</span>
+              <span style="font-size:11px; font-weight:700; color:#B0A89F;">Modifiable par admin</span>
+            </div>
+          </div>
+
+          <div style="font-size:11px; font-weight:800; color:#C25E00; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C25E00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            Administration · direction
+          </div>
+          <div style="background:#FFF8F2; border:1px solid #FFE2C4; border-radius:16px; padding:13px 15px; display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:12px; background:#FFF1E3; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7900" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:14px; font-weight:800; color:#1A1A1A;">Gestion des comptes</div>
+              <div style="font-size:11px; font-weight:700; color:#B07A4A;">Créer un vendeur · réinitialiser un mdp</div>
+            </div>
+            <span style="color:#FF7900; font-weight:800;">›</span>
+          </div>
+        </div>
+        <!-- logout -->
+        <div style="padding:12px 20px 16px; flex-shrink:0;">
+          <div style="text-align:center; padding:13px; border-radius:14px; background:#fff; border:1.5px solid #F0E2E2; color:#D9534F; font-size:14px; font-weight:800;">Se déconnecter</div>
+        </div>
+        <!-- bottom nav (Profil active) -->
+        <div style="flex-shrink:0; background:#fff; border-top:1px solid #F0EAE3; display:flex; padding:9px 6px 12px; box-shadow:0 -3px 16px rgba(0,0,0,0.04);">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="3"></rect><path d="M9 4h6v3H9z"></path><path d="M8.5 12.5l2 2 4-4.5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Tâches</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="0.6" fill="currentColor"></circle></svg>
+            <span style="font-size:10.5px; font-weight:700;">Objectif</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#B7AEA4;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 3-5.2 6-5.2s6 1.9 6 5.2"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.8"></path><path d="M17.5 15c2 .4 3.8 1.9 3.8 5"></path></svg>
+            <span style="font-size:10.5px; font-weight:700;">Suivi</span>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#FF7900;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="font-size:10.5px; font-weight:800;">Profil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: Gestion des comptes -->
+    <div style="flex:none;">
+      <div style="font-family:'Caveat',cursive; font-size:19px; font-weight:700; color:#C25E00; margin-bottom:10px; text-align:center;">Gestion des comptes 🔒</div>
+      <div style="width:300px; height:620px; background:#FBF7F3; border:8px solid #FF7900; border-radius:46px; overflow:hidden; box-shadow:0 16px 40px rgba(255,121,0,0.25); display:flex; flex-direction:column;">
+        <div style="height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px;">
+          <span style="font-size:13px; font-weight:800; color:#1A1A1A;">9:41</span>
+          <span style="font-size:11px; font-weight:800; color:#1A1A1A; letter-spacing:1px;">●●●  ▮▮</span>
+        </div>
+        <div style="padding:6px 22px 12px; flex-shrink:0; display:flex; align-items:center; gap:12px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+          <div>
+            <div style="font-family:'Caveat',cursive; font-size:26px; font-weight:700; color:#1A1A1A; line-height:0.85;">Gestion des comptes</div>
+            <div style="font-size:12px; font-weight:700; color:#9A9088;">10 membres</div>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:0 18px; display:flex; flex-direction:column; gap:9px;">
+          <!-- member with color edit -->
+          <div style="background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display:flex; align-items:center; gap:11px;">
+              <span style="width:36px; height:36px; border-radius:50%; background:#57C77E; color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;">LR</span>
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:800; color:#1A1A1A;">Léa Renaud</div>
+                <div style="font-size:11px; font-weight:700; color:#9A9088;">Vendeuse · LERN5042</div>
+              </div>
+              <span style="color:#C2B8AD; font-weight:800;">⋯</span>
+            </div>
+            <!-- color picker row -->
+            <div style="display:flex; align-items:center; gap:8px; margin-top:11px; padding-top:11px; border-top:1px solid #F4EEE7;">
+              <span style="font-size:11px; font-weight:800; color:#9A9088;">Couleur</span>
+              <div style="display:flex; gap:6px; flex:1;">
+                <span style="width:20px; height:20px; border-radius:50%; background:#57C77E; box-shadow:0 0 0 2px #fff, 0 0 0 4px #57C77E;"></span>
+                <span style="width:20px; height:20px; border-radius:50%; background:#58A6FF;"></span>
+                <span style="width:20px; height:20px; border-radius:50%; background:#B57BE8;"></span>
+                <span style="width:20px; height:20px; border-radius:50%; background:#F2B14B;"></span>
+                <span style="width:20px; height:20px; border-radius:50%; background:#FF8FB8;"></span>
+              </div>
+              <span style="font-size:10px; font-weight:800; color:#FF7900;">Admin</span>
+            </div>
+          </div>
+          <!-- other members compact -->
+          <div style="background:#fff; border-radius:16px; padding:11px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; align-items:center; gap:11px;">
+            <span style="width:34px; height:34px; border-radius:50%; background:#FF7900; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">MD</span>
+            <div style="flex:1;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Marie Dubois</div><div style="font-size:11px; font-weight:700; color:#9A9088;">Directrice · MADU3310</div></div>
+            <span style="color:#C2B8AD; font-weight:800;">⋯</span>
+          </div>
+          <div style="background:#fff; border-radius:16px; padding:11px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; align-items:center; gap:11px;">
+            <span style="width:34px; height:34px; border-radius:50%; background:#58A6FF; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">SL</span>
+            <div style="flex:1;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Sophie Lambert</div><div style="font-size:11px; font-weight:700; color:#9A9088;">Adjointe · SOLA8821</div></div>
+            <span style="color:#C2B8AD; font-weight:800;">⋯</span>
+          </div>
+          <div style="background:#fff; border-radius:16px; padding:11px 14px; box-shadow:0 4px 12px rgba(0,0,0,0.04); display:flex; align-items:center; gap:11px;">
+            <span style="width:34px; height:34px; border-radius:50%; background:#F2B14B; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">PT</span>
+            <div style="flex:1;"><div style="font-size:14px; font-weight:800; color:#1A1A1A;">Paul Thomas</div><div style="font-size:11px; font-weight:700; color:#9A9088;">Vendeur · PATH6190</div></div>
+            <span style="color:#C2B8AD; font-weight:800;">⋯</span>
+          </div>
+          <div style="text-align:center; font-size:12px; font-weight:700; color:#B0A89F;">+ 6 autres membres</div>
+        </div>
+        <!-- add member CTA -->
+        <div style="padding:12px 18px 18px; flex-shrink:0;">
+          <div style="background:#FF7900; color:#fff; text-align:center; padding:15px; border-radius:16px; font-size:15px; font-weight:800; box-shadow:0 8px 18px rgba(255,121,0,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Ajouter un vendeur
+          </div>
+        </div>
+      </div>
+      <div style="width:300px; font-size:13px; font-weight:600; color:#7A7066; line-height:1.5; margin-top:12px;">La direction crée le CUID + mot de passe provisoire et choisit la <b style="color:#57C77E;">couleur</b> du vendeur (non modifiable par lui).</div>
+    </div>
+  </div>
+
+  <!-- APPEND-HERE -->
+
+</x-dc>
+</body>
+</html>

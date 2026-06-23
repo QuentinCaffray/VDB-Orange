@@ -63,6 +63,51 @@ export async function completeTaskHandler(
   }
 }
 
+export async function releaseTaskHandler(
+  request: Request<{ id: string }>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const taskId = request.params.id
+    const { userId, role } = request.authenticatedUser!
+
+    const updatedTask = await taskService.releaseTask(taskId, userId, role)
+    response.json(updatedTask)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getTaskHistoryForDateHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const date = request.query.date as string
+    const tasks = await taskService.getTaskHistoryForDate(date)
+    response.json(tasks)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getActiveDatesHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const month = parseInt(request.query.month as string)
+    const year = parseInt(request.query.year as string)
+    const dates = await taskService.getActiveDatesForMonth(month, year)
+    response.json(dates)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function deleteTaskHandler(
   request: Request<{ id: string }>,
   response: Response,
