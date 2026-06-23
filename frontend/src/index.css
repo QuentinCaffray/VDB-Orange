@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: 'Nunito', sans-serif;
+  --font-display: 'Caveat', cursive;
+
+  /* Brand */
+  --color-brand: #FF7900;
+  --color-brand-dark: #C25E00;
+  --color-brand-darker: #B05500;
+
+  /* Backgrounds */
+  --color-app-bg: #FBF7F3;
+  --color-canvas: #ECE6DF;
+  --color-surface: #F5F1EC;
+
+  /* Text */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #9A9088;
+  --color-text-tertiary: #B0A89F;
+
+  /* Borders */
+  --color-border: #ECE4DA;
+  --color-border-soft: #F0EAE3;
+
+  /* Status */
+  --color-success: #22A650;
+  --color-success-light: #57C77E;
+  --color-success-tint: #E6F6EC;
+  --color-danger: #D9534F;
+
+  /* Admin zone (slate) */
+  --color-admin-bg: #F3F5F8;
+  --color-admin-border: #C9D2DA;
+  --color-admin-text: #5B6B7B;
+
+  /* Vendeur colors */
+  --color-vendor-marie: #FF7900;
+  --color-vendor-sophie: #58A6FF;
+  --color-vendor-lea: #57C77E;
+  --color-vendor-paul: #F2B14B;
+  --color-vendor-emma: #B57BE8;
+  --color-vendor-lucas: #FF8A73;
+  --color-vendor-chloe: #46CBB0;
+  --color-vendor-thomas: #FF8FB8;
+  --color-vendor-ines: #8C8AF0;
+  --color-vendor-noah: #B6D957;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-app-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+#root {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background-color: var(--color-app-bg);
+}
