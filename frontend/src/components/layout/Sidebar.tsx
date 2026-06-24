@@ -1,10 +1,21 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
-import { useAllUsers } from '../../features/users/hooks/useUsers'
+import { useDarkModeContext } from '../../context/DarkModeContext'
+import { TeamColorLegend } from '../ui/TeamColorLegend'
 
 const SIDEBAR_WIDTH = 240
 
 const navItems = [
+  {
+    to: '/dashboard',
+    label: 'Tableau de bord',
+    icon: (active: boolean) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    ),
+  },
   {
     to: '/tasks',
     label: 'Tâches',
@@ -52,8 +63,8 @@ const navItems = [
 
 export default function Sidebar() {
   const { currentUser } = useAuthContext()
-  const { data: allUsers = [] } = useAllUsers()
-  const vendors = allUsers.filter((user) => user.role === 'vendeur')
+  const { isDark, toggleDarkMode } = useDarkModeContext()
+  const isAdmin = currentUser?.role === 'admin'
 
   return (
     // hidden sur mobile, affiché en flex colonne sur desktop
@@ -66,7 +77,7 @@ export default function Sidebar() {
         width: SIDEBAR_WIDTH,
         height: '100dvh',
         flexDirection: 'column',
-        background: 'white',
+        background: 'var(--color-card)',
         borderRight: '1px solid var(--color-border-soft)',
         zIndex: 50,
       }}
@@ -111,22 +122,29 @@ export default function Sidebar() {
           <NavLink key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
             {({ isActive }) => (
               <div
+                className={`sidebar-nav-item ${isActive ? 'sidebar-nav-item--active' : ''}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
                   padding: '10px 12px',
                   borderRadius: 12,
-                  background: isActive ? '#FFF3E6' : 'transparent',
-                  transition: 'background 0.15s ease',
                 }}
               >
-                {item.icon(isActive)}
+                <div
+                  style={{
+                    transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                  }}
+                >
+                  {item.icon(isActive)}
+                </div>
                 <span
                   style={{
                     fontSize: 14,
                     fontWeight: isActive ? 700 : 500,
                     color: isActive ? '#FF7900' : 'var(--color-text-secondary)',
+                    transition: 'color 0.15s ease, font-weight 0.15s ease',
                   }}
                 >
                   {item.label}
@@ -137,29 +155,38 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Légende couleurs vendeurs */}
-      {vendors.length > 0 && (
-        <div
+      {/* Légende couleurs équipe */}
+      <div style={{ padding: '14px 20px', borderTop: '1px solid var(--color-border-soft)' }}>
+        <TeamColorLegend isAdmin={isAdmin} compact={true} />
+      </div>
+
+      {/* Toggle dark mode */}
+      <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-border-soft)' }}>
+        <button
+          onClick={toggleDarkMode}
+          aria-label="Basculer le mode sombre"
           style={{
-            padding: '14px 20px',
-            borderTop: '1px solid var(--color-border-soft)',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 8px',
+            borderRadius: 10,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background 0.15s ease',
           }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px 0' }}>
-            Équipe
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px 4px' }}>
-            {vendors.map((vendor) => (
-              <div key={vendor.id} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: vendor.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {vendor.name}
-                </span>
-              </div>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <SidebarDarkModeIcon isDark={isDark} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+              {isDark ? 'Mode sombre' : 'Mode clair'}
+            </span>
           </div>
-        </div>
-      )}
+          <SidebarToggle isOn={isDark} />
+        </button>
+      </div>
 
       {/* Utilisateur connecté */}
       {currentUser && (
@@ -197,7 +224,7 @@ export default function Sidebar() {
                 fontSize: 10,
                 fontWeight: 700,
                 color: currentUser.role === 'admin' ? '#FF7900' : 'var(--color-text-tertiary)',
-                background: currentUser.role === 'admin' ? '#FFF3E6' : 'var(--color-surface)',
+                background: currentUser.role === 'admin' ? 'var(--color-brand-tint)' : 'var(--color-surface)',
                 padding: '1px 6px',
                 borderRadius: 6,
                 flexShrink: 0,
@@ -213,5 +240,68 @@ export default function Sidebar() {
         </div>
       )}
     </aside>
+  )
+}
+
+// ── Composants visuels internes ───────────────────────────────────────────────
+
+interface SidebarDarkModeIconProps {
+  isDark: boolean
+}
+
+function SidebarDarkModeIcon({ isDark }: SidebarDarkModeIconProps) {
+  if (isDark) {
+    return (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    )
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
+
+interface SidebarToggleProps {
+  isOn: boolean
+}
+
+function SidebarToggle({ isOn }: SidebarToggleProps) {
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: 32,
+        height: 18,
+        borderRadius: 9,
+        background: isOn ? '#FF7900' : 'var(--color-border)',
+        transition: 'background 0.2s ease',
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 2,
+          width: 14,
+          height: 14,
+          borderRadius: '50%',
+          background: 'white',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+          transform: isOn ? 'translateX(16px)' : 'translateX(2px)',
+          transition: 'transform 0.2s ease',
+        }}
+      />
+    </div>
   )
 }

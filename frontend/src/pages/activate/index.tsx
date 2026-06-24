@@ -84,7 +84,7 @@ export default function ActivatePage() {
         {/* Bandeau informatif */}
         <div
           className="flex items-start gap-3 px-4 py-3 rounded-2xl"
-          style={{ background: '#FFF3E6' }}
+          style={{ background: 'var(--color-brand-tint)' }}
         >
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
@@ -92,7 +92,7 @@ export default function ActivatePage() {
           >
             <span className="text-white text-xs font-black">!</span>
           </div>
-          <p className="text-sm font-semibold leading-snug" style={{ color: '#C25E00' }}>
+          <p className="text-sm font-semibold leading-snug" style={{ color: '#FF7900', opacity: 0.85 }}>
             Ce mot de passe remplace celui fourni par la direction.
           </p>
         </div>
@@ -134,7 +134,7 @@ export default function ActivatePage() {
           {serverError && (
             <p
               className="text-sm font-semibold text-center py-2 px-4 rounded-xl"
-              style={{ color: 'var(--color-danger)', background: '#FDF2F2' }}
+              style={{ color: 'var(--color-danger)', background: 'var(--color-danger-tint)' }}
             >
               {serverError}
             </p>
@@ -161,7 +161,7 @@ export default function ActivatePage() {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M15 18l-6-6 6-6" />
     </svg>
   )

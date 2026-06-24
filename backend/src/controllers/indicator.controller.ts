@@ -3,12 +3,18 @@ import { CreateIndicatorInput, UpdateIndicatorInput } from '../types/indicator.t
 import * as indicatorService from '../services/indicator.service'
 
 export async function getAllIndicatorsHandler(
-  _request: Request,
+  request: Request,
   response: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const indicators = await indicatorService.getAllActiveIndicators()
+    const includeInactive = request.query.includeInactive === 'true'
+    const isAdmin = request.authenticatedUser?.role === 'admin'
+
+    const indicators = includeInactive && isAdmin
+      ? await indicatorService.getAllIndicators()
+      : await indicatorService.getAllActiveIndicators()
+
     response.json(indicators)
   } catch (error) {
     next(error)

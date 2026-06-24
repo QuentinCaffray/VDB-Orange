@@ -6,6 +6,14 @@ export async function loginWithCuid(cuid: string, password: string): Promise<Aut
   return response.data
 }
 
+export async function changePasswordWithOldPassword(
+  oldPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<void> {
+  await api.post('/auth/change-password', { oldPassword, newPassword, confirmPassword })
+}
+
 export async function activateAccountWithNewPassword(
   newPassword: string,
   confirmPassword: string,

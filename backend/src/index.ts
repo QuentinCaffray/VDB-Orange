@@ -1,3 +1,4 @@
+import { createServer } from 'http'
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -6,7 +7,9 @@ import taskRouter from './routes/task.routes'
 import indicatorRouter from './routes/indicator.routes'
 import salesRouter from './routes/sales.routes'
 import userRouter from './routes/user.routes'
+import teamNoteRouter from './routes/team-note.routes'
 import { globalErrorHandler } from './middlewares/error.middleware'
+import { initSocketIO } from './lib/socket'
 
 dotenv.config()
 
@@ -22,6 +25,7 @@ app.use('/api/tasks', taskRouter)
 app.use('/api/indicators', indicatorRouter)
 app.use('/api/sales', salesRouter)
 app.use('/api/users', userRouter)
+app.use('/api/team-notes', teamNoteRouter)
 
 // ─── Santé ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_request, response) => {
@@ -31,7 +35,10 @@ app.get('/health', (_request, response) => {
 // ─── Gestion des erreurs (doit être enregistré en dernier) ────────────────────
 app.use(globalErrorHandler)
 
-app.listen(PORT, () => {
+const httpServer = createServer(app)
+initSocketIO(httpServer)
+
+httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })
 

@@ -274,18 +274,21 @@ async function main(): Promise<void> {
   await prisma.monthlyTarget.createMany({ data: monthlyTargetsToCreate })
   console.log(`✓ ${monthlyTargetsToCreate.length} objectifs mensuels créés`)
 
-  // ── Note équipe (exemple pour Léa) ───────────────────────────────────────────
-  await prisma.teamNote.create({
+  // ── Notes équipe ─────────────────────────────────────────────────────────────
+  const leaNote = await prisma.teamNote.create({
     data: {
       userId: userByName['Léa'].id,
       publicNote: 'Très bonne progression sur les accessoires. Continuer à développer la vente de protections.',
       privateNote: 'À accompagner sur la prise de rendez-vous SAV. Prévoir point individuel semaine 26.',
-      challengeLabel: 'Challenge fibre',
-      challengeCurrent: 9,
-      challengeTarget: 15,
     },
   })
-  console.log('✓ Note équipe créée pour Léa')
+  await prisma.teamChallenge.createMany({
+    data: [
+      { noteId: leaNote.id, label: 'Challenge fibre', current: '9', target: '15', order: 0 },
+      { noteId: leaNote.id, label: 'Terminaux premium', current: '3', target: '8', order: 1 },
+    ],
+  })
+  console.log('✓ Notes équipe créées pour Léa (2 challenges)')
 
   console.log('\n✅ Seed terminé avec succès !')
 }

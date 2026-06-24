@@ -21,8 +21,20 @@ export const activateAccountSchema = z
     { message: 'Les mots de passe ne correspondent pas', path: ['confirmPassword'] },
   )
 
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, 'Mot de passe actuel requis'),
+    newPassword: z.string().min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères'),
+    confirmPassword: z.string(),
+  })
+  .refine(
+    (data) => data.newPassword === data.confirmPassword,
+    { message: 'Les mots de passe ne correspondent pas', path: ['confirmPassword'] },
+  )
+
 export type LoginInput = z.infer<typeof loginSchema>
 export type ActivateAccountInput = z.infer<typeof activateAccountSchema>
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
 
 // ─── Types de l'utilisateur authentifié ──────────────────────────────────────
 

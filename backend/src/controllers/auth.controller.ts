@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { login, activateAccount } from '../services/auth.service'
-import { LoginInput, ActivateAccountInput } from '../types/auth.types'
+import { login, activateAccount, changePassword } from '../services/auth.service'
+import { LoginInput, ActivateAccountInput, ChangePasswordInput } from '../types/auth.types'
 
 export async function loginHandler(
   request: Request<object, object, LoginInput>,
@@ -12,6 +12,21 @@ export async function loginHandler(
     const { tokens, user } = await login(cuid, password)
 
     response.status(200).json({ ...tokens, user })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function changePasswordHandler(
+  request: Request<object, object, ChangePasswordInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { oldPassword, newPassword } = request.body
+    const authenticatedUser = request.authenticatedUser!
+    await changePassword(authenticatedUser.userId, oldPassword, newPassword)
+    response.status(200).json({ success: true })
   } catch (error) {
     next(error)
   }

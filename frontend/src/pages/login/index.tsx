@@ -44,7 +44,7 @@ export default function LoginPage() {
         formValues.password,
       )
       handleLoginSuccess({ accessToken, refreshToken }, user)
-      navigate(user.isFirstLogin ? '/activate' : '/tasks', { replace: true })
+      navigate(user.isFirstLogin ? '/activate' : '/dashboard', { replace: true })
     } catch {
       setServerError('Identifiant ou mot de passe incorrect')
     }
@@ -81,7 +81,7 @@ export default function LoginPage() {
 
             {/* Champ CUID */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold tracking-widest uppercase text-text-secondary">
+              <label className="text-xs font-bold tracking-widest uppercase text-text-secondary">
                 Identifiant (CUID)
               </label>
               <div className="relative">
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
             {/* Champ mot de passe */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold tracking-widest uppercase text-text-secondary">
+              <label className="text-xs font-bold tracking-widest uppercase text-text-secondary">
                 Mot de passe
               </label>
               <PasswordInput error={errors.password?.message} {...register('password')} />
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
             {/* Erreur serveur */}
             {serverError && (
-              <p className="text-sm font-semibold text-center py-2 px-4 rounded-xl text-danger bg-[#FDF2F2] m-0">
+              <p className="text-sm font-semibold text-center py-2 px-4 rounded-xl text-danger bg-danger-tint m-0">
                 {serverError}
               </p>
             )}

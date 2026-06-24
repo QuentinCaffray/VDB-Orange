@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   fetchAllTasks,
   createTask,
@@ -12,11 +13,13 @@ import {
 import { CreateTaskInput, Task, TaskStatus } from '../../../types/task.types'
 
 const TASKS_QUERY_KEY = ['tasks']
+const POLLING_INTERVAL_MS = 20_000
 
 export function useTasks() {
   return useQuery<Task[]>({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchAllTasks,
+    refetchInterval: POLLING_INTERVAL_MS,
   })
 }
 
@@ -30,7 +33,10 @@ export function useCreateTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+      toast.success('Tâche créée')
+    },
   })
 }
 
@@ -46,7 +52,10 @@ export function useCompleteTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => completeTask(taskId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+      toast.success('Tâche terminée')
+    },
   })
 }
 

@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
-import { RecordSaleDeltaInput, SetMonthlyTargetInput, SetTargetForAllVendorsInput } from '../types/sales.types'
+import {
+  RecordSaleDeltaInput,
+  SetMonthlyTargetInput,
+  SetTargetForAllVendorsInput,
+  SetDailyCountInput,
+  SetMonthlyAbsoluteTotalInput,
+} from '../types/sales.types'
 import * as salesService from '../services/sales.service'
+import { getSocketIO } from '../lib/socket'
 
 export async function getDailySalesHandler(
   request: Request,
@@ -22,10 +29,68 @@ export async function recordSaleDeltaHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { indicatorId, date, delta } = request.body
-    const currentUserId = request.authenticatedUser!.userId
+    const { indicatorId, date, delta, userId: targetUserId } = request.body
+    const requester = request.authenticatedUser!
 
-    const updatedSale = await salesService.recordSaleDelta(currentUserId, indicatorId, date, delta)
+    if (targetUserId && requester.role !== 'admin') {
+      response.status(403).json({ error: 'Accès refusé' })
+      return
+    }
+
+    const effectiveUserId = targetUserId ?? requester.userId
+    const updatedSale = await salesService.recordSaleDelta(effectiveUserId, indicatorId, date, delta)
+
+    getSocketIO().emit('sales:daily:updated', updatedSale)
+
+    response.json(updatedSale)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function setDailySaleCountHandler(
+  request: Request<{}, {}, SetDailyCountInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { indicatorId, date, count, userId: targetUserId } = request.body
+    const requester = request.authenticatedUser!
+
+    if (targetUserId && requester.role !== 'admin') {
+      response.status(403).json({ error: 'Accès refusé' })
+      return
+    }
+
+    const effectiveUserId = targetUserId ?? requester.userId
+    const updatedSale = await salesService.setDailySaleCount(effectiveUserId, indicatorId, date, count)
+
+    getSocketIO().emit('sales:daily:updated', updatedSale)
+
+    response.json(updatedSale)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function setMonthlyAbsoluteTotalHandler(
+  request: Request<{}, {}, SetMonthlyAbsoluteTotalInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { indicatorId, month, year, total, preserveDailyHistory, userId: targetUserId } = request.body
+    const requester = request.authenticatedUser!
+
+    if (targetUserId && requester.role !== 'admin') {
+      response.status(403).json({ error: 'Accès refusé' })
+      return
+    }
+
+    const effectiveUserId = targetUserId ?? requester.userId
+    const updatedSale = await salesService.setMonthlyAbsoluteTotal(
+      effectiveUserId, indicatorId, month, year, total, preserveDailyHistory ?? false,
+    )
     response.json(updatedSale)
   } catch (error) {
     next(error)
@@ -45,6 +110,21 @@ export async function getMonthlyProgressHandler(
     const targetYear = parseInt(year as string) || new Date().getFullYear()
 
     const progress = await salesService.getMonthlyProgress(targetUserId, targetMonth, targetYear)
+    response.json(progress)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getTeamMonthlyProgressHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const month = parseInt(request.query.month as string) || new Date().getMonth() + 1
+    const year = parseInt(request.query.year as string) || new Date().getFullYear()
+    const progress = await salesService.getTeamMonthlyProgress(month, year)
     response.json(progress)
   } catch (error) {
     next(error)

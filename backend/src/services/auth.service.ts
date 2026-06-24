@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { findUserByCuid, findUserById, updateUserPassword } from '../repositories/user.repository'
+import { findUserByCuid, findUserById, updateUserPassword, updateLastLoginAt } from '../repositories/user.repository'
 import { AuthenticatedUser, JwtPayload } from '../types/auth.types'
 import { AppError } from '../types/error.types'
 
@@ -51,6 +51,9 @@ export async function login(cuid: string, password: string): Promise<LoginResult
 
   const tokens = generateTokens(user.id, user.role)
 
+  // Mise à jour non bloquante — ne pas faire échouer le login si cette opération plante
+  updateLastLoginAt(user.id).catch(() => undefined)
+
   const authenticatedUser: AuthenticatedUser = {
     id: user.id,
     cuid: user.cuid,
@@ -61,6 +64,26 @@ export async function login(cuid: string, password: string): Promise<LoginResult
   }
 
   return { tokens, user: authenticatedUser }
+}
+
+export async function changePassword(
+  userId: string,
+  oldPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const user = await findUserById(userId)
+
+  if (!user) {
+    throw new AppError('Utilisateur introuvable', 404)
+  }
+
+  const isOldPasswordCorrect = await bcrypt.compare(oldPassword, user.password)
+  if (!isOldPasswordCorrect) {
+    throw new AppError('Mot de passe actuel incorrect', 400)
+  }
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
+  await updateUserPassword(userId, hashedNewPassword)
 }
 
 export async function activateAccount(

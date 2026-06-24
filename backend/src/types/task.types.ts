@@ -6,6 +6,7 @@ import { TaskStatus } from '@prisma/client'
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Titre trop long (100 caractères max)'),
   description: z.string().max(500, 'Description trop longue (500 caractères max)').optional(),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format de date invalide (YYYY-MM-DD)').optional(),
 })
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>
@@ -24,6 +25,7 @@ export interface TaskResponse {
   description: string | null
   status: TaskStatus
   assignee: TaskAssignee | null
+  dueDate: string | null
   doneAt: string | null
   createdAt: string
 }

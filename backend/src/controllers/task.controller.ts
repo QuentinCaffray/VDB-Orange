@@ -21,10 +21,10 @@ export async function createTaskHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { title, description } = request.body
+    const { title, description, dueDate } = request.body
     const createdById = request.authenticatedUser!.userId
 
-    const newTask = await taskService.createTask(title, description, createdById)
+    const newTask = await taskService.createTask(title, description, createdById, dueDate)
     response.status(201).json(newTask)
   } catch (error) {
     next(error)

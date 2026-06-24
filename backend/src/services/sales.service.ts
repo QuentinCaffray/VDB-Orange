@@ -1,10 +1,14 @@
 import {
   findDailySalesByDate,
   upsertDailySale,
+  setDailySaleAbsoluteCount,
+  replaceMonthlyAbsoluteTotal,
   findMonthlySalesByUser,
   findMonthlyTargetsByUser,
   upsertMonthlyTarget,
   findAllVendorIds,
+  findMonthlySalesForAllUsers,
+  findMonthlyTargetsForAllUsers,
 } from '../repositories/sales.repository'
 import { findAllActiveIndicators } from '../repositories/indicator.repository'
 import { DailySaleEntry, MonthlyProgressEntry } from '../types/sales.types'
@@ -46,6 +50,28 @@ export async function recordSaleDelta(
   return formatDailySaleEntry(updatedSale)
 }
 
+export async function setDailySaleCount(
+  userId: string,
+  indicatorId: string,
+  dateString: string,
+  count: number,
+): Promise<DailySaleEntry> {
+  const updatedSale = await setDailySaleAbsoluteCount(userId, indicatorId, dateString, count)
+  return formatDailySaleEntry(updatedSale)
+}
+
+export async function setMonthlyAbsoluteTotal(
+  userId: string,
+  indicatorId: string,
+  month: number,
+  year: number,
+  total: number,
+  preserveDailyHistory: boolean = false,
+): Promise<DailySaleEntry> {
+  const updatedSale = await replaceMonthlyAbsoluteTotal(userId, indicatorId, month, year, total, preserveDailyHistory)
+  return formatDailySaleEntry(updatedSale)
+}
+
 export async function getMonthlyProgress(
   userId: string,
   month: number,
@@ -71,6 +97,32 @@ export async function getMonthlyProgress(
     indicatorOrder: indicator.order,
     totalSales: salesByIndicatorId.get(indicator.id) ?? 0,
     target: targetByIndicatorId.get(indicator.id) ?? null,
+  }))
+}
+
+export async function getTeamMonthlyProgress(
+  month: number,
+  year: number,
+): Promise<MonthlyProgressEntry[]> {
+  const [activeIndicators, monthlySales, monthlyTargets] = await Promise.all([
+    findAllActiveIndicators(),
+    findMonthlySalesForAllUsers(month, year),
+    findMonthlyTargetsForAllUsers(month, year),
+  ])
+
+  const salesByIndicatorId = new Map(
+    monthlySales.map((sale) => [sale.indicatorId, sale._sum.count ?? 0]),
+  )
+  const targetSumByIndicatorId = new Map(
+    monthlyTargets.map((entry) => [entry.indicatorId, entry._sum.target ?? 0]),
+  )
+
+  return activeIndicators.map((indicator) => ({
+    indicatorId: indicator.id,
+    indicatorName: indicator.name,
+    indicatorOrder: indicator.order,
+    totalSales: salesByIndicatorId.get(indicator.id) ?? 0,
+    target: targetSumByIndicatorId.get(indicator.id) ?? null,
   }))
 }
 

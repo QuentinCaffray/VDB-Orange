@@ -2,13 +2,22 @@ import { Router } from 'express'
 import {
   getDailySalesHandler,
   recordSaleDeltaHandler,
+  setDailySaleCountHandler,
+  setMonthlyAbsoluteTotalHandler,
   getMonthlyProgressHandler,
+  getTeamMonthlyProgressHandler,
   setMonthlyTargetHandler,
   setTargetForAllVendorsHandler,
 } from '../controllers/sales.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
-import { recordSaleDeltaSchema, setMonthlyTargetSchema, setTargetForAllVendorsSchema } from '../types/sales.types'
+import {
+  recordSaleDeltaSchema,
+  setDailyCountSchema,
+  setMonthlyAbsoluteTotalSchema,
+  setMonthlyTargetSchema,
+  setTargetForAllVendorsSchema,
+} from '../types/sales.types'
 
 const salesRouter = Router()
 
@@ -19,6 +28,15 @@ salesRouter.get('/daily', getDailySalesHandler)
 
 // PATCH /sales/daily — pointer ou corriger sa propre vente (delta +1 ou -1)
 salesRouter.patch('/daily', validateBody(recordSaleDeltaSchema), recordSaleDeltaHandler)
+
+// PUT /sales/daily — corriger le total du jour en valeur absolue (correction d'oubli)
+salesRouter.put('/daily', validateBody(setDailyCountSchema), setDailySaleCountHandler)
+
+// PUT /sales/monthly-total — remplace le total mensuel d'un indicateur mensuel (valeur absolue)
+salesRouter.put('/monthly-total', validateBody(setMonthlyAbsoluteTotalSchema), setMonthlyAbsoluteTotalHandler)
+
+// GET /sales/monthly/team?month=N&year=N — progression mensuelle agrégée boutique (admin)
+salesRouter.get('/monthly/team', requireAdmin, getTeamMonthlyProgressHandler)
 
 // GET /sales/monthly?userId=ID&month=N&year=N — progression mensuelle d'un vendeur
 salesRouter.get('/monthly', getMonthlyProgressHandler)

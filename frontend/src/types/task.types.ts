@@ -13,10 +13,12 @@ export interface Task {
   status: TaskStatus
   assignee: TaskAssignee | null
   doneAt: string | null
+  dueDate: string | null
   createdAt: string
 }
 
 export interface CreateTaskInput {
   title: string
   description?: string
+  dueDate?: string
 }

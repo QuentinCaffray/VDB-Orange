@@ -20,6 +20,7 @@ function formatTaskResponse(task: {
   description: string | null
   status: TaskStatus
   assignee: { id: string; name: string; color: string } | null
+  dueDate: Date | null
   doneAt: Date | null
   createdAt: Date
 }): TaskResponse {
@@ -29,6 +30,7 @@ function formatTaskResponse(task: {
     description: task.description,
     status: task.status,
     assignee: task.assignee,
+    dueDate: task.dueDate?.toISOString().split('T')[0] ?? null,
     doneAt: task.doneAt?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
   }
@@ -43,8 +45,10 @@ export async function createTask(
   title: string,
   description: string | undefined,
   createdById: string,
+  dueDateString?: string,
 ): Promise<TaskResponse> {
-  const newTask = await createTaskInDatabase(title, description, createdById)
+  const dueDate = dueDateString ? new Date(dueDateString + 'T12:00:00') : undefined
+  const newTask = await createTaskInDatabase(title, description, createdById, dueDate)
   return formatTaskResponse(newTask)
 }
 

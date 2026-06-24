@@ -10,7 +10,7 @@ function parseDateString(dateString: string): Date {
 
 export async function findDailySalesByDate(date: Date) {
   return prisma.dailySale.findMany({
-    where: { date },
+    where: { date, isCorrection: false },
     include: { user: { select: USER_SELECT } },
     orderBy: [{ indicatorId: 'asc' }, { userId: 'asc' }],
   })
@@ -25,15 +25,15 @@ export async function upsertDailySale(
   const date = parseDateString(dateString)
 
   const existingRecord = await prisma.dailySale.findUnique({
-    where: { date_userId_indicatorId: { date, userId, indicatorId } },
+    where: { date_userId_indicatorId_isCorrection: { date, userId, indicatorId, isCorrection: false } },
   })
 
   const currentCount = existingRecord?.count ?? 0
   const newCount = Math.max(0, currentCount + delta)
 
   return prisma.dailySale.upsert({
-    where: { date_userId_indicatorId: { date, userId, indicatorId } },
-    create: { userId, indicatorId, date, count: newCount },
+    where: { date_userId_indicatorId_isCorrection: { date, userId, indicatorId, isCorrection: false } },
+    create: { userId, indicatorId, date, count: newCount, isCorrection: false },
     update: { count: newCount },
     include: { user: { select: USER_SELECT } },
   })
@@ -65,6 +65,83 @@ export async function findAllVendorIds(): Promise<string[]> {
     select: { id: true },
   })
   return vendors.map((vendor) => vendor.id)
+}
+
+export async function setDailySaleAbsoluteCount(
+  userId: string,
+  indicatorId: string,
+  dateString: string,
+  count: number,
+) {
+  const date = parseDateString(dateString)
+  return prisma.dailySale.upsert({
+    where: { date_userId_indicatorId_isCorrection: { date, userId, indicatorId, isCorrection: false } },
+    create: { userId, indicatorId, date, count, isCorrection: false },
+    update: { count },
+    include: { user: { select: USER_SELECT } },
+  })
+}
+
+export async function replaceMonthlyAbsoluteTotal(
+  userId: string,
+  indicatorId: string,
+  month: number,
+  year: number,
+  total: number,
+  preserveDailyHistory: boolean = false,
+) {
+  const startOfMonth = new Date(year, month - 1, 1)
+  const startOfNextMonth = new Date(year, month, 1)
+
+  return prisma.$transaction(async (tx) => {
+    if (preserveDailyHistory) {
+      // Mode correction journalier : supprime les éventuelles corrections existantes du mois,
+      // recalcule l'ajustement par rapport aux vraies saisies, crée une nouvelle entrée de correction.
+      await tx.dailySale.deleteMany({
+        where: { userId, indicatorId, date: { gte: startOfMonth, lt: startOfNextMonth }, isCorrection: true },
+      })
+
+      const realEntriesSum = await tx.dailySale.aggregate({
+        where: { userId, indicatorId, date: { gte: startOfMonth, lt: startOfNextMonth }, isCorrection: false },
+        _sum: { count: true },
+      })
+      const naturalTotal = realEntriesSum._sum.count ?? 0
+      const correctionAmount = total - naturalTotal
+
+      return tx.dailySale.create({
+        data: { userId, indicatorId, date: startOfMonth, count: correctionAmount, isCorrection: true },
+        include: { user: { select: USER_SELECT } },
+      })
+    }
+
+    // Mode remplacement complet (indicateurs mensuels) : supprime tout et crée une seule entrée de correction
+    await tx.dailySale.deleteMany({
+      where: { userId, indicatorId, date: { gte: startOfMonth, lt: startOfNextMonth } },
+    })
+    return tx.dailySale.create({
+      data: { userId, indicatorId, date: startOfMonth, count: total, isCorrection: true },
+      include: { user: { select: USER_SELECT } },
+    })
+  })
+}
+
+export async function findMonthlySalesForAllUsers(month: number, year: number) {
+  const startOfMonth = new Date(year, month - 1, 1)
+  const startOfNextMonth = new Date(year, month, 1)
+
+  return prisma.dailySale.groupBy({
+    by: ['indicatorId'],
+    where: { date: { gte: startOfMonth, lt: startOfNextMonth } },
+    _sum: { count: true },
+  })
+}
+
+export async function findMonthlyTargetsForAllUsers(month: number, year: number) {
+  return prisma.monthlyTarget.groupBy({
+    by: ['indicatorId'],
+    where: { month, year },
+    _sum: { target: true },
+  })
 }
 
 export async function upsertMonthlyTarget(

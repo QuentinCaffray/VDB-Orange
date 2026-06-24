@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import {
   useIndicators,
@@ -8,16 +8,49 @@ import {
   useSetMonthlyTarget,
 } from '../../features/sales/hooks/useSales'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
+import { useCurrentDate } from '../../hooks/useCurrentDate'
 import DailyPointing from '../../features/sales/components/DailyPointing'
 import TeamStackedGauges from '../../features/sales/components/TeamStackedGauges'
 import MonthlyProgress from '../../features/sales/components/MonthlyProgress'
+import { VendorSelector } from '../../components/ui/VendorSelector'
 
 type MainTab = 'day' | 'month'
 type DaySubTab = 'pointing' | 'team'
 
-const TODAY_STRING = new Date().toISOString().split('T')[0]
-const CURRENT_MONTH = new Date().getMonth() + 1
-const CURRENT_YEAR = new Date().getFullYear()
+const MAX_DAYS_IN_PAST = 30
+
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0]
+}
+
+function getPreviousDateString(dateString: string): string {
+  const date = new Date(dateString + 'T12:00:00')
+  date.setDate(date.getDate() - 1)
+  return date.toISOString().split('T')[0]
+}
+
+function getNextDateString(dateString: string): string {
+  const date = new Date(dateString + 'T12:00:00')
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().split('T')[0]
+}
+
+function formatSelectedDateLabel(dateString: string): string {
+  const todayString = getTodayString()
+  const yesterdayString = getPreviousDateString(todayString)
+  if (dateString === todayString) return "Aujourd'hui"
+  if (dateString === yesterdayString) return 'Hier'
+  const date = new Date(dateString + 'T12:00:00')
+  return new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).format(date)
+}
+
+function isMoreThanMaxDaysInPast(dateString: string): boolean {
+  const todayString = getTodayString()
+  const today = new Date(todayString + 'T12:00:00')
+  const date = new Date(dateString + 'T12:00:00')
+  const diffInDays = Math.round((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+  return diffInDays >= MAX_DAYS_IN_PAST
+}
 
 function formatTodayDate(): string {
   const formatted = new Intl.DateTimeFormat('fr-FR', {
@@ -29,13 +62,18 @@ function formatTodayDate(): string {
 export default function ObjectivesPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuthContext()
+  const [searchParams] = useSearchParams()
+  const vendorIdFromUrl = searchParams.get('vendorId')
+  const { month: currentMonth, year: currentYear, dateString: todayString } = useCurrentDate()
 
-  const [mainTab, setMainTab] = useState<MainTab>('day')
+  const [mainTab, setMainTab] = useState<MainTab>(() => vendorIdFromUrl ? 'month' : 'day')
   const [daySubTab, setDaySubTab] = useState<DaySubTab>('pointing')
-  const [selectedVendorId, setSelectedVendorId] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayString())
+  const [selectedVendorId, setSelectedVendorId] = useState<string>(() => vendorIdFromUrl ?? '')
   const [isEditingTargets, setIsEditingTargets] = useState(false)
-  // Dictionnaire indicatorId → nouvelle cible saisie par l'admin
   const [targetEdits, setTargetEdits] = useState<Record<string, number | null>>({})
+
+  const isTodaySelected = selectedDate === todayString
 
   const isAdmin = currentUser?.role === 'admin'
 
@@ -48,16 +86,16 @@ export default function ObjectivesPage() {
   const dailyIndicators = indicators.filter((indicator) => indicator.type === 'daily')
   const monthlyIndicators = indicators.filter((indicator) => indicator.type === 'monthly')
 
-  const { data: dailySales = [] } = useDailySales(TODAY_STRING)
+  const { data: dailySales = [] } = useDailySales(selectedDate)
   const { data: monthlyProgress = [] } = useMonthlyProgress(
     isAdmin ? resolvedVendorId : (currentUser?.id ?? ''),
-    CURRENT_MONTH,
-    CURRENT_YEAR,
+    currentMonth,
+    currentYear,
   )
 
   const { mutateAsync: saveTarget, isPending: isSavingTargets } = useSetMonthlyTarget(
-    CURRENT_MONTH,
-    CURRENT_YEAR,
+    currentMonth,
+    currentYear,
     resolvedVendorId,
   )
 
@@ -92,8 +130,8 @@ export default function ObjectivesPage() {
       await saveTarget({
         userId: resolvedVendorId,
         indicatorId,
-        month: CURRENT_MONTH,
-        year: CURRENT_YEAR,
+        month: currentMonth,
+        year: currentYear,
         target: newTarget,
       })
     }
@@ -133,6 +171,39 @@ export default function ObjectivesPage() {
           )}
         </div>
 
+        {/* Navigation temporelle — visible uniquement sur l'onglet Jour */}
+        {mainTab === 'day' && (
+          <div className="flex items-center justify-center gap-2 px-5 pb-3">
+            <button
+              onClick={() => setSelectedDate(getPreviousDateString(selectedDate))}
+              disabled={isMoreThanMaxDaysInPast(selectedDate)}
+              className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+              style={{ background: 'var(--color-surface)' }}
+              aria-label="Jour précédent"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            <span className="text-sm font-bold text-text-primary min-w-[90px] text-center">
+              {formatSelectedDateLabel(selectedDate)}
+            </span>
+
+            <button
+              onClick={() => setSelectedDate(getNextDateString(selectedDate))}
+              disabled={isTodaySelected}
+              className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+              style={{ background: 'var(--color-surface)' }}
+              aria-label="Jour suivant"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Onglets Jour / Mois */}
         <div className="flex border-b border-border-soft px-5 gap-1">
           {(['day', 'month'] as MainTab[]).map((tab) => (
@@ -157,14 +228,14 @@ export default function ObjectivesPage() {
         {/* ── Onglet Jour ── */}
         {mainTab === 'day' && (
           <>
-            <div className="flex bg-surface rounded-2xl p-1 mb-4">
+            <div className="flex bg-canvas rounded-2xl p-1 mb-4">
               {([['pointing', '✎ Je pointe'], ['team', 'Équipe']] as [DaySubTab, string][]).map(([sub, label]) => (
                 <button
                   key={sub}
                   onClick={() => setDaySubTab(sub)}
                   className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
                     daySubTab === sub
-                      ? 'bg-white text-text-primary shadow-sm'
+                      ? 'bg-white text-text-primary shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_1px_4px_rgba(0,0,0,0.5)]'
                       : 'text-text-secondary'
                   }`}
                 >
@@ -176,10 +247,8 @@ export default function ObjectivesPage() {
             {daySubTab === 'pointing' && (
               <DailyPointing
                 indicators={dailyIndicators}
-                dailySales={dailySales}
-                currentUserId={currentUser.id}
                 currentUserColor={currentUser.color}
-                dateString={TODAY_STRING}
+                dateString={selectedDate}
               />
             )}
 
@@ -199,43 +268,18 @@ export default function ObjectivesPage() {
             {/* Sélecteur de vendeur — admin uniquement */}
             {isAdmin && allUsers.length > 0 && (
               <div className="mb-4">
-                <p className="text-[11px] font-bold text-text-tertiary uppercase tracking-widest mb-2 m-0">
-                  Membre consulté
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {allUsers.map((vendor) => {
-                    const isSelected = resolvedVendorId === vendor.id
-                    return (
-                      <button
-                        key={vendor.id}
-                        onClick={() => handleVendorSelect(vendor.id)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all"
-                        style={{
-                          background: isSelected ? vendor.color : 'var(--color-surface)',
-                          color: isSelected ? 'white' : 'var(--color-text-secondary)',
-                        }}
-                      >
-                        <div
-                          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black"
-                          style={{
-                            background: isSelected ? 'rgba(255,255,255,0.25)' : vendor.color,
-                            color: 'white',
-                          }}
-                        >
-                          {vendor.name.charAt(0).toUpperCase()}
-                        </div>
-                        {vendor.name}
-                      </button>
-                    )
-                  })}
-                </div>
+                <VendorSelector
+                  vendors={allUsers}
+                  selectedId={resolvedVendorId}
+                  onSelect={handleVendorSelect}
+                />
 
                 {/* Bouton modifier les objectifs — visible hors mode édition */}
                 {!isEditingTargets && (
                   <button
                     onClick={() => setIsEditingTargets(true)}
                     className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
-                    style={{ background: '#FFF3E6', color: '#FF7900' }}
+                    style={{ background: 'var(--color-brand-tint)', color: '#FF7900' }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -247,29 +291,19 @@ export default function ObjectivesPage() {
               </div>
             )}
 
-            {/* Saisie des indicateurs mensuels (occasionnels, non-journaliers) */}
-            {monthlyIndicators.length > 0 && (
-              <div className="mb-4">
-                <DailyPointing
-                  indicators={monthlyIndicators}
-                  dailySales={dailySales}
-                  currentUserId={currentUser.id}
-                  currentUserColor={currentUser.color}
-                  dateString={TODAY_STRING}
-                  showTeamTotal={false}
-                  sectionTitle="Saisie mensuelle"
-                />
-              </div>
-            )}
-
             <MonthlyProgress
               progressEntries={monthlyProgress}
-              month={CURRENT_MONTH}
-              year={CURRENT_YEAR}
+              month={currentMonth}
+              year={currentYear}
               vendorName={isAdmin ? selectedVendor?.name : undefined}
               isEditMode={isEditingTargets}
               editableTargets={targetEdits}
               onTargetChange={handleTargetChange}
+              monthlyIndicatorIds={new Set(monthlyIndicators.map((i) => i.id))}
+              currentUserId={currentUser.id}
+              currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
+              allowSaleCorrection={true}
+              targetUserId={isAdmin ? resolvedVendorId : undefined}
             />
 
             {/* Barre actions — visible en mode édition */}

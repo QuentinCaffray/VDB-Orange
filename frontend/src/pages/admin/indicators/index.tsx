@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
   useIndicators,
   useCreateIndicator,
@@ -9,7 +10,7 @@ import {
 import { Indicator, IndicatorType } from '../../../types/sales.types'
 
 interface IndicatorDraft {
-  id: string | null // null pour les nouveaux indicateurs non encore créés
+  id: string | null
   name: string
   type: IndicatorType
   order: number
@@ -31,14 +32,17 @@ export default function AdminManageIndicatorsPage() {
   const { data: indicators = [] } = useIndicators()
   const { mutateAsync: createIndicatorAsync, isPending: isCreating } = useCreateIndicator()
   const { mutateAsync: updateIndicatorAsync, isPending: isUpdating } = useUpdateIndicator()
-  const { mutateAsync: deleteIndicatorAsync } = useDeleteIndicator()
+  const { mutate: deleteIndicator } = useDeleteIndicator()
 
   const [drafts, setDrafts] = useState<IndicatorDraft[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const hasInitialized = useRef(false)
 
   useEffect(() => {
     if (indicators.length === 0) return
+    if (hasInitialized.current) return
+    hasInitialized.current = true
     setDrafts(buildInitialDrafts(indicators))
   }, [indicators])
 
@@ -66,7 +70,7 @@ export default function AdminManageIndicatorsPage() {
     setDrafts((previous) => [...previous, newDraft])
   }
 
-  async function handleDeleteIndicator(index: number): Promise<void> {
+  function handleDeleteIndicator(index: number): void {
     const draft = drafts[index]
 
     if (draft.isNew) {
@@ -75,15 +79,73 @@ export default function AdminManageIndicatorsPage() {
     }
 
     if (!draft.id) return
-    await deleteIndicatorAsync(draft.id)
+
     setDrafts((previous) => previous.filter((_, i) => i !== index))
+    toast.success('Indicateur supprimé')
+    deleteIndicator(draft.id)
+  }
+
+  async function handleMoveUp(globalIndex: number): Promise<void> {
+    const sectionType = drafts[globalIndex].type
+    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
+
+    if (positionInSection <= 0) return
+
+    const previousDraft = sectionDrafts[positionInSection - 1]
+    const previousGlobalIndex = drafts.indexOf(previousDraft)
+    const currentOrder = drafts[globalIndex].order
+    const previousOrder = previousDraft.order
+
+    setDrafts((previous) =>
+      previous.map((draft, i) => {
+        if (i === globalIndex) return { ...draft, order: previousOrder }
+        if (i === previousGlobalIndex) return { ...draft, order: currentOrder }
+        return draft
+      }),
+    )
+
+    if (drafts[globalIndex].id && previousDraft.id) {
+      await Promise.all([
+        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: previousOrder } }),
+        updateIndicatorAsync({ id: previousDraft.id!, payload: { order: currentOrder } }),
+      ])
+    }
+  }
+
+  async function handleMoveDown(globalIndex: number): Promise<void> {
+    const sectionType = drafts[globalIndex].type
+    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
+
+    if (positionInSection >= sectionDrafts.length - 1) return
+
+    const nextDraft = sectionDrafts[positionInSection + 1]
+    const nextGlobalIndex = drafts.indexOf(nextDraft)
+    const currentOrder = drafts[globalIndex].order
+    const nextOrder = nextDraft.order
+
+    setDrafts((previous) =>
+      previous.map((draft, i) => {
+        if (i === globalIndex) return { ...draft, order: nextOrder }
+        if (i === nextGlobalIndex) return { ...draft, order: currentOrder }
+        return draft
+      }),
+    )
+
+    if (drafts[globalIndex].id && nextDraft.id) {
+      await Promise.all([
+        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: nextOrder } }),
+        updateIndicatorAsync({ id: nextDraft.id!, payload: { order: currentOrder } }),
+      ])
+    }
   }
 
   function validateDrafts(): string | null {
     const newDrafts = drafts.filter((draft) => draft.isNew)
 
     for (const draft of newDrafts) {
-      if (!draft.name.trim()) return 'Un nouvel indicateur n\'a pas de nom.'
+      if (!draft.name.trim()) return "Un nouvel indicateur n'a pas de nom."
 
       const nameAlreadyExists = indicators.some(
         (existing) => existing.name.toLowerCase() === draft.name.trim().toLowerCase(),
@@ -127,16 +189,17 @@ export default function AdminManageIndicatorsPage() {
         }
       }
 
+      toast.success('Indicateurs enregistrés')
       navigate('/objectives')
     } catch {
-      setErrorMessage('Une erreur est survenue lors de l\'enregistrement.')
+      setErrorMessage("Une erreur est survenue lors de l'enregistrement.")
     } finally {
       setIsSaving(false)
     }
   }
 
-  const dailyDrafts = drafts.filter((draft) => draft.type === 'daily')
-  const monthlyDrafts = drafts.filter((draft) => draft.type === 'monthly')
+  const dailyDrafts = drafts.filter((draft) => draft.type === 'daily').sort((a, b) => a.order - b.order)
+  const monthlyDrafts = drafts.filter((draft) => draft.type === 'monthly').sort((a, b) => a.order - b.order)
   const isPendingAny = isSaving || isCreating || isUpdating
 
   return (
@@ -172,6 +235,8 @@ export default function AdminManageIndicatorsPage() {
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
+          onMoveUp={handleMoveUp}
+          onMoveDown={handleMoveDown}
         />
 
         <IndicatorSection
@@ -182,6 +247,8 @@ export default function AdminManageIndicatorsPage() {
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
+          onMoveUp={handleMoveUp}
+          onMoveDown={handleMoveDown}
         />
 
         <button
@@ -196,22 +263,21 @@ export default function AdminManageIndicatorsPage() {
 
         <div
           className="rounded-2xl px-4 py-3"
-          style={{ background: '#FFF3E6' }}
+          style={{ background: 'var(--color-brand-tint)' }}
         >
           <p className="text-xs font-bold m-0" style={{ color: '#FF7900' }}>
             💡 Les objectifs chiffrés se définissent par vendeur
           </p>
-          <p className="text-xs m-0 mt-1" style={{ color: '#CC6200' }}>
+          <p className="text-xs m-0 mt-1" style={{ color: '#FF7900', opacity: 0.75 }}>
             Dans Objectifs → Mois, sélectionnez un vendeur puis "Modifier les objectifs".
           </p>
         </div>
       </div>
 
-      {/* Message d'erreur de validation */}
       {errorMessage && (
         <div
           className="fixed bottom-[88px] left-4 right-4 md:left-[256px] z-30 px-4 py-3 rounded-2xl text-sm font-semibold"
-          style={{ background: '#FEE2E2', color: '#B91C1C' }}
+          style={{ background: 'var(--color-danger-tint)', color: 'var(--color-danger)' }}
         >
           {errorMessage}
         </div>
@@ -248,7 +314,9 @@ interface IndicatorSectionProps {
   allDrafts: IndicatorDraft[]
   onNameChange: (globalIndex: number, value: string) => void
   onTypeChange: (globalIndex: number, value: IndicatorType) => void
-  onDelete: (globalIndex: number) => Promise<void>
+  onDelete: (globalIndex: number) => void
+  onMoveUp: (globalIndex: number) => Promise<void>
+  onMoveDown: (globalIndex: number) => Promise<void>
 }
 
 function IndicatorSection({
@@ -259,28 +327,37 @@ function IndicatorSection({
   onNameChange,
   onTypeChange,
   onDelete,
+  onMoveUp,
+  onMoveDown,
 }: IndicatorSectionProps) {
   if (drafts.length === 0) return null
 
   return (
     <div>
       <div className="mb-3">
-        <p className="text-[11px] font-bold text-text-tertiary uppercase tracking-widest m-0">
+        <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest m-0">
           {title}
         </p>
-        <p className="text-[10px] text-text-tertiary m-0 mt-0.5">{subtitle}</p>
+        <p className="text-xs text-text-tertiary m-0 mt-0.5">{subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-2">
         {drafts.map((draft) => {
           const globalIndex = allDrafts.indexOf(draft)
+          const positionInSection = drafts.indexOf(draft)
+          const isFirst = positionInSection === 0
+          const isLast = positionInSection === drafts.length - 1
           return (
             <IndicatorRow
               key={draft.id ?? `new-${globalIndex}`}
               draft={draft}
+              isFirstInSection={isFirst}
+              isLastInSection={isLast}
               onNameChange={(value) => onNameChange(globalIndex, value)}
               onTypeChange={(value) => onTypeChange(globalIndex, value)}
               onDelete={() => onDelete(globalIndex)}
+              onMoveUp={() => onMoveUp(globalIndex)}
+              onMoveDown={() => onMoveDown(globalIndex)}
             />
           )
         })}
@@ -291,45 +368,87 @@ function IndicatorSection({
 
 interface IndicatorRowProps {
   draft: IndicatorDraft
+  isFirstInSection: boolean
+  isLastInSection: boolean
   onNameChange: (value: string) => void
   onTypeChange: (value: IndicatorType) => void
   onDelete: () => void
+  onMoveUp: () => void
+  onMoveDown: () => void
 }
 
-function IndicatorRow({ draft, onNameChange, onTypeChange, onDelete }: IndicatorRowProps) {
+function IndicatorRow({
+  draft,
+  isFirstInSection,
+  isLastInSection,
+  onNameChange,
+  onTypeChange,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}: IndicatorRowProps) {
   return (
-    <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex items-center gap-3">
+    <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex flex-col gap-2">
 
-      <input
-        type="text"
-        value={draft.name}
-        onChange={(event) => onNameChange(event.target.value)}
-        placeholder="Nom de l'indicateur…"
-        className="flex-1 min-w-0 text-sm font-bold text-text-primary bg-surface rounded-xl px-3 py-2 outline-none border border-transparent focus:border-brand"
-      />
+      {/* Ligne principale : nom + type + supprimer */}
+      <div className="flex items-center gap-3">
+        <input
+          type="text"
+          value={draft.name}
+          onChange={(event) => onNameChange(event.target.value)}
+          placeholder="Nom de l'indicateur…"
+          className="flex-1 min-w-0 text-sm font-bold text-text-primary bg-surface rounded-xl px-3 py-2 outline-none border border-transparent focus:border-brand"
+        />
 
-      {/* Badge type cliquable pour basculer daily ↔ monthly */}
-      <button
-        onClick={() => onTypeChange(draft.type === 'daily' ? 'monthly' : 'daily')}
-        className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-lg"
-        style={{
-          background: draft.type === 'daily' ? '#FFF3E6' : '#EEF2FF',
-          color: draft.type === 'daily' ? '#FF7900' : '#6366F1',
-        }}
-        title="Cliquer pour changer le type"
-      >
-        {draft.type === 'daily' ? 'JOUR' : 'MOIS'}
-      </button>
+        <button
+          onClick={() => onTypeChange(draft.type === 'daily' ? 'monthly' : 'daily')}
+          className="shrink-0 text-[11px] font-bold px-2 py-1 rounded-lg"
+          style={{
+            background: draft.type === 'daily' ? 'var(--color-brand-tint)' : 'var(--color-monthly-tint)',
+            color: draft.type === 'daily' ? '#FF7900' : '#6366F1',
+          }}
+          title="Cliquer pour changer le type"
+        >
+          {draft.type === 'daily' ? 'JOUR' : 'MOIS'}
+        </button>
 
-      <button
-        onClick={onDelete}
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-danger"
-        aria-label={`Supprimer ${draft.name}`}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
+        <button
+          onClick={onDelete}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-danger"
+          aria-label={`Supprimer ${draft.name}`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Ligne secondaire : réorganisation */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onMoveUp}
+          disabled={isFirstInSection || draft.isNew}
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-text-tertiary disabled:opacity-30"
+          style={{ background: 'var(--color-surface)' }}
+          aria-label="Monter"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+        </button>
+
+        <button
+          onClick={onMoveDown}
+          disabled={isLastInSection || draft.isNew}
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-text-tertiary disabled:opacity-30"
+          style={{ background: 'var(--color-surface)' }}
+          aria-label="Descendre"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }

@@ -4,7 +4,13 @@ import { IndicatorType } from '../types/indicator.types'
 export async function findAllActiveIndicators() {
   return prisma.indicator.findMany({
     where: { isActive: true },
-    orderBy: { order: 'asc' },
+    orderBy: [{ order: 'asc' }, { name: 'asc' }],
+  })
+}
+
+export async function findAllIndicators() {
+  return prisma.indicator.findMany({
+    orderBy: [{ order: 'asc' }, { name: 'asc' }],
   })
 }
 
@@ -23,9 +29,6 @@ export async function updateIndicator(
   return prisma.indicator.update({ where: { id: indicatorId }, data })
 }
 
-export async function softDeleteIndicator(indicatorId: string) {
-  return prisma.indicator.update({
-    where: { id: indicatorId },
-    data: { isActive: false },
-  })
+export async function hardDeleteIndicator(indicatorId: string) {
+  return prisma.indicator.delete({ where: { id: indicatorId } })
 }

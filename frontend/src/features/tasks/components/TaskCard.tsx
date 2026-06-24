@@ -17,6 +17,7 @@ export default function TaskCard({ task, currentUserId, currentUserRole }: TaskC
   const isAdmin = currentUserRole === 'admin'
   const isAssignedToCurrentUser = task.assignee?.id === currentUserId
   const canActOnDoingTask = task.status === 'doing' && (isAssignedToCurrentUser || isAdmin)
+  const showDueDate = task.dueDate !== null && task.status !== 'done'
 
   return (
     <div className={`bg-white rounded-2xl p-4 shadow-[0_4px_14px_rgba(0,0,0,0.05)] flex flex-col gap-3 ${task.status === 'done' ? 'opacity-75' : ''}`}>
@@ -38,10 +39,13 @@ export default function TaskCard({ task, currentUserId, currentUserRole }: TaskC
         )}
       </div>
 
+      {/* Date limite (tâches todo et doing uniquement) */}
+      {showDueDate && <DueDateBadge dueDate={task.dueDate as string} />}
+
       {/* Bas de carte selon le statut */}
       {task.status === 'todo' && (
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-semibold text-text-tertiary bg-surface px-2.5 py-1 rounded-full">
+          <span className="text-xs font-semibold text-text-tertiary bg-surface px-2.5 py-1 rounded-full">
             Non attribuée
           </span>
           <button
@@ -84,7 +88,7 @@ export default function TaskCard({ task, currentUserId, currentUserRole }: TaskC
       {task.status === 'done' && (
         <div className="flex items-center justify-between gap-2">
           <AssigneeChip assignee={task.assignee} />
-          <span className="text-[11px] font-semibold text-text-tertiary shrink-0">
+          <span className="text-xs font-semibold text-text-tertiary shrink-0">
             ✓ {formatDoneTime(task.doneAt)}
           </span>
         </div>
@@ -108,6 +112,52 @@ function AssigneeChip({ assignee }: { assignee: Task['assignee'] }) {
 function formatDoneTime(doneAt: string | null): string {
   if (!doneAt) return 'Fait'
   return new Date(doneAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
+type DueDateStatus = 'overdue' | 'urgent' | 'normal'
+
+function getDueDateStatus(dueDate: string): DueDateStatus {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate)
+  due.setHours(0, 0, 0, 0)
+  const msPerDay = 1000 * 60 * 60 * 24
+  const daysUntilDue = Math.round((due.getTime() - today.getTime()) / msPerDay)
+
+  if (daysUntilDue < 0) return 'overdue'
+  if (daysUntilDue < 2) return 'urgent'
+  return 'normal'
+}
+
+function formatDueDate(dueDate: string): string {
+  const due = new Date(dueDate)
+  const currentYear = new Date().getFullYear()
+  const options: Intl.DateTimeFormatOptions =
+    due.getFullYear() === currentYear
+      ? { day: 'numeric', month: 'long' }
+      : { day: 'numeric', month: 'long', year: 'numeric' }
+  return due.toLocaleDateString('fr-FR', options)
+}
+
+const DUE_DATE_STYLES: Record<DueDateStatus, string> = {
+  overdue: 'text-danger',
+  urgent: 'text-[#E07A00]',
+  normal: 'text-text-tertiary',
+}
+
+function DueDateBadge({ dueDate }: { dueDate: string }) {
+  const status = getDueDateStatus(dueDate)
+  const colorClass = DUE_DATE_STYLES[status]
+  const label =
+    status === 'overdue'
+      ? '⚠ En retard'
+      : `Échéance le ${formatDueDate(dueDate)}`
+
+  return (
+    <p className={`text-xs font-semibold m-0 ${colorClass}`}>
+      {label}
+    </p>
+  )
 }
 
 function TrashIcon() {

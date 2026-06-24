@@ -24,15 +24,16 @@ enum IndicatorType {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  cuid         String   @unique // Format 4L+4D ex: LERN5042 — identifiant de connexion
+  id           String    @id @default(cuid())
+  cuid         String    @unique // Format 4L+4D ex: LERN5042 — identifiant de connexion
   name         String
   password     String
-  role         Role     @default(vendeur)
-  color        String   // Hex assigné par un admin
-  isFirstLogin Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role      @default(vendeur)
+  color        String    // Hex assigné par un admin
+  isFirstLogin Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   tasksCreated   Task[]          @relation("TaskCreatedBy")
   tasksAssigned  Task[]          @relation("TaskAssignee")
@@ -50,6 +51,7 @@ model Task {
   status      TaskStatus @default(todo)
   createdById String
   assigneeId  String?
+  dueDate     DateTime?
   doneAt      DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -74,18 +76,19 @@ model Indicator {
 }
 
 model DailySale {
-  id          String   @id @default(cuid())
-  date        DateTime @db.Date
-  userId      String
-  indicatorId String
-  count       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+  userId       String
+  indicatorId  String
+  count        Float    @default(0)
+  isCorrection Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user      User      @relation(fields: [userId], references: [id])
-  indicator Indicator @relation(fields: [indicatorId], references: [id])
+  indicator Indicator @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
 
-  @@unique([date, userId, indicatorId])
+  @@unique([date, userId, indicatorId, isCorrection])
   @@map("daily_sales")
 }
 
@@ -95,28 +98,41 @@ model MonthlyTarget {
   year        Int
   userId      String
   indicatorId String
-  target      Int      @default(0)
+  target      Float    @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user      User      @relation(fields: [userId], references: [id])
-  indicator Indicator @relation(fields: [indicatorId], references: [id])
+  indicator Indicator @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
 
   @@unique([month, year, userId, indicatorId])
   @@map("monthly_targets")
 }
 
 model TeamNote {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  publicNote       String?
-  privateNote      String?
-  challengeLabel   String?
-  challengeCurrent Int      @default(0)
-  challengeTarget  Int      @default(0)
-  updatedAt        DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  publicNote  String?
+  privateNote String?
+  updatedAt   DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user       User            @relation(fields: [userId], references: [id])
+  challenges TeamChallenge[]
 
   @@map("team_notes")
+}
+
+model TeamChallenge {
+  id        String   @id @default(cuid())
+  noteId    String
+  label     String
+  current   String   @default("0")
+  target    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teamNote TeamNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("team_challenges")
 }

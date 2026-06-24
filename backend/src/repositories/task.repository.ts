@@ -26,9 +26,10 @@ export async function createTask(
   title: string,
   description: string | undefined,
   createdById: string,
+  dueDate?: Date,
 ) {
   return prisma.task.create({
-    data: { title, description, createdById },
+    data: { title, description, createdById, dueDate },
     include: { assignee: { select: ASSIGNEE_SELECT } },
   })
 }

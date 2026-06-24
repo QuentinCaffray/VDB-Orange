@@ -1,9 +1,10 @@
 import {
   findAllActiveIndicators,
+  findAllIndicators,
   findIndicatorById,
   createIndicator as createIndicatorInDatabase,
   updateIndicator as updateIndicatorInDatabase,
-  softDeleteIndicator,
+  hardDeleteIndicator,
 } from '../repositories/indicator.repository'
 import { IndicatorType, IndicatorResponse, UpdateIndicatorInput } from '../types/indicator.types'
 import { AppError } from '../types/error.types'
@@ -26,6 +27,11 @@ function formatIndicatorResponse(indicator: {
 
 export async function getAllActiveIndicators(): Promise<IndicatorResponse[]> {
   const indicators = await findAllActiveIndicators()
+  return indicators.map(formatIndicatorResponse)
+}
+
+export async function getAllIndicators(): Promise<IndicatorResponse[]> {
+  const indicators = await findAllIndicators()
   return indicators.map(formatIndicatorResponse)
 }
 
@@ -59,5 +65,5 @@ export async function deleteIndicator(indicatorId: string): Promise<void> {
     throw new AppError('Indicateur introuvable', 404)
   }
 
-  await softDeleteIndicator(indicatorId)
+  await hardDeleteIndicator(indicatorId)
 }

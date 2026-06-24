@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import TaskCard from '../../features/tasks/components/TaskCard'
 import CreateTaskSheet from '../../features/tasks/components/CreateTaskSheet'
-import { TaskStatus, Task } from '../../types/task.types'
+import { TaskStatus, Task, TaskAssignee } from '../../types/task.types'
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
   todo: 'À faire',
@@ -42,13 +42,38 @@ export default function TasksPage() {
   const { data: allTasks = [], isLoading } = useTasks()
   const [activeTab, setActiveTab] = useState<TaskStatus>('todo')
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
+  const [filterAssigneeId, setFilterAssigneeId] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const isAdmin = currentUser?.role === 'admin'
   const taskCounts = countTasksByStatus(allTasks)
-  const visibleTasks = allTasks.filter((task) =>
-    task.status === activeTab && (task.status !== 'done' || isCompletedToday(task)),
+
+  const assigneesInActiveTasks = useMemo<TaskAssignee[]>(() => {
+    const activeTasks = allTasks.filter(
+      (task) => task.status === 'todo' || task.status === 'doing',
+    )
+    const assigneeMap = new Map<string, TaskAssignee>()
+    for (const task of activeTasks) {
+      if (task.assignee && !assigneeMap.has(task.assignee.id)) {
+        assigneeMap.set(task.assignee.id, task.assignee)
+      }
+    }
+    return Array.from(assigneeMap.values())
+  }, [allTasks])
+
+  const tasksMatchingActiveTab = allTasks.filter(
+    (task) => task.status === activeTab && (task.status !== 'done' || isCompletedToday(task)),
   )
+
+  const visibleTasks = tasksMatchingActiveTab.filter((task) => {
+    if (filterAssigneeId === null) return true
+    return task.assignee?.id === filterAssigneeId
+  })
+
+  function handleTabChange(newStatus: TaskStatus): void {
+    setActiveTab(newStatus)
+    setFilterAssigneeId(null)
+  }
 
   if (!currentUser) return null
 
@@ -93,7 +118,7 @@ export default function TasksPage() {
           {(Object.keys(STATUS_LABELS) as TaskStatus[]).map((status) => (
             <button
               key={status}
-              onClick={() => setActiveTab(status)}
+              onClick={() => handleTabChange(status)}
               className={`pb-3 px-2 text-sm font-bold transition-colors relative ${
                 activeTab === status ? 'text-text-primary' : 'text-text-tertiary'
               }`}
@@ -108,6 +133,26 @@ export default function TasksPage() {
             </button>
           ))}
         </div>
+
+        {/* Chips de filtre par assigné (uniquement si au moins 1 assigné dans les tâches actives) */}
+        {assigneesInActiveTasks.length > 0 && (
+          <div className="flex items-center gap-2 px-5 py-3 overflow-x-auto">
+            <AssigneeFilterChip
+              label="Tous"
+              isActive={filterAssigneeId === null}
+              onPress={() => setFilterAssigneeId(null)}
+            />
+            {assigneesInActiveTasks.map((assignee) => (
+              <AssigneeFilterChip
+                key={assignee.id}
+                label={assignee.name}
+                avatarColor={assignee.color}
+                isActive={filterAssigneeId === assignee.id}
+                onPress={() => setFilterAssigneeId(assignee.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Liste des tâches */}
@@ -140,6 +185,31 @@ export default function TasksPage() {
         onClose={() => setIsCreateSheetOpen(false)}
       />
     </div>
+  )
+}
+
+interface AssigneeFilterChipProps {
+  label: string
+  isActive: boolean
+  onPress: () => void
+  avatarColor?: string
+}
+
+function AssigneeFilterChip({ label, isActive, onPress, avatarColor }: AssigneeFilterChipProps) {
+  return (
+    <button
+      onClick={onPress}
+      className={`flex items-center gap-1.5 px-3 h-7 rounded-full text-xs font-semibold shrink-0 transition-colors ${
+        isActive
+          ? 'bg-brand-tint text-brand'
+          : 'bg-surface text-text-secondary'
+      }`}
+    >
+      {avatarColor && (
+        <span className="w-3 h-3 rounded-full shrink-0" style={{ background: avatarColor }} />
+      )}
+      {label}
+    </button>
   )
 }
 
