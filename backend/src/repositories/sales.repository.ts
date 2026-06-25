@@ -144,6 +144,21 @@ export async function findMonthlyTargetsForAllUsers(month: number, year: number)
   })
 }
 
+export async function findMonthlySalesPerUserAndIndicator(month: number, year: number) {
+  const startOfMonth = new Date(year, month - 1, 1)
+  const startOfNextMonth = new Date(year, month, 1)
+
+  return prisma.dailySale.groupBy({
+    by: ['userId', 'indicatorId'],
+    where: { date: { gte: startOfMonth, lt: startOfNextMonth } },
+    _sum: { count: true },
+  })
+}
+
+export async function findAllMonthlyTargetsForMonth(month: number, year: number) {
+  return prisma.monthlyTarget.findMany({ where: { month, year } })
+}
+
 export async function upsertMonthlyTarget(
   userId: string,
   indicatorId: string,

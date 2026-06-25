@@ -9,9 +9,26 @@ import {
   findAllVendorIds,
   findMonthlySalesForAllUsers,
   findMonthlyTargetsForAllUsers,
+  findMonthlySalesPerUserAndIndicator,
+  findAllMonthlyTargetsForMonth,
 } from '../repositories/sales.repository'
 import { findAllActiveIndicators } from '../repositories/indicator.repository'
-import { DailySaleEntry, MonthlyProgressEntry } from '../types/sales.types'
+import { findAllUsers } from '../repositories/user.repository'
+import {
+  DailySaleEntry,
+  MonthlyProgressEntry,
+  VendorIndicatorProgress,
+  IndicatorTeamBreakdown,
+} from '../types/sales.types'
+
+// Formate la date en YYYY-MM-DD en heure locale — toISOString() donnerait la date UTC,
+// ce qui décale d'un jour si le serveur est en UTC+2 (ex: minuit local = 22h UTC la veille).
+function formatLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 function formatDailySaleEntry(sale: {
   id: string
@@ -23,7 +40,7 @@ function formatDailySaleEntry(sale: {
 }): DailySaleEntry {
   return {
     id: sale.id,
-    date: sale.date.toISOString().split('T')[0],
+    date: formatLocalDateString(sale.date),
     userId: sale.userId,
     userName: sale.user.name,
     userColor: sale.user.color,
@@ -124,6 +141,49 @@ export async function getTeamMonthlyProgress(
     totalSales: salesByIndicatorId.get(indicator.id) ?? 0,
     target: targetSumByIndicatorId.get(indicator.id) ?? null,
   }))
+}
+
+export async function getTeamMonthlyBreakdown(
+  month: number,
+  year: number,
+): Promise<IndicatorTeamBreakdown[]> {
+  const [activeIndicators, salesPerUserAndIndicator, allTargets, allUsers] = await Promise.all([
+    findAllActiveIndicators(),
+    findMonthlySalesPerUserAndIndicator(month, year),
+    findAllMonthlyTargetsForMonth(month, year),
+    findAllUsers(),
+  ])
+
+  return activeIndicators.map((indicator) => {
+    const vendorEntries: Omit<VendorIndicatorProgress, 'rank'>[] = allUsers.map((user) => {
+      const salesEntry = salesPerUserAndIndicator.find(
+        (sale) => sale.userId === user.id && sale.indicatorId === indicator.id,
+      )
+      const targetEntry = allTargets.find(
+        (target) => target.userId === user.id && target.indicatorId === indicator.id,
+      )
+      return {
+        userId: user.id,
+        userName: user.name,
+        userColor: user.color ?? '#FF7900',
+        totalSales: salesEntry?._sum.count ?? 0,
+        target: targetEntry?.target ?? null,
+      }
+    })
+
+    const sortedVendors = [...vendorEntries].sort((a, b) => b.totalSales - a.totalSales)
+    const vendorsWithRank: VendorIndicatorProgress[] = sortedVendors.map((entry, index) => ({
+      ...entry,
+      rank: index + 1,
+    }))
+
+    return {
+      indicatorId: indicator.id,
+      indicatorName: indicator.name,
+      indicatorOrder: indicator.order,
+      vendors: vendorsWithRank,
+    }
+  })
 }
 
 export async function setTargetForAllVendors(

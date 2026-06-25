@@ -1,70 +1,17 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import { useDarkModeContext } from '../../context/DarkModeContext'
+import { useTasks } from '../../features/tasks/hooks/useTasks'
 import { TeamColorLegend } from '../ui/TeamColorLegend'
 
 const SIDEBAR_WIDTH = 240
 
-const navItems = [
-  {
-    to: '/dashboard',
-    label: 'Tableau de bord',
-    icon: (active: boolean) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    ),
-  },
-  {
-    to: '/tasks',
-    label: 'Tâches',
-    icon: (active: boolean) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-        <rect x="9" y="3" width="6" height="4" rx="1" />
-        <path d="M9 12h6M9 16h4" />
-      </svg>
-    ),
-  },
-  {
-    to: '/objectives',
-    label: 'Objectif',
-    icon: (active: boolean) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="6" />
-        <circle cx="12" cy="12" r="2" />
-      </svg>
-    ),
-  },
-  {
-    to: '/team',
-    label: 'Suivi équipe',
-    icon: (active: boolean) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-  },
-  {
-    to: '/profile',
-    label: 'Mon profil',
-    icon: (active: boolean) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-      </svg>
-    ),
-  },
-]
-
 export default function Sidebar() {
   const { currentUser } = useAuthContext()
   const { isDark, toggleDarkMode } = useDarkModeContext()
+  const { data: allTasks = [] } = useTasks()
   const isAdmin = currentUser?.role === 'admin'
+  const todoCount = allTasks.filter((task) => task.status === 'todo').length
 
   return (
     // hidden sur mobile, affiché en flex colonne sur desktop
@@ -118,41 +65,11 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav style={{ flex: 1, padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {navItems.map((item) => (
-          <NavLink key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
-            {({ isActive }) => (
-              <div
-                className={`sidebar-nav-item ${isActive ? 'sidebar-nav-item--active' : ''}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '10px 12px',
-                  borderRadius: 12,
-                }}
-              >
-                <div
-                  style={{
-                    transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                  }}
-                >
-                  {item.icon(isActive)}
-                </div>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#FF7900' : 'var(--color-text-secondary)',
-                    transition: 'color 0.15s ease, font-weight 0.15s ease',
-                  }}
-                >
-                  {item.label}
-                </span>
-              </div>
-            )}
-          </NavLink>
-        ))}
+        <SidebarNavItem to="/dashboard" label="Tableau de bord" icon={SidebarHomeIcon} />
+        <SidebarNavItem to="/tasks" label="Tâches" icon={SidebarTasksIcon} badge={todoCount} />
+        <SidebarNavItem to="/objectives" label="Objectif" icon={SidebarObjectivesIcon} />
+        <SidebarNavItem to="/team" label="Suivi équipe" icon={SidebarTeamIcon} />
+        <SidebarNavItem to="/profile" label="Mon profil" icon={SidebarProfileIcon} />
       </nav>
 
       {/* Légende couleurs équipe */}
@@ -240,6 +157,105 @@ export default function Sidebar() {
         </div>
       )}
     </aside>
+  )
+}
+
+// ── Composants de navigation ──────────────────────────────────────────────────
+
+interface SidebarNavItemProps {
+  to: string
+  label: string
+  icon: (active: boolean) => React.ReactNode
+  badge?: number
+}
+
+function SidebarNavItem({ to, label, icon, badge }: SidebarNavItemProps) {
+  return (
+    <NavLink to={to} style={{ textDecoration: 'none' }}>
+      {({ isActive }) => (
+        <div
+          className={`sidebar-nav-item ${isActive ? 'sidebar-nav-item--active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12 }}
+        >
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)', transform: isActive ? 'scale(1.1)' : 'scale(1)' }}>
+              {icon(isActive)}
+            </div>
+            {badge !== undefined && badge > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: -4,
+                right: -6,
+                minWidth: 16,
+                height: 16,
+                borderRadius: 8,
+                background: '#FF7900',
+                color: 'white',
+                fontSize: 10,
+                fontWeight: 900,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 3px',
+              }}>
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: 14, fontWeight: isActive ? 700 : 500, color: isActive ? '#FF7900' : 'var(--color-text-secondary)', transition: 'color 0.15s ease, font-weight 0.15s ease' }}>
+            {label}
+          </span>
+        </div>
+      )}
+    </NavLink>
+  )
+}
+
+function SidebarHomeIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  )
+}
+
+function SidebarTasksIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+      <rect x="9" y="3" width="6" height="4" rx="1" />
+      <path d="M9 12h6M9 16h4" />
+    </svg>
+  )
+}
+
+function SidebarObjectivesIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  )
+}
+
+function SidebarTeamIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+
+function SidebarProfileIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
   )
 }
 

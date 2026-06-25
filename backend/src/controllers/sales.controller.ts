@@ -7,7 +7,7 @@ import {
   SetMonthlyAbsoluteTotalInput,
 } from '../types/sales.types'
 import * as salesService from '../services/sales.service'
-import { getSocketIO } from '../lib/socket'
+import { eventBus } from '../lib/event-bus'
 
 export async function getDailySalesHandler(
   request: Request,
@@ -40,7 +40,7 @@ export async function recordSaleDeltaHandler(
     const effectiveUserId = targetUserId ?? requester.userId
     const updatedSale = await salesService.recordSaleDelta(effectiveUserId, indicatorId, date, delta)
 
-    getSocketIO().emit('sales:daily:updated', updatedSale)
+    eventBus.publishEvent({ type: 'sale.updated', sale: updatedSale })
 
     response.json(updatedSale)
   } catch (error) {
@@ -65,7 +65,7 @@ export async function setDailySaleCountHandler(
     const effectiveUserId = targetUserId ?? requester.userId
     const updatedSale = await salesService.setDailySaleCount(effectiveUserId, indicatorId, date, count)
 
-    getSocketIO().emit('sales:daily:updated', updatedSale)
+    eventBus.publishEvent({ type: 'sale.updated', sale: updatedSale })
 
     response.json(updatedSale)
   } catch (error) {
@@ -91,6 +91,7 @@ export async function setMonthlyAbsoluteTotalHandler(
     const updatedSale = await salesService.setMonthlyAbsoluteTotal(
       effectiveUserId, indicatorId, month, year, total, preserveDailyHistory ?? false,
     )
+    eventBus.publishEvent({ type: 'sale.monthly.corrected', userId: effectiveUserId, month, year })
     response.json(updatedSale)
   } catch (error) {
     next(error)
@@ -131,6 +132,21 @@ export async function getTeamMonthlyProgressHandler(
   }
 }
 
+export async function getTeamMonthlyBreakdownHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const month = parseInt(request.query.month as string) || new Date().getMonth() + 1
+    const year = parseInt(request.query.year as string) || new Date().getFullYear()
+    const breakdown = await salesService.getTeamMonthlyBreakdown(month, year)
+    response.json(breakdown)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function setTargetForAllVendorsHandler(
   request: Request<{}, {}, SetTargetForAllVendorsInput>,
   response: Response,
@@ -153,6 +169,7 @@ export async function setMonthlyTargetHandler(
   try {
     const { userId, indicatorId, month, year, target } = request.body
     await salesService.setMonthlyTarget(userId, indicatorId, month, year, target)
+    eventBus.publishEvent({ type: 'monthly.target.updated', userId, month, year })
     response.status(204).send()
   } catch (error) {
     next(error)

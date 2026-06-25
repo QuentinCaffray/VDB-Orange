@@ -71,3 +71,21 @@ export interface MonthlyProgressEntry {
   totalSales: number
   target: number | null
 }
+
+// Un vendeur dans le classement mensuel d'un indicateur
+export interface VendorIndicatorProgress {
+  userId: string
+  userName: string
+  userColor: string
+  totalSales: number
+  target: number | null
+  rank: number
+}
+
+// Classement mensuel complet d'un indicateur (tous vendeurs triés par totalSales)
+export interface IndicatorTeamBreakdown {
+  indicatorId: string
+  indicatorName: string
+  indicatorOrder: number
+  vendors: VendorIndicatorProgress[]
+}

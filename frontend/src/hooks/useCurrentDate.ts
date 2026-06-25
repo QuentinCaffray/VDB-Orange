@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getLocalDateString } from '../lib/date'
 
 interface CurrentDate {
   month: number
@@ -10,7 +11,7 @@ function buildCurrentDate(date: Date): CurrentDate {
   return {
     month: date.getMonth() + 1,
     year: date.getFullYear(),
-    dateString: date.toISOString().split('T')[0],
+    dateString: getLocalDateString(date),
   }
 }
 

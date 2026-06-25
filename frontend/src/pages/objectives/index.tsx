@@ -9,6 +9,7 @@ import {
 } from '../../features/sales/hooks/useSales'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
 import { useCurrentDate } from '../../hooks/useCurrentDate'
+import { getLocalDateString } from '../../lib/date'
 import DailyPointing from '../../features/sales/components/DailyPointing'
 import TeamStackedGauges from '../../features/sales/components/TeamStackedGauges'
 import MonthlyProgress from '../../features/sales/components/MonthlyProgress'
@@ -20,19 +21,25 @@ type DaySubTab = 'pointing' | 'team'
 const MAX_DAYS_IN_PAST = 30
 
 function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return getLocalDateString()
 }
 
 function getPreviousDateString(dateString: string): string {
   const date = new Date(dateString + 'T12:00:00')
   date.setDate(date.getDate() - 1)
-  return date.toISOString().split('T')[0]
+  return getLocalDateString(date)
 }
 
 function getNextDateString(dateString: string): string {
   const date = new Date(dateString + 'T12:00:00')
   date.setDate(date.getDate() + 1)
-  return date.toISOString().split('T')[0]
+  return getLocalDateString(date)
+}
+
+function formatViewMonthLabel(month: number, year: number): string {
+  const date = new Date(year, month - 1, 1)
+  const formatted = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date)
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
 function formatSelectedDateLabel(dateString: string): string {
@@ -72,10 +79,32 @@ export default function ObjectivesPage() {
   const [selectedVendorId, setSelectedVendorId] = useState<string>(() => vendorIdFromUrl ?? '')
   const [isEditingTargets, setIsEditingTargets] = useState(false)
   const [targetEdits, setTargetEdits] = useState<Record<string, number | null>>({})
+  const [viewMonth, setViewMonth] = useState<number>(currentMonth)
+  const [viewYear, setViewYear] = useState<number>(currentYear)
 
   const isTodaySelected = selectedDate === todayString
+  const isViewingCurrentMonth = viewMonth === currentMonth && viewYear === currentYear
 
   const isAdmin = currentUser?.role === 'admin'
+
+  function handlePreviousMonth(): void {
+    if (viewMonth === 1) {
+      setViewMonth(12)
+      setViewYear(viewYear - 1)
+    } else {
+      setViewMonth(viewMonth - 1)
+    }
+  }
+
+  function handleNextMonth(): void {
+    if (isViewingCurrentMonth) return
+    if (viewMonth === 12) {
+      setViewMonth(1)
+      setViewYear(viewYear + 1)
+    } else {
+      setViewMonth(viewMonth + 1)
+    }
+  }
 
   const { data: allUsers = [] } = useAllUsers()
 
@@ -89,23 +118,23 @@ export default function ObjectivesPage() {
   const { data: dailySales = [] } = useDailySales(selectedDate)
   const { data: monthlyProgress = [] } = useMonthlyProgress(
     isAdmin ? resolvedVendorId : (currentUser?.id ?? ''),
-    currentMonth,
-    currentYear,
+    viewMonth,
+    viewYear,
   )
 
   const { mutateAsync: saveTarget, isPending: isSavingTargets } = useSetMonthlyTarget(
-    currentMonth,
-    currentYear,
+    viewMonth,
+    viewYear,
     resolvedVendorId,
   )
 
   const selectedVendor = allUsers.find((user) => user.id === resolvedVendorId)
 
-  // Réinitialiser l'édition quand on change de vendeur
+  // Réinitialiser l'édition quand on change de vendeur ou de mois
   useEffect(() => {
     setIsEditingTargets(false)
     setTargetEdits({})
-  }, [selectedVendorId])
+  }, [selectedVendorId, viewMonth, viewYear])
 
   function handleVendorSelect(vendorId: string): void {
     setSelectedVendorId(vendorId)
@@ -130,8 +159,8 @@ export default function ObjectivesPage() {
       await saveTarget({
         userId: resolvedVendorId,
         indicatorId,
-        month: currentMonth,
-        year: currentYear,
+        month: viewMonth,
+        year: viewYear,
         target: newTarget,
       })
     }
@@ -265,6 +294,34 @@ export default function ObjectivesPage() {
         {/* ── Onglet Mois ── */}
         {mainTab === 'month' && (
           <>
+            {/* Navigation mois */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <button
+                onClick={handlePreviousMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Mois précédent"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <span className="text-sm font-bold text-text-primary min-w-[140px] text-center">
+                {formatViewMonthLabel(viewMonth, viewYear)}
+              </span>
+              <button
+                onClick={handleNextMonth}
+                disabled={isViewingCurrentMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Mois suivant"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+
             {/* Sélecteur de vendeur — admin uniquement */}
             {isAdmin && allUsers.length > 0 && (
               <div className="mb-4">
@@ -274,8 +331,8 @@ export default function ObjectivesPage() {
                   onSelect={handleVendorSelect}
                 />
 
-                {/* Bouton modifier les objectifs — visible hors mode édition */}
-                {!isEditingTargets && (
+                {/* Bouton modifier les objectifs — uniquement sur le mois en cours */}
+                {!isEditingTargets && isViewingCurrentMonth && (
                   <button
                     onClick={() => setIsEditingTargets(true)}
                     className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
@@ -293,8 +350,8 @@ export default function ObjectivesPage() {
 
             <MonthlyProgress
               progressEntries={monthlyProgress}
-              month={currentMonth}
-              year={currentYear}
+              month={viewMonth}
+              year={viewYear}
               vendorName={isAdmin ? selectedVendor?.name : undefined}
               isEditMode={isEditingTargets}
               editableTargets={targetEdits}
@@ -302,7 +359,7 @@ export default function ObjectivesPage() {
               monthlyIndicatorIds={new Set(monthlyIndicators.map((i) => i.id))}
               currentUserId={currentUser.id}
               currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
-              allowSaleCorrection={true}
+              allowSaleCorrection={isViewingCurrentMonth}
               targetUserId={isAdmin ? resolvedVendorId : undefined}
             />
 

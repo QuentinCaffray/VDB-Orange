@@ -6,6 +6,7 @@ import {
   setMonthlyAbsoluteTotalHandler,
   getMonthlyProgressHandler,
   getTeamMonthlyProgressHandler,
+  getTeamMonthlyBreakdownHandler,
   setMonthlyTargetHandler,
   setTargetForAllVendorsHandler,
 } from '../controllers/sales.controller'
@@ -37,6 +38,9 @@ salesRouter.put('/monthly-total', validateBody(setMonthlyAbsoluteTotalSchema), s
 
 // GET /sales/monthly/team?month=N&year=N — progression mensuelle agrégée boutique (admin)
 salesRouter.get('/monthly/team', requireAdmin, getTeamMonthlyProgressHandler)
+
+// GET /sales/monthly/team-breakdown?month=N&year=N — classement mensuel par vendeur et indicateur (admin)
+salesRouter.get('/monthly/team-breakdown', requireAdmin, getTeamMonthlyBreakdownHandler)
 
 // GET /sales/monthly?userId=ID&month=N&year=N — progression mensuelle d'un vendeur
 salesRouter.get('/monthly', getMonthlyProgressHandler)

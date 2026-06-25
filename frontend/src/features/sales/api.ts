@@ -4,6 +4,7 @@ import {
   IndicatorType,
   DailySaleEntry,
   MonthlyProgressEntry,
+  IndicatorTeamBreakdown,
   SetMonthlyTargetPayload,
 } from '../../types/sales.types'
 
@@ -98,6 +99,16 @@ export async function setDailySaleCount(
   targetUserId?: string,
 ): Promise<DailySaleEntry> {
   const response = await api.put<DailySaleEntry>('/sales/daily', { indicatorId, date: dateString, count, userId: targetUserId })
+  return response.data
+}
+
+export async function fetchTeamMonthlyBreakdown(
+  month: number,
+  year: number,
+): Promise<IndicatorTeamBreakdown[]> {
+  const response = await api.get<IndicatorTeamBreakdown[]>('/sales/monthly/team-breakdown', {
+    params: { month, year },
+  })
   return response.data
 }
 

@@ -1,6 +1,5 @@
 import { Indicator } from '../../../types/sales.types'
 import { useDailySales, useRecordSaleDelta } from '../hooks/useSales'
-import { useDailySalesSocket } from '../hooks/useSalesSocket'
 import { useAuthContext } from '../../../context/AuthContext'
 
 interface DailyPointingProps {
@@ -21,9 +20,6 @@ export default function DailyPointing({
   const { currentUser } = useAuthContext()
   const { data: dailySales = [] } = useDailySales(dateString)
   const { mutate: recordDelta } = useRecordSaleDelta(dateString)
-
-  // Met à jour le cache React Query en temps réel via WebSocket
-  useDailySalesSocket(dateString)
 
   if (!currentUser) return null
 

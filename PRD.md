@@ -1,8 +1,8 @@
-# Vie de Boutique — Product Requirements Document · v1.0
+# The Crew — Product Requirements Document · v2.0
 
 Application interne de gestion d'équipe — Boutique Orange · Mobile-first (+ desktop) · Juin 2026
 
-> « Vie de Boutique » est une application interne qui réunit en un seul outil la gestion des tâches de vide de boutique, le pointage quotidien des ventes par vendeur et le suivi des objectifs du mois, plus un espace d'encadrement réservé à la direction. Objectif : remplacer les fichiers papier / tableurs épars par un outil mobile simple, motivant et fiable.
+> « The Crew » est une application interne qui réunit en un seul outil la gestion des tâches de boutique, le pointage quotidien des ventes par vendeur et le suivi des objectifs du mois, plus un espace d'encadrement réservé à la direction. Objectif : remplacer les fichiers papier / tableurs épars par un outil mobile simple, motivant et fiable.
 
 **~10 utilisateurs · Mobile-first · Déclinaison desktop · 2 rôles : vendeur / admin**
 
@@ -12,9 +12,9 @@ Application interne de gestion d'équipe — Boutique Orange · Mobile-first (+ 
 
 Une boutique Orange compte une dizaine de vendeurs, encadrés par une directrice et une adjointe. Au quotidien, plusieurs besoins ne sont pas outillés ou le sont mal :
 
-- Les tâches de vide de boutique (réassort, étiquetage, rangement…) sont distribuées à l'oral, sans visibilité sur qui fait quoi.
+- Les tâches de boutique (réassort, étiquetage, rangement…) sont distribuées à l'oral, sans visibilité sur qui fait quoi.
 - Le pointage des ventes par indicateur se fait sur papier, sans vue d'équipe en temps réel.
-- Le suivi des objectifs du mois et des challenges manque de lisibilité pour les vendeurs.
+- Le suivi des objectifs du mois manque de lisibilité pour les vendeurs.
 - L'encadrement n'a pas d'espace dédié pour noter le suivi individuel (points à améliorer, notes privées).
 - Aucun historique fiable de ce qui a été fait et quand.
 
@@ -34,7 +34,7 @@ Une boutique Orange compte une dizaine de vendeurs, encadrés par une directrice
 
 | Rôle | Qui | Permissions |
 |---|---|---|
-| **Vendeur** | ~8 personnes | Créer / prendre / terminer ses tâches · pointer ses ventes (jour) · consulter sa progression du mois (lecture seule) · voir ses « points à améliorer » et le challenge · changer son mot de passe. L'onglet Suivi lui est masqué. |
+| **Vendeur** | ~8 personnes | Créer / prendre / terminer des tâches · pointer ses ventes (jour) · consulter sa progression du mois (lecture seule) · voir ses notes de coaching et le challenge · changer son mot de passe. L'onglet Suivi lui est masqué. |
 | **Admin** | Directrice + adjointe | Tout le périmètre vendeur + créer / éditer les comptes · définir les couleurs des vendeurs · fixer les objectifs et la liste des indicateurs · rédiger les notes (publiques et privées) · consulter la fiche de n'importe quel vendeur. |
 
 ---
@@ -43,74 +43,117 @@ Une boutique Orange compte une dizaine de vendeurs, encadrés par une directrice
 
 - Connexion par identifiant **CUID** (4 lettres + 4 chiffres, ex. `DQHB7493`) + mot de passe.
 - Les comptes sont créés exclusivement par un admin, qui définit le CUID et un mot de passe provisoire.
-- À la première connexion, l'utilisateur est invité à définir son propre mot de passe personnel (avec indicateur de robustesse). Il remplace celui fourni par la direction.
+- À la première connexion, l'utilisateur définit son propre mot de passe personnel. Il remplace celui fourni par la direction.
+- Changement de mot de passe disponible depuis le profil (avec vérification de l'ancien mot de passe).
 
 ---
 
 ## 5. Fonctionnalités
 
-### 5.1 — Tâches « vide de boutique » (Kanban)
+### 5.1 — Dashboard
 
-- Trois colonnes : **À faire · En cours · Fait**.
-- Une tâche porte un titre et une description optionnelle (pas de catégorie).
+Point d'entrée de l'application. Affiche un résumé personnalisé selon le rôle.
+
+**Vue vendeur**
+- Salutation + date du jour.
+- Chips « Mes ventes aujourd'hui » (compteur par indicateur journalier).
+- Carte « Tâches actives » (nb À faire / En cours, cliquable → page Tâches).
+- Barres de progression « Ma progression du mois » (indicateurs avec objectif fixé uniquement).
+
+**Vue admin**
+- Même structure que le vendeur pour les sections personnelles.
+- `⚠️ À revoir` — voir section Recommandations.
+
+### 5.2 — Tâches « boutique » (Kanban)
+
+- Trois onglets : **À faire · En cours · Fait**.
+- Une tâche porte un titre, une description optionnelle et une date d'échéance optionnelle.
 - **Tout utilisateur** peut créer une tâche (feuille modale « Nouvelle tâche »).
-- Chacun peut s'attribuer une tâche libre (bouton « Prendre ») → elle passe en **En cours** et disparaît de « À faire ».
-- Une tâche prise ne peut être reprise par un autre ; seul son porteur la passe à « Fait ».
-- La direction peut modifier ou supprimer n'importe quelle tâche.
+- Chacun peut s'attribuer une tâche libre (bouton « Prendre ») → elle passe en **En cours**.
+- Une tâche prise ne peut être reprise par un autre ; seul son porteur (ou un admin) la passe à « Fait » ou la remet à disposition.
+- La direction peut supprimer n'importe quelle tâche.
+- **Temps réel** : toute action (prise, complétion, création, suppression) est propagée instantanément sur tous les clients via SSE.
 
-### 5.2 — Historique (calendrier)
+### 5.3 — Historique (calendrier)
 
-- Accessible depuis l'écran Tâches (icône calendrier).
-- Vue mensuelle : les jours avec activité sont marqués ; au tap sur un jour, la liste des tâches faites ce jour-là (auteur + heure).
-- **Lecture seule, strictement non modifiable** — c'est la garantie anti-triche. Les jours futurs sont inactifs.
+- Accessible via icône calendrier depuis la page Tâches.
+- Vue mensuelle : les jours avec activité sont marqués. Au tap sur un jour → liste des tâches faites ce jour-là (auteur + heure).
+- **Lecture seule, non modifiable** — garantie anti-triche. Les jours futurs sont inactifs.
+- Navigation mois par mois.
 
-### 5.3 — Objectifs — onglet « Jour »
+### 5.4 — Objectifs — onglet « Jour »
 
 Deux sous-vues, basculables par un sélecteur segmenté :
 
 **✎ Je pointe**
-Liste des indicateurs ; chacun dispose d'un compteur `− valeur +` à la couleur du vendeur. Le `+` ajoute une vente ; `−`/`+` permettent de corriger une saisie. Chaque vendeur ne modifie que sa valeur.
+Liste des indicateurs journaliers. Compteur `− valeur +` à la couleur du vendeur. `+` ajoute une vente, `−` corrige. Chaque vendeur ne modifie que sa propre valeur. Navigation entre jours (jusqu'à 30 jours en arrière).
 
 **Équipe**
-Pour chaque indicateur, une jauge empilée où chaque segment représente la contribution d'un vendeur, à sa couleur, avec le total à droite. Le segment du vendeur connecté est mis en évidence. Une légende associe couleur et prénom.
+Pour chaque indicateur, une jauge empilée où chaque segment représente la contribution d'un vendeur à sa couleur, avec le total à droite. Légende couleur / prénom. **Temps réel** via SSE.
 
-Indicateurs suivis : **HD** (internet), **ABO** (forfaits), **Terminaux**, **Challenge**, **MP** (Mobile Protect), **Parafoudre**, **Divertissement**. La liste est éditable par un admin.
+Indicateurs suivis : **HD** (internet), **ABO** (forfaits), **Terminaux**, **Challenge**, **MP** (Mobile Protect), **Parafoudre**, **Divertissement**. Liste éditable par un admin.
 
-### 5.4 — Objectifs — onglet « Mois »
+### 5.5 — Objectifs — onglet « Mois »
 
-**Vue vendeur — « Ma progression » (lecture seule)**
-Titre + mois en cours, puis une barre de progression par indicateur vers la cible fixée par la direction (ex. `12 / 15`). Un indicateur n'est marqué **validé** (vert + ✓) que lorsque la valeur atteint exactement la cible ; en dessous, il reste « en cours ». Mention « Objectifs fixés par la direction ».
+**Vue vendeur**
+Barres de progression par indicateur vers la cible fixée (ex. `12 / 15`). Indicateur **Validé** (vert ✓) lorsque la valeur atteint la cible. Rythme journalier conseillé affiché si en retard. Correction du total mensuel possible (bouton « Corriger »). Saisie directe pour les indicateurs de type mensuel.
 
-**Vue admin** `admin`
-Cadre orange (mode admin), sélecteur de vendeur (menu déroulant) pour consulter n'importe quelle fiche, et un seul bouton « Modifier les objectifs » qui permet d'éditer les cibles, les valeurs et la liste des indicateurs.
+**Vue admin**
+Sélecteur de vendeur. Bouton « Modifier les objectifs » pour éditer les cibles. Barre d'actions flottante avec Annuler / Enregistrer. **Temps réel** : les corrections et changements d'objectif se propagent sur tous les clients.
 
-### 5.5 — Suivi équipe (encadrement) `admin`
+### 5.6 — Suivi équipe `admin`
 
-Fiche par vendeur, accessible uniquement par la directrice et l'adjointe (onglet masqué aux vendeurs). Sélecteur de vendeur en tête. Deux zones nettement distinctes :
+Accessible uniquement par les admins (onglet masqué aux vendeurs). Sélecteur de vendeur en tête.
 
-**Zone partagée — visible par le vendeur**
-Points à améliorer (notes de coaching) et suivi du challenge en cours (barre de progression). Le vendeur voit cette zone depuis son profil.
+**Zone partagée — visible par le vendeur depuis son profil**
+Notes de coaching (points à améliorer) et suivi du challenge en cours (barre de progression avec valeur actuelle / cible).
 
 **Notes privées — direction uniquement**
-Espace de notes confidentielles, jamais visible par le vendeur. Démarcation visuelle volontairement douce (gris ardoise, pointillés) — pas de rouge agressif.
+Espace de notes confidentielles, jamais visible par le vendeur. Démarcation visuelle volontairement douce (gris ardoise, pointillés).
 
-### 5.6 — Profil
+### 5.7 — Profil
 
-- Avatar (à la couleur du vendeur), nom, rôle, CUID.
-- Section **Compte** : changer son mot de passe, ses informations, voir sa couleur (mention « modifiable par admin »).
-- Section **Administration** (admins uniquement) : accès à la Gestion des comptes.
+- Avatar couleur, nom, rôle, CUID.
+- Changer son mot de passe.
+- Vue en lecture seule de ses notes de coaching et challenge (zone partagée par l'admin).
+- Section **Administration** (admins) : accès Gestion des comptes.
 - Déconnexion.
 
-### 5.7 — Gestion des comptes `admin`
+### 5.8 — Gestion des comptes `admin`
 
-- Liste des membres (avatar couleur, nom, rôle, CUID).
-- Création d'un vendeur : l'admin définit CUID + mot de passe provisoire.
-- Attribution / modification de la couleur d'un vendeur — réservée aux admins.
-- Réinitialisation d'un mot de passe.
+- Liste des membres (avatar, nom, rôle, CUID).
+- Création d'un vendeur : CUID + mot de passe provisoire.
+- Attribution / modification de la couleur d'un vendeur.
+- Réinitialisation de mot de passe.
+
+### 5.9 — Gestion des indicateurs `admin`
+
+- Liste des indicateurs actifs et inactifs.
+- Création, édition (nom, type jour/mois, ordre), désactivation.
+- Définition des objectifs globaux (tous les vendeurs en une action) ou individuel.
 
 ---
 
-## 6. Système de design
+## 6. Temps réel (SSE)
+
+Toutes les mutations critiques sont propagées en temps réel à tous les clients connectés via Server-Sent Events.
+
+| Event | Déclencheur | Impact frontend |
+|---|---|---|
+| `task.created` | Nouvelle tâche | Ajout au cache [`tasks`] |
+| `task.taken` | Prise de tâche | Mise à jour du cache [`tasks`] |
+| `task.completed` | Tâche terminée | Mise à jour du cache [`tasks`] |
+| `task.released` | Remise à dispo | Mise à jour du cache [`tasks`] |
+| `task.deleted` | Suppression | Retrait du cache [`tasks`] |
+| `sale.updated` | Pointage journalier | Invalidation [`sales/daily`] + [`sales/monthly`] |
+| `sale.monthly.corrected` | Correction total mensuel | Invalidation [`sales/monthly`] |
+| `monthly.target.updated` | Modif objectif par admin | Invalidation [`sales/monthly`] |
+
+Architecture : EventBus en mémoire (suffisant pour une instance unique sur Railway). Si scaling multi-instances → migrer vers `pg_notify` (Postgres LISTEN/NOTIFY).
+
+---
+
+## 7. Système de design
 
 ### Couleurs principales
 
@@ -118,66 +161,80 @@ Espace de notes confidentielles, jamais visible par le vendeur. Démarcation vis
 |---|---|
 | Orange primaire (marque, CTA) | `#FF7900` |
 | Noir / texte | `#1A1A1A` |
-| Fond application (crème) | `#FBF7F3` |
+| Fond application (crème clair) | `#FBF7F3` |
 | Vert validé | `#22A650` |
 | Vert en cours | `#57C77E` |
 | Zone privée (ardoise) | `#5B6B7B` / fond `#F3F5F8` |
 
+Mode sombre supporté (bascule depuis le profil).
+
 ### Couleurs d'identité vendeur
 
-Une couleur unique par vendeur, utilisée partout (avatars, jauges, compteurs). **Modifiable uniquement par un admin.**
-
-| Vendeur | Couleur |
-|---|---|
-| Marie | `#FF7900` |
-| Sophie | `#58A6FF` |
-| Léa | `#57C77E` |
-| Paul | `#F2B14B` |
-| Emma | `#B57BE8` |
-| Lucas | `#FF8A73` |
-| Chloé | `#46CBB0` |
-| Thomas | `#FF8FB8` |
-| Inès | `#8C8AF0` |
-| Noah | `#B6D957` |
+Une couleur unique par vendeur, utilisée partout (avatars, jauges, compteurs). Modifiable uniquement par un admin.
 
 ### Typographie
 
-- **Caveat** — manuscrite, pour les titres, salutations et chiffres clés (ton chaleureux, friendly).
+- **Caveat** — manuscrite, pour les titres et chiffres clés (ton chaleureux).
 - **Nunito** — corps de texte, labels et données (lisible, arrondie).
 
 ---
 
-## 7. Règles métier clés
+## 8. Règles métier clés
 
-1. Prendre une tâche la déplace immédiatement de « À faire » vers « En cours » et l'attribue au vendeur connecté.
+1. Prendre une tâche la déplace immédiatement en « En cours » et l'attribue au vendeur. Tentative simultanée de deux vendeurs → le second reçoit une erreur 409.
 2. L'historique des tâches faites est figé : aucune modification a posteriori.
-3. Un objectif n'est « validé » que lorsque la valeur atteint **exactement** la cible.
-4. Les objectifs et la liste des indicateurs sont définis par un admin ; le vendeur les consulte en lecture seule.
+3. Un objectif n'est « Validé » que lorsque la valeur atteint ou dépasse la cible.
+4. Les objectifs et indicateurs sont définis par un admin ; le vendeur les consulte en lecture seule.
 5. Les couleurs des vendeurs sont gérées par les admins uniquement.
 6. Les notes privées de la fiche de suivi ne sont jamais accessibles aux vendeurs.
+7. Le pointage journalier remonte à 30 jours maximum.
 
 ---
 
-## 8. Plateformes
+## 9. Plateformes & stack
 
-**Mobile-first** : navigation par barre basse à 4 onglets (Tâches · Objectif · Suivi · Profil). L'onglet Suivi n'apparaît que pour les admins.
+**Mobile-first** : navigation par barre basse à 4 onglets (Tâches · Objectif · Suivi · Profil). L'onglet Suivi n'apparaît que pour les admins. App installable (PWA).
 
-**Desktop** : navigation par sidebar, mêmes fonctionnalités et règles de permissions.
+**Desktop** : navigation par sidebar (240px fixe), mêmes fonctionnalités.
+
+| Couche | Technologie |
+|---|---|
+| Frontend | React 19 + Vite + TypeScript + Tailwind CSS v4 |
+| PWA | vite-plugin-pwa (Workbox) |
+| Backend | Node.js + Express 5 + TypeScript |
+| ORM | Prisma + PostgreSQL |
+| Temps réel | SSE (Server-Sent Events) + EventBus en mémoire |
+| État serveur | TanStack Query (React Query) |
+| Infra | Railway (backend + DB) |
 
 ---
 
-## 9. Hors périmètre (v1)
+## 10. Hors périmètre (v1 — intentionnel)
 
 - Notifications push.
-- Statistiques avancées / export de données.
+- Export de données (PDF, CSV).
 - Intégration avec les systèmes de caisse ou CRM Orange.
 - Gestion multi-boutiques.
+- Sync offline / mutations en file d'attente.
 
 ---
 
-## 10. Pistes d'évolution
+## 11. Pistes d'évolution (v2+)
 
-- Tableau de classement d'équipe (gamification) sur le mois.
-- Rappels de tâches récurrentes (ouverture / fermeture).
-- Export PDF du suivi mensuel pour les entretiens.
-- Historique des objectifs sur plusieurs mois.
+### Priorité haute
+
+- **Classement mensuel** — Leaderboard par indicateur, par mois. Vue ludique et motivante. Candidat direct pour remplacer la carte « Boutique aujourd'hui » dans le dashboard admin.
+- **Dashboard admin repensé** — Voir recommandations ci-dessous.
+- **Tâches récurrentes** — Templates de tâches qui se recréent automatiquement (ouverture, fermeture boutique). Déclenché par cron ou manuellement par un admin.
+
+### Priorité moyenne
+
+- **Historique des objectifs** — Consulter la performance de n'importe quel mois passé. Actuellement l'onglet Mois est figé sur le mois en cours.
+- **Export PDF** — Fiche mensuelle d'un vendeur pour les entretiens individuels.
+- **Notifications in-app** — Badge sur l'onglet Tâches si de nouvelles tâches sont disponibles, alerte si un vendeur est très en retard sur ses objectifs.
+
+### Priorité basse / expérimental
+
+- **Badges d'accomplissement** — « Premier à valider HD ce mois », « 5 tâches terminées en une journée ». Gamification légère.
+- **Vue semaine** — Agrégation des pointages sur 7 jours glissants (complément à Jour / Mois).
+- **Mode multi-boutiques** — Nécessiterait une refonte de la gestion des rôles et des permissions.

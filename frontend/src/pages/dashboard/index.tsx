@@ -4,16 +4,22 @@ import {
   useDailySales,
   useIndicators,
   useMonthlyProgress,
-  useTeamMonthlyProgress,
+  useTeamMonthlyBreakdown,
 } from '../../features/sales/hooks/useSales'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import { useCurrentDate } from '../../hooks/useCurrentDate'
-import { Indicator, MonthlyProgressEntry } from '../../types/sales.types'
+import { Indicator, MonthlyProgressEntry, IndicatorTeamBreakdown, VendorIndicatorProgress } from '../../types/sales.types'
 
 function formatTodayLong(): string {
   const formatted = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
   }).format(new Date())
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
+
+function formatMonthLabel(month: number, year: number): string {
+  const date = new Date(year, month - 1, 1)
+  const formatted = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date)
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
@@ -37,107 +43,6 @@ function SectionTitle({ label }: SectionTitleProps) {
     <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
       {label}
     </p>
-  )
-}
-
-// Ligne boutique : total du jour pour un indicateur + progression mensuelle
-interface BoutiqueIndicatorRowProps {
-  indicatorName: string
-  dailyTeamTotal: number
-  monthlyTeamTotal: number
-  monthlyTarget: number | null
-}
-
-function BoutiqueIndicatorRow({
-  indicatorName,
-  dailyTeamTotal,
-  monthlyTeamTotal,
-  monthlyTarget,
-}: BoutiqueIndicatorRowProps) {
-  const hasTarget = monthlyTarget !== null && monthlyTarget > 0
-  const percentage = hasTarget
-    ? Math.min(Math.round((monthlyTeamTotal / monthlyTarget) * 100), 100)
-    : 0
-  const isCompleted = percentage >= 100
-  const progressColor = isCompleted ? '#22C55E' : '#FF7900'
-
-  return (
-    <div className="py-3.5">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {indicatorName}
-        </span>
-        <span className="text-xl font-black" style={{ color: '#FF7900' }}>
-          {dailyTeamTotal}
-        </span>
-      </div>
-      {hasTarget ? (
-        <>
-          <div
-            className="h-1.5 rounded-full overflow-hidden mb-1.5"
-            style={{ background: 'var(--color-surface)' }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${percentage}%`, background: progressColor }}
-            />
-          </div>
-          <div className="flex justify-between items-baseline">
-            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              {monthlyTeamTotal} / {monthlyTarget} ce mois
-            </span>
-            <span className="text-xs font-bold" style={{ color: progressColor }}>
-              {percentage}%
-            </span>
-          </div>
-        </>
-      ) : (
-        <p className="text-xs m-0" style={{ color: 'var(--color-text-tertiary)' }}>
-          Pas d'objectif mensuel défini
-        </p>
-      )}
-    </div>
-  )
-}
-
-// Récap boutique : liste des indicateurs actifs avec totaux + progression
-interface BoutiqueRecapCardProps {
-  stats: Array<{
-    indicator: Indicator
-    dailyTeamTotal: number
-    monthlyTeamTotal: number
-    monthlyTarget: number | null
-  }>
-}
-
-function BoutiqueRecapCard({ stats }: BoutiqueRecapCardProps) {
-  if (stats.length === 0) {
-    return (
-      <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-        Aucun indicateur journalier actif.
-      </p>
-    )
-  }
-
-  return (
-    <div
-      className="rounded-2xl px-4"
-      style={{ background: 'var(--color-card)', boxShadow: '0 4px 14px rgba(0,0,0,0.05)' }}
-    >
-      {stats.map(({ indicator, dailyTeamTotal, monthlyTeamTotal, monthlyTarget }, index) => (
-        <div key={indicator.id}>
-          <BoutiqueIndicatorRow
-            indicatorName={indicator.name}
-            dailyTeamTotal={dailyTeamTotal}
-            monthlyTeamTotal={monthlyTeamTotal}
-            monthlyTarget={monthlyTarget}
-          />
-          {index < stats.length - 1 && (
-            <div className="h-px" style={{ background: 'var(--color-border)' }} />
-          )}
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -262,6 +167,121 @@ function MonthlyProgressBars({ entries, emptyLabel }: MonthlyProgressBarsProps) 
   )
 }
 
+// ── Classement mensuel (admin) ────────────────────────────────────────────────
+
+const RANK_MEDALS = ['🥇', '🥈', '🥉']
+
+interface VendorRankRowProps {
+  vendor: VendorIndicatorProgress
+  maxSales: number
+}
+
+function VendorRankRow({ vendor, maxSales }: VendorRankRowProps) {
+  const barWidthPercentage = maxSales > 0 ? (vendor.totalSales / maxSales) * 100 : 0
+  const medal = RANK_MEDALS[vendor.rank - 1] ?? null
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5">
+      <span className="w-5 text-center text-sm leading-none">
+        {medal ?? (
+          <span className="text-xs font-bold" style={{ color: 'var(--color-text-tertiary)' }}>
+            {vendor.rank}
+          </span>
+        )}
+      </span>
+      <span
+        className="w-2.5 h-2.5 rounded-full shrink-0"
+        style={{ background: vendor.userColor }}
+      />
+      <span className="text-sm font-semibold flex-1 truncate" style={{ color: 'var(--color-text-primary)' }}>
+        {vendor.userName}
+      </span>
+      <div className="flex items-center gap-2 shrink-0">
+        <div
+          className="w-20 h-1.5 rounded-full overflow-hidden"
+          style={{ background: 'var(--color-surface)' }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${barWidthPercentage}%`, background: vendor.userColor }}
+          />
+        </div>
+        <span className="text-sm font-black w-6 text-right" style={{ color: 'var(--color-text-primary)' }}>
+          {vendor.totalSales}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+interface IndicatorLeaderboardCardProps {
+  indicator: IndicatorTeamBreakdown
+}
+
+function IndicatorLeaderboardCard({ indicator }: IndicatorLeaderboardCardProps) {
+  const teamTotal = indicator.vendors.reduce((sum, vendor) => sum + vendor.totalSales, 0)
+  const maxSales = Math.max(...indicator.vendors.map((vendor) => vendor.totalSales), 1)
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{ background: 'var(--color-card)', boxShadow: '0 4px 14px rgba(0,0,0,0.05)' }}
+    >
+      <div
+        className="flex justify-between items-center px-4 py-3 border-b"
+        style={{ borderColor: 'var(--color-border-soft)' }}
+      >
+        <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
+          {indicator.indicatorName}
+        </span>
+        <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+          <span className="font-black text-base" style={{ color: '#FF7900' }}>{teamTotal}</span>
+          {' '}ce mois
+        </span>
+      </div>
+      <div>
+        {indicator.vendors.map((vendor, index) => (
+          <div key={vendor.userId}>
+            <VendorRankRow vendor={vendor} maxSales={maxSales} />
+            {index < indicator.vendors.length - 1 && (
+              <div className="mx-4 h-px" style={{ background: 'var(--color-border-soft)' }} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+interface MonthlyLeaderboardProps {
+  breakdown: IndicatorTeamBreakdown[]
+  month: number
+  year: number
+}
+
+function MonthlyLeaderboard({ breakdown, month, year }: MonthlyLeaderboardProps) {
+  if (breakdown.length === 0) {
+    return (
+      <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+        Aucun indicateur actif ce mois.
+      </p>
+    )
+  }
+
+  return (
+    <div>
+      <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
+        {formatMonthLabel(month, year)}
+      </p>
+      <div className="flex flex-col gap-3">
+        {breakdown.map((indicator) => (
+          <IndicatorLeaderboardCard key={indicator.indicatorId} indicator={indicator} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -281,10 +301,7 @@ export default function DashboardPage() {
     year,
   )
 
-  const { data: teamMonthlyProgress = [] } = useTeamMonthlyProgress(
-    month,
-    year,
-  )
+  const { data: teamBreakdown = [] } = useTeamMonthlyBreakdown(month, year)
 
   if (!currentUser) return null
 
@@ -293,28 +310,11 @@ export default function DashboardPage() {
   const todoCount = allTasks.filter((task) => task.status === 'todo').length
   const doingCount = allTasks.filter((task) => task.status === 'doing').length
 
-  // Ventes personnelles du jour (vue vendeur)
   const myDailySales = dailyIndicators.map((indicator) => {
     const mySale = dailySales.find(
       (sale) => sale.indicatorId === indicator.id && sale.userId === currentUser.id,
     )
     return { indicator, count: mySale?.count ?? 0 }
-  })
-
-  // Totaux boutique du jour + progression mensuelle par indicateur (vue admin)
-  const boutiqueIndicatorStats = dailyIndicators.map((indicator) => {
-    const dailyTeamTotal = dailySales
-      .filter((sale) => sale.indicatorId === indicator.id)
-      .reduce((sum, sale) => sum + sale.count, 0)
-
-    const monthlyEntry = teamMonthlyProgress.find((entry) => entry.indicatorId === indicator.id)
-
-    return {
-      indicator,
-      dailyTeamTotal,
-      monthlyTeamTotal: monthlyEntry?.totalSales ?? 0,
-      monthlyTarget: monthlyEntry?.target ?? null,
-    }
   })
 
   function handleNavigateToTasks(): void {
@@ -340,8 +340,8 @@ export default function DashboardPage() {
           // ── Vue admin ────────────────────────────────────────────────────
           <>
             <section>
-              <SectionTitle label="Boutique aujourd'hui" />
-              <BoutiqueRecapCard stats={boutiqueIndicatorStats} />
+              <SectionTitle label="Classement du mois" />
+              <MonthlyLeaderboard breakdown={teamBreakdown} month={month} year={year} />
             </section>
 
             <section>

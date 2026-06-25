@@ -8,6 +8,7 @@ import {
   setMonthlyAbsoluteTotal,
   fetchMonthlyProgress,
   fetchTeamMonthlyProgress,
+  fetchTeamMonthlyBreakdown,
   setMonthlyTarget,
   createIndicator,
   updateIndicator,
@@ -64,15 +65,10 @@ export function useDeleteIndicator() {
   })
 }
 
-const POLLING_INTERVAL_MS = 20_000
-const DAILY_SALES_FALLBACK_POLL_MS = 5 * 60_000 // 5 min — WebSocket gère le temps réel
-
 export function useDailySales(dateString: string) {
   return useQuery({
     queryKey: ['sales', 'daily', dateString],
     queryFn: ({ signal }) => fetchDailySales(dateString, signal),
-    // Fallback si la connexion WebSocket est perdue
-    refetchInterval: DAILY_SALES_FALLBACK_POLL_MS,
     refetchOnWindowFocus: false,
   })
 }
@@ -123,7 +119,6 @@ export function useMonthlyProgress(userId: string, month: number, year: number) 
     queryFn: () => fetchMonthlyProgress(userId, month, year),
     enabled: userId.length > 0,
     staleTime: 0,
-    refetchInterval: POLLING_INTERVAL_MS,
   })
 }
 
@@ -132,7 +127,14 @@ export function useTeamMonthlyProgress(month: number, year: number) {
     queryKey: ['sales', 'monthly', 'team', month, year],
     queryFn: () => fetchTeamMonthlyProgress(month, year),
     staleTime: 0,
-    refetchInterval: POLLING_INTERVAL_MS,
+  })
+}
+
+export function useTeamMonthlyBreakdown(month: number, year: number) {
+  return useQuery({
+    queryKey: ['sales', 'monthly', 'team-breakdown', month, year],
+    queryFn: () => fetchTeamMonthlyBreakdown(month, year),
+    staleTime: 0,
   })
 }
 

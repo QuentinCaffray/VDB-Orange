@@ -13,13 +13,11 @@ import {
 import { CreateTaskInput, Task, TaskStatus } from '../../../types/task.types'
 
 const TASKS_QUERY_KEY = ['tasks']
-const POLLING_INTERVAL_MS = 20_000
 
 export function useTasks() {
   return useQuery<Task[]>({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchAllTasks,
-    refetchInterval: POLLING_INTERVAL_MS,
   })
 }
 

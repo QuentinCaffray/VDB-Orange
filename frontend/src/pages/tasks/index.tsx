@@ -5,6 +5,7 @@ import { useTasks } from '../../features/tasks/hooks/useTasks'
 import TaskCard from '../../features/tasks/components/TaskCard'
 import CreateTaskSheet from '../../features/tasks/components/CreateTaskSheet'
 import { TaskStatus, Task, TaskAssignee } from '../../types/task.types'
+import { getLocalDateString } from '../../lib/date'
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
   todo: 'À faire',
@@ -22,7 +23,7 @@ function formatTodayDate(): string {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
-const TODAY_DATE_STRING = new Date().toISOString().split('T')[0]
+const TODAY_DATE_STRING = getLocalDateString()
 
 function isCompletedToday(task: Task): boolean {
   if (!task.doneAt) return false

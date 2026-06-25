@@ -26,6 +26,22 @@ export interface MonthlyProgressEntry {
   target: number | null
 }
 
+export interface VendorIndicatorProgress {
+  userId: string
+  userName: string
+  userColor: string
+  totalSales: number
+  target: number | null
+  rank: number
+}
+
+export interface IndicatorTeamBreakdown {
+  indicatorId: string
+  indicatorName: string
+  indicatorOrder: number
+  vendors: VendorIndicatorProgress[]
+}
+
 export interface SetMonthlyTargetPayload {
   userId: string
   indicatorId: string

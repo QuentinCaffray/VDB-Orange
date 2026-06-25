@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { CreateTaskInput } from '../types/task.types'
 import * as taskService from '../services/task.service'
+import { eventBus } from '../lib/event-bus'
 
 export async function getAllTasksHandler(
   request: Request,
@@ -25,6 +26,7 @@ export async function createTaskHandler(
     const createdById = request.authenticatedUser!.userId
 
     const newTask = await taskService.createTask(title, description, createdById, dueDate)
+    eventBus.publishEvent({ type: 'task.created', task: newTask })
     response.status(201).json(newTask)
   } catch (error) {
     next(error)
@@ -41,6 +43,7 @@ export async function takeTaskHandler(
     const currentUserId = request.authenticatedUser!.userId
 
     const updatedTask = await taskService.takeTask(taskId, currentUserId)
+    eventBus.publishEvent({ type: 'task.taken', task: updatedTask })
     response.json(updatedTask)
   } catch (error) {
     next(error)
@@ -57,6 +60,7 @@ export async function completeTaskHandler(
     const { userId, role } = request.authenticatedUser!
 
     const updatedTask = await taskService.completeTask(taskId, userId, role)
+    eventBus.publishEvent({ type: 'task.completed', task: updatedTask })
     response.json(updatedTask)
   } catch (error) {
     next(error)
@@ -73,6 +77,7 @@ export async function releaseTaskHandler(
     const { userId, role } = request.authenticatedUser!
 
     const updatedTask = await taskService.releaseTask(taskId, userId, role)
+    eventBus.publishEvent({ type: 'task.released', task: updatedTask })
     response.json(updatedTask)
   } catch (error) {
     next(error)
@@ -116,6 +121,7 @@ export async function deleteTaskHandler(
   try {
     const taskId = request.params.id
     await taskService.deleteTask(taskId)
+    eventBus.publishEvent({ type: 'task.deleted', taskId })
     response.status(204).send()
   } catch (error) {
     next(error)

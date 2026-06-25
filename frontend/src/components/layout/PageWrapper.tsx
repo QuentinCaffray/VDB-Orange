@@ -2,9 +2,12 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
 import { useAuthContext } from '../../context/AuthContext'
+import { useAppEventStream } from '../../hooks/useAppEventStream'
 
 export default function PageWrapper() {
   const { currentUser } = useAuthContext()
+  const isAuthenticated = currentUser !== null
+  useAppEventStream(isAuthenticated)
   const location = useLocation()
   const navigate = useNavigate()
 
