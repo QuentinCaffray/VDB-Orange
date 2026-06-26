@@ -216,13 +216,19 @@ function VendorRankRow({ vendor, maxSales }: VendorRankRowProps) {
   )
 }
 
+const LEADERBOARD_TOP_COUNT = 3
+
 interface IndicatorLeaderboardCardProps {
   indicator: IndicatorTeamBreakdown
 }
 
 function IndicatorLeaderboardCard({ indicator }: IndicatorLeaderboardCardProps) {
+  const [showAll, setShowAll] = useState(false)
+
   const teamTotal = indicator.vendors.reduce((sum, vendor) => sum + vendor.totalSales, 0)
   const maxSales = Math.max(...indicator.vendors.map((vendor) => vendor.totalSales), 1)
+  const hiddenCount = indicator.vendors.length - LEADERBOARD_TOP_COUNT
+  const visibleVendors = showAll ? indicator.vendors : indicator.vendors.slice(0, LEADERBOARD_TOP_COUNT)
 
   return (
     <div
@@ -242,15 +248,28 @@ function IndicatorLeaderboardCard({ indicator }: IndicatorLeaderboardCardProps) 
         </span>
       </div>
       <div>
-        {indicator.vendors.map((vendor, index) => (
+        {visibleVendors.map((vendor, index) => (
           <div key={vendor.userId}>
             <VendorRankRow vendor={vendor} maxSales={maxSales} />
-            {index < indicator.vendors.length - 1 && (
+            {index < visibleVendors.length - 1 && (
               <div className="mx-4 h-px" style={{ background: 'var(--color-border-soft)' }} />
             )}
           </div>
         ))}
       </div>
+      {hiddenCount > 0 && (
+        <button
+          onClick={() => setShowAll((prev) => !prev)}
+          className="w-full py-2.5 text-xs font-bold border-t"
+          style={{
+            borderColor: 'var(--color-border-soft)',
+            color: 'var(--color-text-tertiary)',
+            background: 'transparent',
+          }}
+        >
+          {showAll ? 'Réduire ▲' : `Voir les ${hiddenCount} autres ▾`}
+        </button>
+      )}
     </div>
   )
 }

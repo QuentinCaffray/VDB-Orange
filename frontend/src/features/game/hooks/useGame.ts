@@ -43,6 +43,22 @@ export function useResumeGame() {
   })
 }
 
+export function useFinishGame() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: gameApi.finishGame,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ACTIVE_GAME_QUERY_KEY }),
+  })
+}
+
+export function useAdminAdvancePawn() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: gameApi.adminAdvancePawn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ACTIVE_GAME_QUERY_KEY }),
+  })
+}
+
 export function useResetGame() {
   const queryClient = useQueryClient()
   return useMutation({

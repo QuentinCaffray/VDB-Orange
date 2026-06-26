@@ -4,7 +4,7 @@ const USER_SELECT = { id: true, name: true, color: true }
 
 export async function findActiveGame() {
   return prisma.game.findFirst({
-    where: { status: { not: 'finished' } },
+    orderBy: { createdAt: 'desc' },
     include: {
       pawns: { include: { user: { select: USER_SELECT } }, orderBy: { currentFloor: 'desc' } },
       winner: { select: USER_SELECT },
@@ -23,10 +23,11 @@ export async function findGameById(gameId: string) {
   })
 }
 
-export async function createGame(floorCount: number, reward: string, userIds: string[]) {
+export async function createGame(floorCount: number, objective: string, reward: string, userIds: string[]) {
   return prisma.game.create({
     data: {
       floorCount,
+      objective,
       reward,
       pawns: {
         create: userIds.map((userId) => ({ userId, currentFloor: 0 })),
@@ -45,7 +46,11 @@ export async function updateGameStatus(
 ) {
   return prisma.game.update({
     where: { id: gameId },
-    data: { status, winnerId: winnerId ?? null },
+    data: {
+      status,
+      // Preserve existing winnerId when not explicitly provided
+      ...(winnerId !== undefined ? { winnerId } : {}),
+    },
   })
 }
 

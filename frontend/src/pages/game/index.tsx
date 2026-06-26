@@ -6,6 +6,8 @@ import {
   usePauseGame,
   useResumeGame,
   useResetGame,
+  useFinishGame,
+  useAdminAdvancePawn,
   useSubmitMoveRequest,
   usePendingMoveRequests,
   useResolveMoveRequest,
@@ -22,7 +24,9 @@ export default function GamePage() {
     return <GameSkeleton />
   }
 
-  if (!activeGame) {
+  const isGameVisibleToVendor = activeGame && activeGame.status !== 'finished'
+
+  if (!activeGame || (!isAdmin && !isGameVisibleToVendor)) {
     return <NoGameView isAdmin={isAdmin} />
   }
 
@@ -54,13 +58,16 @@ function NoGameView({ isAdmin }: NoGameViewProps) {
 
 function CreateGameForm() {
   const [floorCount, setFloorCount] = useState(10)
+  const [objective, setObjective] = useState('')
   const [reward, setReward] = useState('')
   const { mutate: createGame, isPending } = useCreateGame()
 
+  const canSubmit = objective.trim() && reward.trim()
+
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    if (!reward.trim()) return
-    createGame({ floorCount, reward: reward.trim() })
+    if (!canSubmit) return
+    createGame({ floorCount, objective: objective.trim(), reward: reward.trim() })
   }
 
   return (
@@ -105,6 +112,28 @@ function CreateGameForm() {
 
         <div className="flex flex-col gap-1">
           <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+            Objectif pour avancer
+          </label>
+          <input
+            type="text"
+            value={objective}
+            onChange={(event) => setObjective(event.target.value)}
+            placeholder="Ex: Vendre un smartphone haut de gamme"
+            required
+            style={{
+              padding: '12px 14px',
+              borderRadius: 12,
+              border: '1.5px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              fontSize: 14,
+              color: 'var(--color-text-primary)',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             Récompense du gagnant
           </label>
           <input
@@ -127,17 +156,17 @@ function CreateGameForm() {
 
         <button
           type="submit"
-          disabled={isPending || !reward.trim()}
+          disabled={isPending || !canSubmit}
           style={{
             marginTop: 8,
             padding: '14px',
             borderRadius: 14,
-            background: isPending || !reward.trim() ? 'var(--color-border)' : '#FF7900',
+            background: isPending || !canSubmit ? 'var(--color-border)' : '#FF7900',
             color: 'white',
             fontWeight: 700,
             fontSize: 15,
             border: 'none',
-            cursor: isPending || !reward.trim() ? 'not-allowed' : 'pointer',
+            cursor: isPending || !canSubmit ? 'not-allowed' : 'pointer',
           }}
         >
           {isPending ? 'Création...' : 'Lancer la partie'}
@@ -175,9 +204,9 @@ function ActiveGameView({ game, isAdmin, currentUserId }: ActiveGameViewProps) {
     <div className="px-4 pt-6 pb-8 max-w-[430px] mx-auto flex flex-col gap-5">
       <GameHeader game={game} isAdmin={isAdmin} />
       <GameBuilding game={game} currentUserId={currentUserId} />
-      {isAdmin && <AdminControls game={game} />}
+      {isAdmin && <AdminControls game={game} currentUserId={currentUserId} />}
       {!isAdmin && game.status === 'active' && (
-        <VendorRequestPanel gameId={game.id} currentUserId={currentUserId} />
+        <VendorRequestPanel gameId={game.id} />
       )}
     </div>
   )
@@ -200,6 +229,10 @@ function GameHeader({ game, isAdmin }: GameHeaderProps) {
     finished: '#6b7280',
   }
 
+  const highestFloor = game.pawns.length > 0
+    ? Math.max(...game.pawns.map((pawn) => pawn.currentFloor))
+    : 0
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
@@ -208,6 +241,16 @@ function GameHeader({ game, isAdmin }: GameHeaderProps) {
           <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
             Gratte-ciel
           </h1>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: 'var(--color-text-tertiary)',
+            background: 'var(--color-surface)',
+            padding: '3px 8px',
+            borderRadius: 20,
+          }}>
+            🏢 {highestFloor}/{game.floorCount}
+          </span>
         </div>
         <span style={{
           fontSize: 11,
@@ -221,45 +264,75 @@ function GameHeader({ game, isAdmin }: GameHeaderProps) {
         </span>
       </div>
 
-      <div
-        style={{
-          background: 'var(--color-surface)',
-          borderRadius: 12,
-          padding: '10px 14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
-        <span style={{ fontSize: 16 }}>🏆</span>
-        <div>
-          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 600 }}>
-            Récompense
-          </p>
-          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-            {game.reward}
-          </p>
+      {/* Objectif + Récompense — visible par tous */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div
+          style={{
+            background: 'var(--color-surface)',
+            border: '1.5px solid var(--color-border-soft)',
+            borderRadius: 14,
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 22, flexShrink: 0 }}>🎯</span>
+          <div>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Pour avancer d'un étage
+            </p>
+            <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-primary)', margin: '2px 0 0' }}>
+              {game.objective}
+            </p>
+          </div>
+        </div>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #FF790015 0%, #FFB30015 100%)',
+            border: '1.5px solid #FF790030',
+            borderRadius: 14,
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 22, flexShrink: 0 }}>🏆</span>
+          <div>
+            <p style={{ fontSize: 11, color: '#FF7900', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Récompense du gagnant
+            </p>
+            <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-primary)', margin: '2px 0 0' }}>
+              {game.reward}
+            </p>
+          </div>
         </div>
       </div>
 
-      {game.status === 'finished' && game.winnerName && (
+      {game.winnerId && game.winnerName && (
         <div
           style={{
-            background: '#FF790015',
-            border: '1.5px solid #FF790040',
+            background: game.status === 'finished' ? '#FF790015' : '#f59e0b15',
+            border: `1.5px solid ${game.status === 'finished' ? '#FF790040' : '#f59e0b40'}`,
             borderRadius: 14,
-            padding: '12px 16px',
+            padding: '14px 16px',
             textAlign: 'center',
           }}
         >
-          <p style={{ fontSize: 20, margin: 0 }}>🎉</p>
-          <p style={{ fontSize: 16, fontWeight: 800, color: '#FF7900', margin: '4px 0 0' }}>
-            {game.winnerName} a gagné !
+          <p style={{ fontSize: 24, margin: 0 }}>{game.status === 'finished' ? '🎉' : '🏆'}</p>
+          <p style={{ fontSize: 17, fontWeight: 800, color: game.status === 'finished' ? '#FF7900' : '#f59e0b', margin: '4px 0 2px' }}>
+            {game.winnerName} {game.status === 'finished' ? 'a gagné !' : 'a atteint le sommet !'}
           </p>
+          {game.status === 'paused' && isAdmin && (
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+              En attente de validation — clique sur "Terminer" pour officialiser
+            </p>
+          )}
         </div>
       )}
 
-      {isAdmin && game.pendingRequestCount > 0 && (
+      {isAdmin && game.status !== 'finished' && game.pendingRequestCount > 0 && (
         <div
           style={{
             background: '#f59e0b15',
@@ -291,50 +364,36 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
   return (
     <div
       style={{
-        background: 'var(--color-card)',
         borderRadius: 16,
         border: '1px solid var(--color-border-soft)',
         overflow: 'hidden',
       }}
     >
-      <div style={{ padding: '12px 16px 4px', borderBottom: '1px solid var(--color-border-soft)' }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-tertiary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Classement — {game.floorCount} étages
-        </p>
-      </div>
-
-      <div style={{ maxHeight: 420, overflowY: 'auto' }}>
-        {/* Goal floor */}
-        <FloorRow
-          floorNumber={game.floorCount}
-          isGoal={true}
-          pawns={floors[game.floorCount] ?? []}
-          currentUserId={currentUserId}
-        />
-
-        {/* Intermediate floors — descending from floorCount-1 to 1 */}
-        {Array.from({ length: game.floorCount - 1 }, (_, index) => {
-          const floorNumber = game.floorCount - 1 - index
-          return (
-            <FloorRow
-              key={floorNumber}
-              floorNumber={floorNumber}
-              isGoal={false}
-              pawns={floors[floorNumber] ?? []}
-              currentUserId={currentUserId}
-            />
-          )
-        })}
-
-        {/* Ground floor */}
-        <FloorRow
-          floorNumber={0}
-          isGoal={false}
-          isGround={true}
-          pawns={floors[0] ?? []}
-          currentUserId={currentUserId}
-        />
-      </div>
+      <FloorRow
+        floorNumber={game.floorCount}
+        isGoal={true}
+        pawns={floors[game.floorCount] ?? []}
+        currentUserId={currentUserId}
+      />
+      {Array.from({ length: game.floorCount - 1 }, (_, index) => {
+        const floorNumber = game.floorCount - 1 - index
+        return (
+          <FloorRow
+            key={floorNumber}
+            floorNumber={floorNumber}
+            isGoal={false}
+            pawns={floors[floorNumber] ?? []}
+            currentUserId={currentUserId}
+          />
+        )
+      })}
+      <FloorRow
+        floorNumber={0}
+        isGoal={false}
+        isGround={true}
+        pawns={floors[0] ?? []}
+        currentUserId={currentUserId}
+      />
     </div>
   )
 }
@@ -369,48 +428,73 @@ function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: Floor
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '8px 16px',
+        alignItems: 'stretch',
         borderBottom: '1px solid var(--color-border-soft)',
-        background: isGoal ? '#FF790010' : 'transparent',
-        minHeight: 44,
+        minHeight: 52,
       }}
     >
-      <div style={{ width: 32, flexShrink: 0, textAlign: 'center' }}>
+      {/* Numéro de l'étage */}
+      <div
+        style={{
+          width: 40,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRight: '1px solid var(--color-border-soft)',
+          background: isGoal
+            ? 'linear-gradient(180deg, #FFB300 0%, #FF7900 100%)'
+            : isGround
+            ? 'var(--color-surface)'
+            : 'var(--color-card)',
+        }}
+      >
         {isGoal ? (
           <span style={{ fontSize: 16 }}>🏆</span>
-        ) : isGround ? (
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 600 }}>Sol</span>
         ) : (
-          <span style={{ fontSize: 12, fontWeight: 700, color: hasPawns ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)' }}>
-            {floorNumber}
+          <span style={{ fontSize: isGround ? 9 : 11, fontWeight: 800, color: 'var(--color-text-tertiary)' }}>
+            {isGround ? 'Sol' : floorNumber}
           </span>
         )}
       </div>
 
-      {isGoal && (
-        <div style={{ flex: 1 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#FF7900' }}>
+      {/* Contenu de l'étage */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '8px 12px',
+          gap: 8,
+          flexWrap: 'wrap',
+          background: isGoal
+            ? '#FF790008'
+            : isGround
+            ? 'var(--color-surface)'
+            : hasPawns
+            ? 'var(--color-brand-tint)'
+            : 'var(--color-card)',
+        }}
+      >
+        {isGoal && !hasPawns && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#FF7900', opacity: 0.6 }}>
             Arrivée
           </span>
-        </div>
-      )}
+        )}
 
-      {!isGoal && !hasPawns && (
-        <div
-          style={{
-            flex: 1,
-            height: 2,
-            background: 'var(--color-border-soft)',
-            borderRadius: 1,
-          }}
-        />
-      )}
+        {!hasPawns && !isGoal && (
+          <div style={{ display: 'flex', gap: 5, opacity: 0.12 }}>
+            {[0, 1, 2, 3].map((windowIndex) => (
+              <div
+                key={windowIndex}
+                style={{ width: 9, height: 12, borderRadius: 2, background: 'var(--color-text-secondary)' }}
+              />
+            ))}
+          </div>
+        )}
 
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end', flex: hasPawns ? 1 : 'unset' }}>
-        {pawns.map((pawn) => (
-          <PawnDot
+        {hasPawns && pawns.map((pawn) => (
+          <PawnOnFloor
             key={pawn.id}
             pawn={pawn}
             isCurrentUser={pawn.userId === currentUserId}
@@ -421,29 +505,48 @@ function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: Floor
   )
 }
 
-interface PawnDotProps {
+interface PawnOnFloorProps {
   pawn: GamePawn
   isCurrentUser: boolean
 }
 
-function PawnDot({ pawn, isCurrentUser }: PawnDotProps) {
+function PawnOnFloor({ pawn, isCurrentUser }: PawnOnFloorProps) {
+  const firstName = pawn.userName.split(' ')[0]
+
   return (
-    <div
-      title={pawn.userName}
-      style={{
-        width: 30,
-        height: 30,
-        borderRadius: '50%',
-        background: pawn.userColor,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: isCurrentUser ? `0 0 0 2.5px white, 0 0 0 4px ${pawn.userColor}` : '0 1px 3px rgba(0,0,0,0.15)',
-        flexShrink: 0,
-      }}
-    >
-      <span style={{ fontSize: 11, fontWeight: 800, color: 'white' }}>
-        {pawn.userName.charAt(0).toUpperCase()}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          background: pawn.userColor,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: isCurrentUser
+            ? `0 0 0 2px white, 0 0 0 3.5px ${pawn.userColor}`
+            : '0 1px 4px rgba(0,0,0,0.18)',
+        }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 900, color: 'white' }}>
+          {pawn.userName.charAt(0).toUpperCase()}
+        </span>
+      </div>
+      <span
+        style={{
+          fontSize: 9,
+          fontWeight: isCurrentUser ? 800 : 600,
+          color: isCurrentUser ? pawn.userColor : 'var(--color-text-secondary)',
+          lineHeight: 1,
+          maxWidth: 36,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {firstName}
       </span>
     </div>
   )
@@ -453,94 +556,123 @@ function PawnDot({ pawn, isCurrentUser }: PawnDotProps) {
 
 interface AdminControlsProps {
   game: ActiveGame
+  currentUserId: string
 }
 
-function AdminControls({ game }: AdminControlsProps) {
+function AdminControls({ game, currentUserId }: AdminControlsProps) {
+  const [showNewGameForm, setShowNewGameForm] = useState(false)
+  const [newFloorCount, setNewFloorCount] = useState(game.floorCount)
+  const [newObjective, setNewObjective] = useState('')
+  const [newReward, setNewReward] = useState('')
   const { mutate: pauseGame, isPending: isPausing } = usePauseGame()
   const { mutate: resumeGame, isPending: isResuming } = useResumeGame()
   const { mutate: resetGame, isPending: isResetting } = useResetGame()
+  const { mutate: finishGame, isPending: isFinishing } = useFinishGame()
+  const { mutate: createGame, isPending: isCreatingNewGame } = useCreateGame()
+  const { mutate: adminAdvance, isPending: isAdvancing } = useAdminAdvancePawn()
   const { data: pendingRequests = [], isLoading: isLoadingRequests } = usePendingMoveRequests(game.id)
   const { mutate: resolveRequest, isPending: isResolving } = useResolveMoveRequest(game.id)
 
   const isGameActive = game.status === 'active'
   const isGamePaused = game.status === 'paused'
   const isGameFinished = game.status === 'finished'
+  const myPawn = game.pawns.find((pawn) => pawn.userId === currentUserId)
 
-  function handleResetWithConfirmation() {
-    if (window.confirm('Remettre tous les pions à 0 et reprendre la partie ?')) {
-      resetGame(game.id)
-    }
+  function handleCreateNewGame(event: React.FormEvent) {
+    event.preventDefault()
+    if (!newObjective.trim() || !newReward.trim()) return
+    createGame(
+      { floorCount: newFloorCount, objective: newObjective.trim(), reward: newReward.trim() },
+      {
+        onSuccess: () => {
+          setShowNewGameForm(false)
+          setNewObjective('')
+          setNewReward('')
+        },
+      },
+    )
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Nouvelle partie — formulaire inline quand la partie est terminée */}
+      {isGameFinished && (
+        <div style={adminCardStyle}>
+          <p style={adminCardTitleStyle}>Partie terminée</p>
+          {!showNewGameForm ? (
+            <button onClick={() => setShowNewGameForm(true)} style={primaryButtonStyle}>
+              Lancer une nouvelle partie
+            </button>
+          ) : (
+            <form onSubmit={handleCreateNewGame} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Nombre d'étages</label>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setNewFloorCount((v) => Math.max(3, v - 1))} style={stepperButtonStyle}>−</button>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-primary)', minWidth: 32, textAlign: 'center' }}>{newFloorCount}</span>
+                  <button type="button" onClick={() => setNewFloorCount((v) => Math.min(30, v + 1))} style={stepperButtonStyle}>+</button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Objectif pour avancer</label>
+                <input type="text" value={newObjective} onChange={(e) => setNewObjective(e.target.value)} placeholder="Ex: Vendre un smartphone haut de gamme" required style={{ padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--color-border)', background: 'var(--color-surface)', fontSize: 13, color: 'var(--color-text-primary)', outline: 'none' }} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Récompense du gagnant</label>
+                <input type="text" value={newReward} onChange={(e) => setNewReward(e.target.value)} placeholder="Ex: Pizzas pour tout le monde" required style={{ padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--color-border)', background: 'var(--color-surface)', fontSize: 13, color: 'var(--color-text-primary)', outline: 'none' }} />
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setShowNewGameForm(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1.5px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
+                <button type="submit" disabled={isCreatingNewGame || !newObjective.trim() || !newReward.trim()} style={{ flex: 2, padding: '10px 0', borderRadius: 10, border: 'none', background: (!newObjective.trim() || !newReward.trim()) ? 'var(--color-border)' : '#FF7900', color: 'white', fontWeight: 700, fontSize: 13, cursor: (!newObjective.trim() || !newReward.trim()) ? 'not-allowed' : 'pointer' }}>{isCreatingNewGame ? 'Création...' : 'Lancer'}</button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
+      {/* Mon pion — avance directe pour l'admin */}
+      {isGameActive && myPawn && (
+        <div style={adminCardStyle}>
+          <p style={adminCardTitleStyle}>Mon pion — étage {myPawn.currentFloor} / {game.floorCount}</p>
+          <ConfirmButton
+            label="Avancer mon pion"
+            confirmLabel="Confirmer l'avancement"
+            color="#FF7900"
+            isLoading={isAdvancing}
+            onConfirm={() => adminAdvance(game.id)}
+          />
+        </div>
+      )}
+
       {/* Contrôles de la partie */}
       {!isGameFinished && (
-        <div
-          style={{
-            background: 'var(--color-card)',
-            borderRadius: 14,
-            border: '1px solid var(--color-border-soft)',
-            padding: '14px 16px',
-          }}
-        >
-          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-tertiary)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Contrôles admin
-          </p>
+        <div style={adminCardStyle}>
+          <p style={adminCardTitleStyle}>Contrôles</p>
           <div className="flex gap-2">
             {isGameActive && (
-              <button
-                onClick={() => pauseGame(game.id)}
-                disabled={isPausing}
-                style={adminButtonStyle('#f59e0b')}
-              >
+              <button onClick={() => pauseGame(game.id)} disabled={isPausing} style={adminButtonStyle('#f59e0b')}>
                 {isPausing ? '...' : 'Pause'}
               </button>
             )}
             {isGamePaused && (
-              <button
-                onClick={() => resumeGame(game.id)}
-                disabled={isResuming}
-                style={adminButtonStyle('#22c55e')}
-              >
+              <button onClick={() => resumeGame(game.id)} disabled={isResuming} style={adminButtonStyle('#22c55e')}>
                 {isResuming ? '...' : 'Reprendre'}
               </button>
             )}
-            <button
-              onClick={handleResetWithConfirmation}
-              disabled={isResetting}
-              style={adminButtonStyle('#6b7280')}
-            >
-              {isResetting ? '...' : 'Reset'}
-            </button>
+            <ConfirmButton label="Reset" confirmLabel="Remettre à 0 ?" color="#6b7280" isLoading={isResetting} onConfirm={() => resetGame(game.id)} />
+            <ConfirmButton label="Terminer" confirmLabel="Figer le classement ?" color="#ef4444" isLoading={isFinishing} onConfirm={() => finishGame(game.id)} />
           </div>
         </div>
       )}
 
       {/* Demandes en attente */}
       {!isGameFinished && (
-        <div
-          style={{
-            background: 'var(--color-card)',
-            borderRadius: 14,
-            border: '1px solid var(--color-border-soft)',
-            padding: '14px 16px',
-          }}
-        >
-          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-tertiary)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Demandes d'avancement ({pendingRequests.length})
-          </p>
-
-          {isLoadingRequests && (
-            <Skeleton className="h-14 w-full" />
-          )}
-
+        <div style={adminCardStyle}>
+          <p style={adminCardTitleStyle}>Demandes d'avancement ({pendingRequests.length})</p>
+          {isLoadingRequests && <Skeleton className="h-14 w-full" />}
           {!isLoadingRequests && pendingRequests.length === 0 && (
-            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>
-              Aucune demande en attente
-            </p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Aucune demande en attente</p>
           )}
-
           <div className="flex flex-col gap-2">
             {pendingRequests.map((request) => (
               <MoveRequestCard
@@ -555,6 +687,85 @@ function AdminControls({ game }: AdminControlsProps) {
         </div>
       )}
     </div>
+  )
+}
+
+const adminCardStyle: React.CSSProperties = {
+  background: 'var(--color-card)',
+  borderRadius: 14,
+  border: '1px solid var(--color-border-soft)',
+  padding: '14px 16px',
+}
+
+const adminCardTitleStyle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: 'var(--color-text-tertiary)',
+  margin: '0 0 10px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+}
+
+const primaryButtonStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 0',
+  borderRadius: 12,
+  background: '#FF7900',
+  color: 'white',
+  fontWeight: 700,
+  fontSize: 14,
+  border: 'none',
+  cursor: 'pointer',
+}
+
+// ── ConfirmButton — confirmation inline sans alerte navigateur ────────────────
+
+interface ConfirmButtonProps {
+  label: string
+  confirmLabel: string
+  color: string
+  isLoading: boolean
+  onConfirm: () => void
+}
+
+function ConfirmButton({ label, confirmLabel, color, isLoading, onConfirm }: ConfirmButtonProps) {
+  const [isConfirming, setIsConfirming] = useState(false)
+
+  function handleConfirm() {
+    setIsConfirming(false)
+    onConfirm()
+  }
+
+  if (isConfirming) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color, textAlign: 'center' }}>{confirmLabel}</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => setIsConfirming(false)}
+            style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: '1.5px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleConfirm}
+            style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', background: color, color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+          >
+            Confirmer
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setIsConfirming(true)}
+      disabled={isLoading}
+      style={{ ...adminButtonStyle(color), flex: 1 }}
+    >
+      {isLoading ? '...' : label}
+    </button>
   )
 }
 
@@ -661,10 +872,9 @@ function MoveRequestCard({ request, onApprove, onReject, isLoading }: MoveReques
 
 interface VendorRequestPanelProps {
   gameId: string
-  currentUserId: string
 }
 
-function VendorRequestPanel({ gameId, currentUserId: _currentUserId }: VendorRequestPanelProps) {
+function VendorRequestPanel({ gameId }: VendorRequestPanelProps) {
   const [reason, setReason] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const { mutate: submitRequest, isPending } = useSubmitMoveRequest(gameId)
@@ -725,7 +935,7 @@ function VendorRequestPanel({ gameId, currentUserId: _currentUserId }: VendorReq
         <textarea
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Explique pourquoi tu mérites d'avancer (vente rare, objectif dépassé...)"
+          placeholder="Quel objectif est atteint, ou quelle vente réalisée ?"
           rows={3}
           required
           style={{

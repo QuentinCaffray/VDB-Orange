@@ -2,6 +2,7 @@ import * as gameRepository from '../repositories/game.repository'
 import { findAllUsers } from '../repositories/user.repository'
 import { eventBus } from '../lib/event-bus'
 import { ActiveGameResponse, GamePawnWithUser } from '../types/game.types'
+import { AppError } from '../types/error.types'
 
 function buildPawnWithUser(pawn: {
   userId: string
@@ -25,6 +26,7 @@ export async function getActiveGame(): Promise<ActiveGameResponse | null> {
   return {
     id: game.id,
     floorCount: game.floorCount,
+    objective: game.objective,
     reward: game.reward,
     status: game.status as 'active' | 'paused' | 'finished',
     winnerId: game.winnerId,
@@ -34,20 +36,22 @@ export async function getActiveGame(): Promise<ActiveGameResponse | null> {
   }
 }
 
-export async function createGame(floorCount: number, reward: string): Promise<ActiveGameResponse> {
+export async function createGame(floorCount: number, objective: string, reward: string): Promise<ActiveGameResponse> {
   const existingGame = await gameRepository.findActiveGame()
-  if (existingGame) {
-    throw Object.assign(new Error('Une partie est déjà en cours'), { statusCode: 409 })
+  const isExistingGameOngoing = existingGame && existingGame.status !== 'finished'
+  if (isExistingGameOngoing) {
+    throw new AppError('Une partie est déjà en cours', 409)
   }
 
   const allUsers = await findAllUsers()
   const userIds = allUsers.map((user) => user.id)
 
-  const game = await gameRepository.createGame(floorCount, reward, userIds)
+  const game = await gameRepository.createGame(floorCount, objective, reward, userIds)
 
   const response: ActiveGameResponse = {
     id: game.id,
     floorCount: game.floorCount,
+    objective: game.objective,
     reward: game.reward,
     status: 'active',
     winnerId: null,
@@ -65,7 +69,7 @@ export async function updateGameStatus(
   status: 'active' | 'paused' | 'finished',
 ): Promise<void> {
   const game = await gameRepository.findGameById(gameId)
-  if (!game) throw Object.assign(new Error('Partie introuvable'), { statusCode: 404 })
+  if (!game) throw new AppError('Partie introuvable', 404)
 
   await gameRepository.updateGameStatus(gameId, status)
   eventBus.publishEvent({ type: 'game.status.changed', payload: { gameId, status } })
@@ -73,7 +77,7 @@ export async function updateGameStatus(
 
 export async function resetGame(gameId: string): Promise<void> {
   const game = await gameRepository.findGameById(gameId)
-  if (!game) throw Object.assign(new Error('Partie introuvable'), { statusCode: 404 })
+  if (!game) throw new AppError('Partie introuvable', 404)
 
   await gameRepository.resetGamePawns(gameId)
   await gameRepository.updateGameStatus(gameId, 'active')
@@ -86,14 +90,9 @@ export async function submitMoveRequest(
   reason: string,
 ): Promise<void> {
   const game = await gameRepository.findGameById(gameId)
-  if (!game) throw Object.assign(new Error('Partie introuvable'), { statusCode: 404 })
+  if (!game) throw new AppError('Partie introuvable', 404)
   if (game.status !== 'active') {
-    throw Object.assign(new Error('La partie n\'est pas active'), { statusCode: 400 })
-  }
-
-  const alreadyPending = await gameRepository.hasPendingRequestForUser(gameId, userId)
-  if (alreadyPending) {
-    throw Object.assign(new Error('Tu as déjà une demande en attente'), { statusCode: 409 })
+    throw new AppError('La partie n\'est pas active', 400)
   }
 
   const request = await gameRepository.createMoveRequest(gameId, userId, reason)
@@ -103,8 +102,49 @@ export async function submitMoveRequest(
   })
 }
 
-export async function getPendingMoveRequests(gameId: string) {
-  return gameRepository.findPendingMoveRequests(gameId)
+export async function getPendingMoveRequests(gameId: string): Promise<import('../types/game.types').MoveRequestWithUser[]> {
+  const requests = await gameRepository.findPendingMoveRequests(gameId)
+  return requests.map((request) => ({
+    id: request.id,
+    userId: request.userId,
+    userName: request.user.name,
+    userColor: request.user.color,
+    reason: request.reason,
+    status: request.status as 'pending' | 'approved' | 'rejected',
+    adminNote: request.adminNote,
+    createdAt: request.createdAt.toISOString(),
+  }))
+}
+
+export async function adminAdvancePawn(gameId: string, adminUserId: string): Promise<void> {
+  const game = await gameRepository.findGameById(gameId)
+  if (!game) throw new AppError('Partie introuvable', 404)
+  if (game.status !== 'active') {
+    throw new AppError('La partie n\'est pas active', 400)
+  }
+
+  const updatedPawn = await gameRepository.advancePawn(gameId, adminUserId)
+  const hasReachedTop = updatedPawn.currentFloor >= game.floorCount
+
+  if (hasReachedTop) {
+    await gameRepository.updateGameStatus(gameId, 'paused', adminUserId)
+    eventBus.publishEvent({
+      type: 'game.status.changed',
+      payload: { gameId, status: 'paused' },
+    })
+    return
+  }
+
+  eventBus.publishEvent({
+    type: 'game.pawn.moved',
+    payload: {
+      gameId,
+      userId: adminUserId,
+      userName: updatedPawn.user.name,
+      userColor: updatedPawn.user.color,
+      newFloor: updatedPawn.currentFloor,
+    },
+  })
 }
 
 export async function resolveMoveRequest(
@@ -113,9 +153,9 @@ export async function resolveMoveRequest(
   adminNote?: string,
 ): Promise<void> {
   const request = await gameRepository.findMoveRequestById(requestId)
-  if (!request) throw Object.assign(new Error('Demande introuvable'), { statusCode: 404 })
+  if (!request) throw new AppError('Demande introuvable', 404)
   if (request.status !== 'pending') {
-    throw Object.assign(new Error('Cette demande a déjà été traitée'), { statusCode: 409 })
+    throw new AppError('Cette demande a déjà été traitée', 409)
   }
 
   const status = approved ? 'approved' : 'rejected'
@@ -127,17 +167,12 @@ export async function resolveMoveRequest(
   const game = await gameRepository.findGameById(request.gameId)
   if (!game) return
 
-  const hasWon = updatedPawn.currentFloor >= game.floorCount
-  if (hasWon) {
-    await gameRepository.updateGameStatus(request.gameId, 'finished', request.userId)
+  const hasReachedTop = updatedPawn.currentFloor >= game.floorCount
+  if (hasReachedTop) {
+    await gameRepository.updateGameStatus(request.gameId, 'paused', request.userId)
     eventBus.publishEvent({
-      type: 'game.finished',
-      payload: {
-        gameId: game.id,
-        winnerId: request.userId,
-        winnerName: request.user.name,
-        winnerColor: request.user.color,
-      },
+      type: 'game.status.changed',
+      payload: { gameId: request.gameId, status: 'paused' },
     })
     return
   }

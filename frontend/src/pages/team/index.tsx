@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import { useAllTeamNotes, useOwnTeamNote, useUpdateOwnChallenge, useSaveTeamNote } from '../../features/team/hooks/useTeamNotes'
@@ -107,6 +107,7 @@ function SelectedVendorEditor({ note }: SelectedVendorEditorProps) {
   const [isEditMode, setIsEditMode] = useState(false)
   const [draft, setDraft] = useState<UpsertTeamNotePayload>({})
   const { mutateAsync: saveNote, isPending: isSaving } = useSaveTeamNote()
+  const cardRef = useRef<HTMLDivElement>(null)
 
   function handleStartEdit(): void {
     setDraft({
@@ -119,6 +120,7 @@ function SelectedVendorEditor({ note }: SelectedVendorEditorProps) {
       })),
     })
     setIsEditMode(true)
+    setTimeout(() => cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
   async function handleSave(): Promise<void> {
@@ -135,7 +137,7 @@ function SelectedVendorEditor({ note }: SelectedVendorEditorProps) {
 
   if (isEditMode) {
     return (
-      <div className="bg-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div ref={cardRef} className="bg-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.05)] overflow-hidden">
         <TeamNoteEditForm
           draft={draft}
           userColor={note.userColor}
@@ -150,7 +152,7 @@ function SelectedVendorEditor({ note }: SelectedVendorEditorProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.05)] px-4 py-4 flex flex-col gap-4">
+    <div ref={cardRef} className="bg-white rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.05)] px-4 py-4 flex flex-col gap-4">
 
       {/* Zone partagée */}
       <div>

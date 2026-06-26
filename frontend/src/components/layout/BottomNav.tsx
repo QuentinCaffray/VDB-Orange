@@ -1,12 +1,15 @@
 import { NavLink } from 'react-router-dom'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import { useActiveGame } from '../../features/game/hooks/useGame'
+import { useAuthContext } from '../../context/AuthContext'
 
 export default function BottomNav() {
+  const { currentUser } = useAuthContext()
   const { data: allTasks = [] } = useTasks()
   const { data: activeGame } = useActiveGame()
   const todoCount = allTasks.filter((task) => task.status === 'todo').length
-  const hasActiveGame = activeGame !== null && activeGame !== undefined
+  const isAdmin = currentUser?.role === 'admin'
+  const hasActiveGame = activeGame?.status === 'active' || activeGame?.status === 'paused'
 
   return (
     <nav
@@ -22,7 +25,7 @@ export default function BottomNav() {
         <BottomNavTab to="/tasks" label="Tâches" icon={TasksIcon} badge={todoCount} />
         <BottomNavTab to="/objectives" label="Objectif" icon={ObjectivesIcon} />
         <BottomNavTab to="/team" label="Suivi" icon={TeamIcon} />
-        {hasActiveGame && (
+        {(isAdmin || hasActiveGame) && (
           <BottomNavTab to="/game" label="Jeu" icon={GameIcon} />
         )}
         <BottomNavTab to="/profile" label="Profil" icon={ProfileIcon} />

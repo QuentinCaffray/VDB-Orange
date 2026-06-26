@@ -131,17 +131,17 @@ export default function MonthlyProgress({
                 </div>
 
                 {/* Valeur actuelle / objectif */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: currentUserColor ?? '#57C77E' }}
-                  >
-                    {entry.totalSales}
-                  </span>
-
-                  {isEditMode ? (
+                {isEditMode ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: currentUserColor ?? '#57C77E' }}
+                      aria-hidden="true"
+                    >
+                      {entry.totalSales}
+                    </span>
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-text-tertiary font-semibold">/</span>
+                      <span className="text-xs text-text-tertiary font-semibold" aria-hidden="true">/</span>
                       <input
                         type="number"
                         min={0}
@@ -160,16 +160,34 @@ export default function MonthlyProgress({
                         placeholder="—"
                         className="w-14 text-sm font-bold text-center rounded-xl px-2 py-1 outline-none border-2 border-brand"
                         style={{ color: '#FF7900' }}
+                        aria-label={`Objectif ${entry.indicatorName}`}
                       />
                     </div>
-                  ) : (
-                    displayTarget !== null && (
-                      <span className="text-sm text-text-tertiary font-semibold">
+                  </div>
+                ) : (
+                  <span
+                    className="flex items-center gap-2 shrink-0"
+                    role="text"
+                    aria-label={
+                      displayTarget !== null
+                        ? `${entry.totalSales} sur ${displayTarget}`
+                        : String(entry.totalSales)
+                    }
+                  >
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: currentUserColor ?? '#57C77E' }}
+                      aria-hidden="true"
+                    >
+                      {entry.totalSales}
+                    </span>
+                    {displayTarget !== null && (
+                      <span className="text-sm text-text-tertiary font-semibold" aria-hidden="true">
                         / {displayTarget}
                       </span>
-                    )
-                  )}
-                </div>
+                    )}
+                  </span>
+                )}
               </div>
 
               {/* Barre de progression */}

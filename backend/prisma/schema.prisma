@@ -141,7 +141,8 @@ model TeamNote {
 model Game {
   id         String     @id @default(cuid())
   floorCount Int
-  reward     String
+  objective  String     // Ce qu'il faut accomplir pour avancer d'un étage
+  reward     String     // Récompense du gagnant
   status     GameStatus @default(active)
   winnerId   String?
   createdAt  DateTime   @default(now())

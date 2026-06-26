@@ -14,7 +14,7 @@ export default function Sidebar() {
   const { data: activeGame } = useActiveGame()
   const isAdmin = currentUser?.role === 'admin'
   const todoCount = allTasks.filter((task) => task.status === 'todo').length
-  const hasActiveGame = activeGame !== null && activeGame !== undefined
+  const hasActiveGame = activeGame?.status === 'active' || activeGame?.status === 'paused'
 
   return (
     // hidden sur mobile, affiché en flex colonne sur desktop
@@ -72,7 +72,7 @@ export default function Sidebar() {
         <SidebarNavItem to="/tasks" label="Tâches" icon={SidebarTasksIcon} badge={todoCount} />
         <SidebarNavItem to="/objectives" label="Objectif" icon={SidebarObjectivesIcon} />
         <SidebarNavItem to="/team" label="Suivi équipe" icon={SidebarTeamIcon} />
-        {hasActiveGame && (
+        {(isAdmin || hasActiveGame) && (
           <SidebarNavItem to="/game" label="Gratte-ciel" icon={SidebarGameIcon} />
         )}
         <SidebarNavItem to="/profile" label="Mon profil" icon={SidebarProfileIcon} />

@@ -25,6 +25,14 @@ export async function resumeGame(gameId: string): Promise<void> {
   await api.patch(`/game/${gameId}/resume`)
 }
 
+export async function finishGame(gameId: string): Promise<void> {
+  await api.patch(`/game/${gameId}/finish`)
+}
+
+export async function adminAdvancePawn(gameId: string): Promise<void> {
+  await api.post(`/game/${gameId}/admin-advance`)
+}
+
 export async function resetGame(gameId: string): Promise<void> {
   await api.patch(`/game/${gameId}/reset`)
 }

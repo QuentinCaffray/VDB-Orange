@@ -9,6 +9,7 @@ export interface GamePawnWithUser {
 export interface ActiveGameResponse {
   id: string
   floorCount: number
+  objective: string
   reward: string
   status: 'active' | 'paused' | 'finished'
   winnerId: string | null
@@ -30,6 +31,7 @@ export interface MoveRequestWithUser {
 
 export interface CreateGameInput {
   floorCount: number
+  objective: string
   reward: string
 }
 

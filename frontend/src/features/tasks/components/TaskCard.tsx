@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Task } from '../../../types/task.types'
 import { UserRole } from '../../../types/auth.types'
 import { useTakeTask, useCompleteTask, useReleaseTask, useDeleteTask } from '../hooks/useTasks'
@@ -13,11 +14,17 @@ export default function TaskCard({ task, currentUserId, currentUserRole }: TaskC
   const { mutate: completeTask, isPending: isCompleting } = useCompleteTask()
   const { mutate: releaseTask, isPending: isReleasing } = useReleaseTask()
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask()
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const isAdmin = currentUserRole === 'admin'
   const isAssignedToCurrentUser = task.assignee?.id === currentUserId
   const canActOnDoingTask = task.status === 'doing' && (isAssignedToCurrentUser || isAdmin)
   const showDueDate = task.dueDate !== null && task.status !== 'done'
+
+  function handleConfirmDelete(): void {
+    deleteTask(task.id)
+    setConfirmingDelete(false)
+  }
 
   return (
     <div className={`bg-white rounded-2xl p-4 shadow-[0_4px_14px_rgba(0,0,0,0.05)] flex flex-col gap-3 ${task.status === 'done' ? 'opacity-75' : ''}`}>
@@ -28,14 +35,33 @@ export default function TaskCard({ task, currentUserId, currentUserRole }: TaskC
           {task.title}
         </p>
         {isAdmin && task.status !== 'done' && (
-          <button
-            onClick={() => deleteTask(task.id)}
-            disabled={isDeleting}
-            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-text-tertiary hover:bg-[#FDF2F2] hover:text-danger transition-colors disabled:opacity-40"
-            aria-label="Supprimer la tâche"
-          >
-            <TrashIcon />
-          </button>
+          confirmingDelete ? (
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="text-[11px] font-bold px-2 py-1 rounded-lg text-white bg-danger disabled:opacity-40"
+                aria-label="Confirmer la suppression"
+              >
+                Suppr. ?
+              </button>
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                className="w-6 h-6 flex items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary transition-colors"
+                aria-label="Annuler la suppression"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-text-tertiary hover:bg-[#FDF2F2] hover:text-danger transition-colors"
+              aria-label="Supprimer la tâche"
+            >
+              <TrashIcon />
+            </button>
+          )
         )}
       </div>
 

@@ -21,8 +21,8 @@ export async function createGameHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { floorCount, reward } = request.body
-    const game = await gameService.createGame(floorCount, reward)
+    const { floorCount, objective, reward } = request.body
+    const game = await gameService.createGame(floorCount, objective, reward)
     response.status(201).json(game)
   } catch (error) {
     next(error)
@@ -62,6 +62,34 @@ export async function resetGameHandler(
 ): Promise<void> {
   try {
     await gameService.resetGame(request.params.id)
+    response.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function adminAdvancePawnHandler(
+  request: Request<{ id: string }>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const gameId = request.params.id
+    const adminUserId = request.authenticatedUser!.userId
+    await gameService.adminAdvancePawn(gameId, adminUserId)
+    response.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function finishGameHandler(
+  request: Request<{ id: string }>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    await gameService.updateGameStatus(request.params.id, 'finished')
     response.status(204).send()
   } catch (error) {
     next(error)
