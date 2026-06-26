@@ -1,4 +1,5 @@
 import argon2 from 'argon2'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { findUserByCuid, findUserById, updateUserPassword, updateLastLoginAt } from '../repositories/user.repository'
 import { AuthenticatedUser, JwtPayload } from '../types/auth.types'
@@ -15,6 +16,15 @@ interface AuthTokens {
 interface LoginResult {
   tokens: AuthTokens
   user: AuthenticatedUser
+}
+
+// Pendant la migration bcrypt → argon2 : détecte le format du hash et utilise la lib appropriée
+async function verifyPassword(storedHash: string, plainPassword: string): Promise<boolean> {
+  const isBcryptHash = storedHash.startsWith('$2b$') || storedHash.startsWith('$2a$')
+  if (isBcryptHash) {
+    return bcrypt.compare(plainPassword, storedHash)
+  }
+  return argon2.verify(storedHash, plainPassword)
 }
 
 function generateTokens(userId: string, role: AuthenticatedUser['role']): AuthTokens {
@@ -43,9 +53,17 @@ export async function login(cuid: string, password: string): Promise<LoginResult
     throw INVALID_CREDENTIALS_ERROR
   }
 
-  const isPasswordCorrect = await argon2.verify(user.password, password)
+  const isPasswordCorrect = await verifyPassword(user.password, password)
   if (!isPasswordCorrect) {
     throw INVALID_CREDENTIALS_ERROR
+  }
+
+  // Migration transparente : si le hash est en bcrypt, le remplacer par argon2 en tâche de fond
+  const isBcryptHash = user.password.startsWith('$2b$') || user.password.startsWith('$2a$')
+  if (isBcryptHash) {
+    argon2.hash(password)
+      .then((newHash) => updateUserPassword(user.id, newHash))
+      .catch(() => undefined)
   }
 
   const tokens = generateTokens(user.id, user.role)
@@ -76,7 +94,7 @@ export async function changePassword(
     throw new AppError('Utilisateur introuvable', 404)
   }
 
-  const isOldPasswordCorrect = await argon2.verify(user.password, oldPassword)
+  const isOldPasswordCorrect = await verifyPassword(user.password, oldPassword)
   if (!isOldPasswordCorrect) {
     throw new AppError('Mot de passe actuel incorrect', 400)
   }
