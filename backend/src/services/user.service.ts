@@ -1,12 +1,10 @@
-import bcrypt from 'bcryptjs'
+import argon2 from 'argon2'
 import {
   createVendor,
   updateUserProfile,
   adminResetUserPassword,
 } from '../repositories/user.repository'
 import { UserSummary } from '../types/user.types'
-
-const BCRYPT_SALT_ROUNDS = 10
 
 export interface CreateVendorInput {
   name: string
@@ -21,7 +19,7 @@ export interface UpdateUserProfileInput {
 }
 
 export async function adminCreateVendor(input: CreateVendorInput): Promise<UserSummary> {
-  const hashedPassword = await bcrypt.hash(input.password, BCRYPT_SALT_ROUNDS)
+  const hashedPassword = await argon2.hash(input.password)
   return createVendor({
     name: input.name,
     cuid: input.cuid,
@@ -38,6 +36,6 @@ export async function adminUpdateUserProfile(
 }
 
 export async function adminResetPassword(userId: string, newPassword: string): Promise<void> {
-  const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
+  const hashedPassword = await argon2.hash(newPassword)
   await adminResetUserPassword(userId, hashedPassword)
 }

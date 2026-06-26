@@ -1,4 +1,5 @@
 import express from 'express'
+import helmet from 'helmet'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import authRouter from './routes/auth.routes'
@@ -20,7 +21,8 @@ const PORT = process.env.PORT ?? 3001
 // SSE requiert un timeout long — désactiver le timeout par défaut d'Express
 app.set('timeout', 0)
 
-app.use(cors({ origin: process.env.CLIENT_URL ?? 'http://localhost:5173' }))
+app.use(helmet())
+app.use(cors({ origin: process.env.CLIENT_URL ?? 'http://localhost:5173', credentials: true }))
 app.use(express.json())
 
 // ─── Routes ────────────────────────────────────────────────────────────────────

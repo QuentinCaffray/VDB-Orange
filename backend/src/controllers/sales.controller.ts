@@ -105,8 +105,15 @@ export async function getMonthlyProgressHandler(
 ): Promise<void> {
   try {
     const { userId, month, year } = request.query
+    const requester = request.authenticatedUser!
+    const requestedUserId = userId as string | undefined
 
-    const targetUserId = (userId as string) ?? request.authenticatedUser!.userId
+    if (requestedUserId && requestedUserId !== requester.userId && requester.role !== 'admin') {
+      response.status(403).json({ error: 'Accès refusé' })
+      return
+    }
+
+    const targetUserId = requestedUserId ?? requester.userId
     const targetMonth = parseInt(month as string) || new Date().getMonth() + 1
     const targetYear = parseInt(year as string) || new Date().getFullYear()
 

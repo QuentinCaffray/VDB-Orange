@@ -1,10 +1,9 @@
-import bcrypt from 'bcryptjs'
+import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import { findUserByCuid, findUserById, updateUserPassword, updateLastLoginAt } from '../repositories/user.repository'
 import { AuthenticatedUser, JwtPayload } from '../types/auth.types'
 import { AppError } from '../types/error.types'
 
-const BCRYPT_SALT_ROUNDS = 10
 const ACCESS_TOKEN_EXPIRY = '1h'
 const REFRESH_TOKEN_EXPIRY = '7d'
 
@@ -44,7 +43,7 @@ export async function login(cuid: string, password: string): Promise<LoginResult
     throw INVALID_CREDENTIALS_ERROR
   }
 
-  const isPasswordCorrect = await bcrypt.compare(password, user.password)
+  const isPasswordCorrect = await argon2.verify(user.password, password)
   if (!isPasswordCorrect) {
     throw INVALID_CREDENTIALS_ERROR
   }
@@ -77,12 +76,12 @@ export async function changePassword(
     throw new AppError('Utilisateur introuvable', 404)
   }
 
-  const isOldPasswordCorrect = await bcrypt.compare(oldPassword, user.password)
+  const isOldPasswordCorrect = await argon2.verify(user.password, oldPassword)
   if (!isOldPasswordCorrect) {
     throw new AppError('Mot de passe actuel incorrect', 400)
   }
 
-  const hashedNewPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
+  const hashedNewPassword = await argon2.hash(newPassword)
   await updateUserPassword(userId, hashedNewPassword)
 }
 
@@ -100,7 +99,7 @@ export async function activateAccount(
     throw new AppError('Ce compte est déjà activé', 400)
   }
 
-  const hashedNewPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
+  const hashedNewPassword = await argon2.hash(newPassword)
   const updatedUser = await updateUserPassword(user.id, hashedNewPassword)
 
   const tokens = generateTokens(updatedUser.id, updatedUser.role)

@@ -1,7 +1,5 @@
-import bcrypt from 'bcryptjs'
+import argon2 from 'argon2'
 import { prisma } from './prisma'
-
-const BCRYPT_SALT_ROUNDS = 10
 
 // Crée ou met à jour le compte admin de développement au démarrage du serveur.
 // Nécessite DEV_ADMIN_CUID et DEV_ADMIN_PASSWORD dans les variables d'environnement.
@@ -12,7 +10,7 @@ export async function ensureDevAdminExists(): Promise<void> {
 
   if (!devCuid || !devPassword) return
 
-  const hashedPassword = await bcrypt.hash(devPassword, BCRYPT_SALT_ROUNDS)
+  const hashedPassword = await argon2.hash(devPassword)
 
   await prisma.user.upsert({
     where: { cuid: devCuid },
