@@ -32,9 +32,14 @@ export const changePasswordSchema = z
     { message: 'Les mots de passe ne correspondent pas', path: ['confirmPassword'] },
   )
 
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token requis'),
+})
+
 export type LoginInput = z.infer<typeof loginSchema>
 export type ActivateAccountInput = z.infer<typeof activateAccountSchema>
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>
 
 // ─── Types de l'utilisateur authentifié ──────────────────────────────────────
 

@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { rateLimit } from 'express-rate-limit'
-import { loginHandler, activateAccountHandler, changePasswordHandler } from '../controllers/auth.controller'
+import { loginHandler, activateAccountHandler, changePasswordHandler, refreshTokenHandler } from '../controllers/auth.controller'
 import { requireAuth } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
-import { loginSchema, activateAccountSchema, changePasswordSchema } from '../types/auth.types'
+import { loginSchema, activateAccountSchema, changePasswordSchema, refreshTokenSchema } from '../types/auth.types'
 
 const authRouter = Router()
 
@@ -17,6 +17,9 @@ const loginRateLimiter = rateLimit({
 
 // POST /auth/login — connexion avec CUID + mot de passe
 authRouter.post('/login', loginRateLimiter, validateBody(loginSchema), loginHandler)
+
+// POST /auth/refresh — échange un refresh token valide contre un nouvel access token
+authRouter.post('/refresh', validateBody(refreshTokenSchema), refreshTokenHandler)
 
 // POST /auth/activate — définition du mot de passe définitif (première connexion)
 authRouter.post('/activate', requireAuth, validateBody(activateAccountSchema), activateAccountHandler)

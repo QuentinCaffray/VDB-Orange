@@ -83,6 +83,28 @@ export async function login(cuid: string, password: string): Promise<LoginResult
   return { tokens, user: authenticatedUser }
 }
 
+export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string }> {
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { userId: string }
+    const user = await findUserById(decoded.userId)
+
+    if (!user) {
+      throw new AppError('Utilisateur introuvable', 401)
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user.id, role: user.role } as JwtPayload,
+      process.env.JWT_SECRET!,
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
+    )
+
+    return { accessToken }
+  } catch (error) {
+    if (error instanceof AppError) throw error
+    throw new AppError('Refresh token invalide ou expiré', 401)
+  }
+}
+
 export async function changePassword(
   userId: string,
   oldPassword: string,
