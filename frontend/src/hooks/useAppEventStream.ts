@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Task } from '../types/task.types'
 import { DailySaleEntry } from '../types/sales.types'
+import { ACTIVE_GAME_QUERY_KEY } from '../features/game/hooks/useGame'
 
 type AppEvent =
   | { type: 'task.created'; task: Task }
@@ -12,6 +13,12 @@ type AppEvent =
   | { type: 'sale.updated'; sale: DailySaleEntry }
   | { type: 'sale.monthly.corrected'; userId: string; month: number; year: number }
   | { type: 'monthly.target.updated'; userId: string; month: number; year: number }
+  | { type: 'game.started'; payload: unknown }
+  | { type: 'game.status.changed'; payload: unknown }
+  | { type: 'game.reset'; payload: unknown }
+  | { type: 'game.pawn.moved'; payload: unknown }
+  | { type: 'game.finished'; payload: unknown }
+  | { type: 'game.move_request.created'; payload: unknown }
 
 const TASKS_QUERY_KEY = ['tasks']
 
@@ -74,6 +81,23 @@ function dispatchAppEvent(
 
   if (event.type === 'sale.monthly.corrected' || event.type === 'monthly.target.updated') {
     queryClient.invalidateQueries({ queryKey: ['sales', 'monthly'] })
+    return
+  }
+
+  if (
+    event.type === 'game.started' ||
+    event.type === 'game.status.changed' ||
+    event.type === 'game.reset' ||
+    event.type === 'game.pawn.moved' ||
+    event.type === 'game.finished'
+  ) {
+    queryClient.invalidateQueries({ queryKey: ACTIVE_GAME_QUERY_KEY })
+    return
+  }
+
+  if (event.type === 'game.move_request.created') {
+    queryClient.invalidateQueries({ queryKey: ACTIVE_GAME_QUERY_KEY })
+    queryClient.invalidateQueries({ queryKey: ['game', 'move-requests'] })
   }
 }
 

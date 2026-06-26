@@ -4,6 +4,7 @@ import { useAuthContext } from '../../context/AuthContext'
 import { useAllTeamNotes, useOwnTeamNote, useUpdateOwnChallenge, useSaveTeamNote } from '../../features/team/hooks/useTeamNotes'
 import { TeamNoteWithUser, TeamChallengeEntry, TeamChallengeInput, UpsertTeamNotePayload } from '../../types/team-note.types'
 import { VendorSelector, VendorOption } from '../../components/ui/VendorSelector'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 function parseProgressNumber(value: string): number {
   return parseFloat(value.replace('%', '').trim()) || 0
@@ -57,7 +58,14 @@ function AdminTeamView() {
       </div>
 
       <div className="px-5 py-4 pb-24 flex flex-col gap-4">
-        {vendorOptions.length > 0 && (
+        {isLoading && (
+          <>
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-[200px] w-full" />
+          </>
+        )}
+
+        {!isLoading && vendorOptions.length > 0 && (
           <VendorSelector
             vendors={vendorOptions}
             selectedId={selectedUserId}
@@ -473,7 +481,12 @@ function VendorSelfView() {
           </div>
         </div>
 
-        {isLoading && <p className="text-sm text-text-tertiary text-center py-4">Chargement…</p>}
+        {isLoading && (
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-[100px] w-full" />
+            <Skeleton className="h-[160px] w-full" />
+          </div>
+        )}
 
         {ownNote && (
           <>

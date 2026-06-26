@@ -7,8 +7,10 @@ import indicatorRouter from './routes/indicator.routes'
 import salesRouter from './routes/sales.routes'
 import userRouter from './routes/user.routes'
 import teamNoteRouter from './routes/team-note.routes'
+import gameRouter from './routes/game.routes'
 import sseRouter from './routes/sse.routes'
 import { globalErrorHandler } from './middlewares/error.middleware'
+import { ensureDevAdminExists } from './lib/ensure-dev-admin'
 
 dotenv.config()
 
@@ -28,6 +30,7 @@ app.use('/api/indicators', indicatorRouter)
 app.use('/api/sales', salesRouter)
 app.use('/api/users', userRouter)
 app.use('/api/team-notes', teamNoteRouter)
+app.use('/api/game', gameRouter)
 app.use('/api/events', sseRouter)
 
 // ─── Santé ─────────────────────────────────────────────────────────────────────
@@ -38,8 +41,9 @@ app.get('/health', (_request, response) => {
 // ─── Gestion des erreurs (doit être enregistré en dernier) ────────────────────
 app.use(globalErrorHandler)
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on http://localhost:${PORT}`)
+  await ensureDevAdminExists()
 })
 
 export default app

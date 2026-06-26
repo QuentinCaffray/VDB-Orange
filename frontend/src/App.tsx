@@ -16,6 +16,7 @@ import ProfilePage from './pages/profile'
 import AdminManageIndicatorsPage from './pages/admin/indicators'
 import AdminUsersPage from './pages/admin/users'
 import ChangePasswordPage from './pages/profile/change-password'
+import GamePage from './pages/game'
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/profile/change-password" element={<ChangePasswordPage />} />
+              <Route path="/game" element={<GamePage />} />
             </Route>
           </Route>
         </Routes>

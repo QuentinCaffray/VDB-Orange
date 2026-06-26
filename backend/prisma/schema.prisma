@@ -12,6 +12,18 @@ enum Role {
   admin
 }
 
+enum GameStatus {
+  active
+  paused
+  finished
+}
+
+enum MoveRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 enum TaskStatus {
   todo
   doing
@@ -31,6 +43,7 @@ model User {
   role         Role      @default(vendeur)
   color        String    // Hex assigné par un admin
   isFirstLogin Boolean   @default(true)
+  isHidden     Boolean   @default(false)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -40,6 +53,9 @@ model User {
   dailySales     DailySale[]
   monthlyTargets MonthlyTarget[]
   teamNote       TeamNote?
+  gamePawns      GamePawn[]
+  moveRequests   MoveRequest[]
+  gameWins       Game[]          @relation("GameWinner")
 
   @@map("users")
 }
@@ -120,6 +136,53 @@ model TeamNote {
   challenges TeamChallenge[]
 
   @@map("team_notes")
+}
+
+model Game {
+  id         String     @id @default(cuid())
+  floorCount Int
+  reward     String
+  status     GameStatus @default(active)
+  winnerId   String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  pawns        GamePawn[]
+  moveRequests MoveRequest[]
+  winner       User?         @relation("GameWinner", fields: [winnerId], references: [id])
+
+  @@map("games")
+}
+
+model GamePawn {
+  id           String   @id @default(cuid())
+  gameId       String
+  userId       String
+  currentFloor Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([gameId, userId])
+  @@map("game_pawns")
+}
+
+model MoveRequest {
+  id        String            @id @default(cuid())
+  gameId    String
+  userId    String
+  reason    String
+  status    MoveRequestStatus @default(pending)
+  adminNote String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("move_requests")
 }
 
 model TeamChallenge {

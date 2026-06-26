@@ -1,4 +1,4 @@
-# The Crew — Product Requirements Document · v2.0
+# The Crew — Product Requirements Document · v2.1
 
 Application interne de gestion d'équipe — Boutique Orange · Mobile-first (+ desktop) · Juin 2026
 
@@ -34,7 +34,7 @@ Une boutique Orange compte une dizaine de vendeurs, encadrés par une directrice
 
 | Rôle | Qui | Permissions |
 |---|---|---|
-| **Vendeur** | ~8 personnes | Créer / prendre / terminer des tâches · pointer ses ventes (jour) · consulter sa progression du mois (lecture seule) · voir ses notes de coaching et le challenge · changer son mot de passe. L'onglet Suivi lui est masqué. |
+| **Vendeur** | ~8 personnes | Créer / prendre / terminer des tâches · pointer ses ventes (jour) · consulter et corriger sa progression du mois · voir ses notes de coaching et le challenge · changer son mot de passe. L'onglet « Suivi » affiche une vue personnelle « Mon suivi » (ses propres notes partagées et challenges) — pas la vue de l'équipe. |
 | **Admin** | Directrice + adjointe | Tout le périmètre vendeur + créer / éditer les comptes · définir les couleurs des vendeurs · fixer les objectifs et la liste des indicateurs · rédiger les notes (publiques et privées) · consulter la fiche de n'importe quel vendeur. |
 
 ---
@@ -62,7 +62,7 @@ Point d'entrée de l'application. Affiche un résumé personnalisé selon le rô
 
 **Vue admin**
 - Même structure que le vendeur pour les sections personnelles.
-- `⚠️ À revoir` — voir section Recommandations.
+- **Classement du mois** — Leaderboard par indicateur : classement des vendeurs (🥇🥈🥉) avec total équipe, barre proportionnelle à la couleur du vendeur. Navigation mois par mois.
 
 ### 5.2 — Tâches « boutique » (Kanban)
 
@@ -96,10 +96,10 @@ Indicateurs suivis : **HD** (internet), **ABO** (forfaits), **Terminaux**, **Cha
 ### 5.5 — Objectifs — onglet « Mois »
 
 **Vue vendeur**
-Barres de progression par indicateur vers la cible fixée (ex. `12 / 15`). Indicateur **Validé** (vert ✓) lorsque la valeur atteint la cible. Rythme journalier conseillé affiché si en retard. Correction du total mensuel possible (bouton « Corriger »). Saisie directe pour les indicateurs de type mensuel.
+Barres de progression par indicateur vers la cible fixée (ex. `12 / 15`). Indicateur **Validé** (vert ✓) lorsque la valeur atteint la cible. Rythme journalier conseillé affiché si en retard (ex. « +2/jour pour atteindre l'objectif »). Correction du total mensuel possible (bouton « Corriger »). Saisie directe pour les indicateurs de type mensuel.
 
 **Vue admin**
-Sélecteur de vendeur. Bouton « Modifier les objectifs » pour éditer les cibles. Barre d'actions flottante avec Annuler / Enregistrer. **Temps réel** : les corrections et changements d'objectif se propagent sur tous les clients.
+Sélecteur de vendeur. Bouton « Modifier les objectifs » pour éditer les cibles (uniquement sur le mois en cours). Navigation entre les mois passés en lecture seule. Barre d'actions flottante avec Annuler / Enregistrer. **Temps réel** : les corrections et changements d'objectif se propagent sur tous les clients.
 
 ### 5.6 — Suivi équipe `admin`
 
@@ -223,15 +223,12 @@ Une couleur unique par vendeur, utilisée partout (avatars, jauges, compteurs). 
 
 ### Priorité haute
 
-- **Classement mensuel** — Leaderboard par indicateur, par mois. Vue ludique et motivante. Candidat direct pour remplacer la carte « Boutique aujourd'hui » dans le dashboard admin.
-- **Dashboard admin repensé** — Voir recommandations ci-dessous.
 - **Tâches récurrentes** — Templates de tâches qui se recréent automatiquement (ouverture, fermeture boutique). Déclenché par cron ou manuellement par un admin.
 
 ### Priorité moyenne
 
-- **Historique des objectifs** — Consulter la performance de n'importe quel mois passé. Actuellement l'onglet Mois est figé sur le mois en cours.
 - **Export PDF** — Fiche mensuelle d'un vendeur pour les entretiens individuels.
-- **Notifications in-app** — Badge sur l'onglet Tâches si de nouvelles tâches sont disponibles, alerte si un vendeur est très en retard sur ses objectifs.
+- **Alertes retard objectifs** — Notification ou indicateur visuel si un vendeur est très en retard sur ses objectifs en fin de mois.
 
 ### Priorité basse / expérimental
 

@@ -4,6 +4,7 @@ import { useAuthContext } from '../../context/AuthContext'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import TaskCard from '../../features/tasks/components/TaskCard'
 import CreateTaskSheet from '../../features/tasks/components/CreateTaskSheet'
+import { Skeleton } from '../../components/ui/Skeleton'
 import { TaskStatus, Task, TaskAssignee } from '../../types/task.types'
 import { getLocalDateString } from '../../lib/date'
 
@@ -159,7 +160,11 @@ export default function TasksPage() {
       {/* Liste des tâches */}
       <div className="px-5 py-4 flex flex-col gap-3">
         {isLoading && (
-          <p className="text-sm text-text-tertiary text-center py-8 m-0">Chargement…</p>
+          <>
+            <Skeleton className="h-[88px] w-full" />
+            <Skeleton className="h-[88px] w-full" />
+            <Skeleton className="h-[88px] w-full" />
+          </>
         )}
 
         {!isLoading && visibleTasks.length === 0 && (

@@ -10,7 +10,7 @@ function parseDateString(dateString: string): Date {
 
 export async function findDailySalesByDate(date: Date) {
   return prisma.dailySale.findMany({
-    where: { date, isCorrection: false },
+    where: { date, isCorrection: false, user: { isHidden: false } },
     include: { user: { select: USER_SELECT } },
     orderBy: [{ indicatorId: 'asc' }, { userId: 'asc' }],
   })
@@ -61,7 +61,7 @@ export async function findMonthlyTargetsByUser(userId: string, month: number, ye
 
 export async function findAllVendorIds(): Promise<string[]> {
   const vendors = await prisma.user.findMany({
-    where: { role: 'vendeur' },
+    where: { role: 'vendeur', isHidden: false },
     select: { id: true },
   })
   return vendors.map((vendor) => vendor.id)
@@ -150,7 +150,7 @@ export async function findMonthlySalesPerUserAndIndicator(month: number, year: n
 
   return prisma.dailySale.groupBy({
     by: ['userId', 'indicatorId'],
-    where: { date: { gte: startOfMonth, lt: startOfNextMonth } },
+    where: { date: { gte: startOfMonth, lt: startOfNextMonth }, user: { isHidden: false } },
     _sum: { count: true },
   })
 }

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { Indicator, DailySaleEntry } from '../../../types/sales.types'
 import {
   fetchIndicators,
@@ -130,11 +130,13 @@ export function useTeamMonthlyProgress(month: number, year: number) {
   })
 }
 
-export function useTeamMonthlyBreakdown(month: number, year: number) {
+export function useTeamMonthlyBreakdown(month: number, year: number, enabled = true) {
   return useQuery({
     queryKey: ['sales', 'monthly', 'team-breakdown', month, year],
     queryFn: () => fetchTeamMonthlyBreakdown(month, year),
     staleTime: 0,
+    placeholderData: keepPreviousData,
+    enabled,
   })
 }
 

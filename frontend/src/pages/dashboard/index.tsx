@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import {
@@ -8,6 +9,7 @@ import {
 } from '../../features/sales/hooks/useSales'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import { useCurrentDate } from '../../hooks/useCurrentDate'
+import { Skeleton } from '../../components/ui/Skeleton'
 import { Indicator, MonthlyProgressEntry, IndicatorTeamBreakdown, VendorIndicatorProgress } from '../../types/sales.types'
 
 function formatTodayLong(): string {
@@ -257,27 +259,107 @@ interface MonthlyLeaderboardProps {
   breakdown: IndicatorTeamBreakdown[]
   month: number
   year: number
+  isViewingCurrentMonth: boolean
+  onPreviousMonth: () => void
+  onNextMonth: () => void
 }
 
-function MonthlyLeaderboard({ breakdown, month, year }: MonthlyLeaderboardProps) {
-  if (breakdown.length === 0) {
-    return (
-      <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
-        Aucun indicateur actif ce mois.
-      </p>
-    )
-  }
-
+function MonthlyLeaderboard({ breakdown, month, year, isViewingCurrentMonth, onPreviousMonth, onNextMonth }: MonthlyLeaderboardProps) {
   return (
     <div>
-      <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
-        {formatMonthLabel(month, year)}
-      </p>
-      <div className="flex flex-col gap-3">
-        {breakdown.map((indicator) => (
-          <IndicatorLeaderboardCard key={indicator.indicatorId} indicator={indicator} />
-        ))}
+      <div className="flex items-center gap-2 mb-3">
+        <button
+          onClick={onPreviousMonth}
+          className="w-7 h-7 flex items-center justify-center rounded-full"
+          style={{ background: 'var(--color-surface)' }}
+          aria-label="Mois précédent"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <span className="text-xs font-bold min-w-[120px] text-center" style={{ color: 'var(--color-text-tertiary)' }}>
+          {formatMonthLabel(month, year)}
+        </span>
+        <button
+          onClick={onNextMonth}
+          disabled={isViewingCurrentMonth}
+          className="w-7 h-7 flex items-center justify-center rounded-full disabled:opacity-30"
+          style={{ background: 'var(--color-surface)' }}
+          aria-label="Mois suivant"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
+
+      {breakdown.length === 0 ? (
+        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+          Aucun indicateur actif ce mois.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {breakdown.map((indicator) => (
+            <IndicatorLeaderboardCard key={indicator.indicatorId} indicator={indicator} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Skeletons de chargement ───────────────────────────────────────────────────
+
+function DashboardChipsSkeleton() {
+  return (
+    <div className="flex gap-3">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-[68px] w-[100px] shrink-0" />
+      ))}
+    </div>
+  )
+}
+
+function DashboardProgressSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-10" />
+          </div>
+          <Skeleton className="h-2 w-full" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function DashboardLeaderboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="rounded-2xl overflow-hidden"
+          style={{ background: 'var(--color-card)', boxShadow: '0 4px 14px rgba(0,0,0,0.05)' }}
+        >
+          <div
+            className="flex justify-between items-center px-4 py-3 border-b"
+            style={{ borderColor: 'var(--color-border-soft)' }}
+          >
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-14" />
+          </div>
+          <div className="flex flex-col px-4 py-2 gap-3">
+            {[1, 2, 3].map((j) => (
+              <Skeleton key={j} className="h-8 w-full" />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -287,21 +369,46 @@ function MonthlyLeaderboard({ breakdown, month, year }: MonthlyLeaderboardProps)
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuthContext()
-  const { month, year, dateString: todayString } = useCurrentDate()
+  const { month: currentMonth, year: currentYear, dateString: todayString } = useCurrentDate()
 
   const isAdmin = currentUser?.role === 'admin'
 
-  const { data: dailySales = [] } = useDailySales(todayString)
-  const { data: allTasks = [] } = useTasks()
-  const { data: indicators = [] } = useIndicators()
+  const [viewMonth, setViewMonth] = useState<number>(currentMonth)
+  const [viewYear, setViewYear] = useState<number>(currentYear)
+  const isViewingCurrentMonth = viewMonth === currentMonth && viewYear === currentYear
 
-  const { data: myMonthlyProgress = [] } = useMonthlyProgress(
+  function handlePreviousMonth(): void {
+    if (viewMonth === 1) {
+      setViewMonth(12)
+      setViewYear(viewYear - 1)
+    } else {
+      setViewMonth(viewMonth - 1)
+    }
+  }
+
+  function handleNextMonth(): void {
+    if (isViewingCurrentMonth) return
+    if (viewMonth === 12) {
+      setViewMonth(1)
+      setViewYear(viewYear + 1)
+    } else {
+      setViewMonth(viewMonth + 1)
+    }
+  }
+
+  const { data: dailySales = [], isLoading: isDailySalesLoading } = useDailySales(todayString)
+  const { data: allTasks = [] } = useTasks()
+  const { data: indicators = [], isLoading: isIndicatorsLoading } = useIndicators()
+
+  const { data: myMonthlyProgress = [], isLoading: isMonthlyProgressLoading } = useMonthlyProgress(
     currentUser?.id ?? '',
-    month,
-    year,
+    currentMonth,
+    currentYear,
   )
 
-  const { data: teamBreakdown = [] } = useTeamMonthlyBreakdown(month, year)
+  const { data: teamBreakdown = [], isLoading: isTeamBreakdownLoading } = useTeamMonthlyBreakdown(viewMonth, viewYear, isAdmin)
+
+  const isPersonalSalesLoading = isDailySalesLoading || isIndicatorsLoading
 
   if (!currentUser) return null
 
@@ -341,7 +448,18 @@ export default function DashboardPage() {
           <>
             <section>
               <SectionTitle label="Classement du mois" />
-              <MonthlyLeaderboard breakdown={teamBreakdown} month={month} year={year} />
+              {isTeamBreakdownLoading ? (
+                <DashboardLeaderboardSkeleton />
+              ) : (
+                <MonthlyLeaderboard
+                  breakdown={teamBreakdown}
+                  month={viewMonth}
+                  year={viewYear}
+                  isViewingCurrentMonth={isViewingCurrentMonth}
+                  onPreviousMonth={handlePreviousMonth}
+                  onNextMonth={handleNextMonth}
+                />
+              )}
             </section>
 
             <section>
@@ -355,7 +473,11 @@ export default function DashboardPage() {
 
             <section>
               <SectionTitle label="Mes ventes aujourd'hui" />
-              <PersonalDailySalesCard salesByIndicator={myDailySales} />
+              {isPersonalSalesLoading ? (
+                <DashboardChipsSkeleton />
+              ) : (
+                <PersonalDailySalesCard salesByIndicator={myDailySales} />
+              )}
             </section>
 
             <section>
@@ -364,10 +486,14 @@ export default function DashboardPage() {
                 className="rounded-2xl px-4 py-4"
                 style={{ background: 'var(--color-card)', boxShadow: '0 4px 14px rgba(0,0,0,0.05)' }}
               >
-                <MonthlyProgressBars
-                  entries={myMonthlyProgress}
-                  emptyLabel="Aucun objectif fixé ce mois."
-                />
+                {isMonthlyProgressLoading ? (
+                  <DashboardProgressSkeleton />
+                ) : (
+                  <MonthlyProgressBars
+                    entries={myMonthlyProgress}
+                    emptyLabel="Aucun objectif fixé ce mois."
+                  />
+                )}
               </div>
             </section>
           </>
@@ -376,7 +502,11 @@ export default function DashboardPage() {
           <>
             <section>
               <SectionTitle label="Mes ventes aujourd'hui" />
-              <PersonalDailySalesCard salesByIndicator={myDailySales} />
+              {isPersonalSalesLoading ? (
+                <DashboardChipsSkeleton />
+              ) : (
+                <PersonalDailySalesCard salesByIndicator={myDailySales} />
+              )}
             </section>
 
             <section>
@@ -394,10 +524,14 @@ export default function DashboardPage() {
                 className="rounded-2xl px-4 py-4"
                 style={{ background: 'var(--color-card)', boxShadow: '0 4px 14px rgba(0,0,0,0.05)' }}
               >
-                <MonthlyProgressBars
-                  entries={myMonthlyProgress}
-                  emptyLabel="Aucun objectif fixé ce mois."
-                />
+                {isMonthlyProgressLoading ? (
+                  <DashboardProgressSkeleton />
+                ) : (
+                  <MonthlyProgressBars
+                    entries={myMonthlyProgress}
+                    emptyLabel="Aucun objectif fixé ce mois."
+                  />
+                )}
               </div>
             </section>
           </>

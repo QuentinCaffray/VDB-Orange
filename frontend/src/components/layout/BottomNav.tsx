@@ -1,9 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
+import { useActiveGame } from '../../features/game/hooks/useGame'
 
 export default function BottomNav() {
   const { data: allTasks = [] } = useTasks()
+  const { data: activeGame } = useActiveGame()
   const todoCount = allTasks.filter((task) => task.status === 'todo').length
+  const hasActiveGame = activeGame !== null && activeGame !== undefined
 
   return (
     <nav
@@ -19,6 +22,9 @@ export default function BottomNav() {
         <BottomNavTab to="/tasks" label="Tâches" icon={TasksIcon} badge={todoCount} />
         <BottomNavTab to="/objectives" label="Objectif" icon={ObjectivesIcon} />
         <BottomNavTab to="/team" label="Suivi" icon={TeamIcon} />
+        {hasActiveGame && (
+          <BottomNavTab to="/game" label="Jeu" icon={GameIcon} />
+        )}
         <BottomNavTab to="/profile" label="Profil" icon={ProfileIcon} />
       </div>
     </nav>
@@ -120,6 +126,15 @@ function ProfileIcon(active: boolean) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#B7AEA4'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}
+
+function GameIcon(active: boolean) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#B7AEA4'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
     </svg>
   )
 }

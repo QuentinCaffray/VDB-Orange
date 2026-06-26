@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import { useDarkModeContext } from '../../context/DarkModeContext'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
+import { useActiveGame } from '../../features/game/hooks/useGame'
 import { TeamColorLegend } from '../ui/TeamColorLegend'
 
 const SIDEBAR_WIDTH = 240
@@ -10,8 +11,10 @@ export default function Sidebar() {
   const { currentUser } = useAuthContext()
   const { isDark, toggleDarkMode } = useDarkModeContext()
   const { data: allTasks = [] } = useTasks()
+  const { data: activeGame } = useActiveGame()
   const isAdmin = currentUser?.role === 'admin'
   const todoCount = allTasks.filter((task) => task.status === 'todo').length
+  const hasActiveGame = activeGame !== null && activeGame !== undefined
 
   return (
     // hidden sur mobile, affiché en flex colonne sur desktop
@@ -69,6 +72,9 @@ export default function Sidebar() {
         <SidebarNavItem to="/tasks" label="Tâches" icon={SidebarTasksIcon} badge={todoCount} />
         <SidebarNavItem to="/objectives" label="Objectif" icon={SidebarObjectivesIcon} />
         <SidebarNavItem to="/team" label="Suivi équipe" icon={SidebarTeamIcon} />
+        {hasActiveGame && (
+          <SidebarNavItem to="/game" label="Gratte-ciel" icon={SidebarGameIcon} />
+        )}
         <SidebarNavItem to="/profile" label="Mon profil" icon={SidebarProfileIcon} />
       </nav>
 
@@ -255,6 +261,15 @@ function SidebarProfileIcon(active: boolean) {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  )
+}
+
+function SidebarGameIcon(active: boolean) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#FF7900' : '#9A9088'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
     </svg>
   )
 }

@@ -10,6 +10,7 @@ import {
 import { useAllUsers } from '../../features/users/hooks/useUsers'
 import { useCurrentDate } from '../../hooks/useCurrentDate'
 import { getLocalDateString } from '../../lib/date'
+import { Skeleton } from '../../components/ui/Skeleton'
 import DailyPointing from '../../features/sales/components/DailyPointing'
 import TeamStackedGauges from '../../features/sales/components/TeamStackedGauges'
 import MonthlyProgress from '../../features/sales/components/MonthlyProgress'
@@ -66,6 +67,22 @@ function formatTodayDate(): string {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
+function ObjectivesSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function ObjectivesPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuthContext()
@@ -111,12 +128,12 @@ export default function ObjectivesPage() {
   // Admins et vendeurs participent tous aux ventes — le sélecteur inclut tout le monde
   const resolvedVendorId = selectedVendorId || currentUser?.id || ''
 
-  const { data: indicators = [] } = useIndicators()
+  const { data: indicators = [], isLoading: isIndicatorsLoading } = useIndicators()
   const dailyIndicators = indicators.filter((indicator) => indicator.type === 'daily')
   const monthlyIndicators = indicators.filter((indicator) => indicator.type === 'monthly')
 
-  const { data: dailySales = [] } = useDailySales(selectedDate)
-  const { data: monthlyProgress = [] } = useMonthlyProgress(
+  const { data: dailySales = [], isLoading: isDailySalesLoading } = useDailySales(selectedDate)
+  const { data: monthlyProgress = [], isLoading: isMonthlyProgressLoading } = useMonthlyProgress(
     isAdmin ? resolvedVendorId : (currentUser?.id ?? ''),
     viewMonth,
     viewYear,
@@ -200,38 +217,67 @@ export default function ObjectivesPage() {
           )}
         </div>
 
-        {/* Navigation temporelle — visible uniquement sur l'onglet Jour */}
-        {mainTab === 'day' && (
-          <div className="flex items-center justify-center gap-2 px-5 pb-3">
-            <button
-              onClick={() => setSelectedDate(getPreviousDateString(selectedDate))}
-              disabled={isMoreThanMaxDaysInPast(selectedDate)}
-              className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
-              style={{ background: 'var(--color-surface)' }}
-              aria-label="Jour précédent"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
+        {/* Navigation temporelle — jour ou mois selon l'onglet actif */}
+        <div className="flex items-center justify-center gap-2 px-5 pb-3">
+          {mainTab === 'day' ? (
+            <>
+              <button
+                onClick={() => setSelectedDate(getPreviousDateString(selectedDate))}
+                disabled={isMoreThanMaxDaysInPast(selectedDate)}
+                className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Jour précédent"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
 
-            <span className="text-sm font-bold text-text-primary min-w-[90px] text-center">
-              {formatSelectedDateLabel(selectedDate)}
-            </span>
+              <span className="text-sm font-bold text-text-primary min-w-[90px] text-center">
+                {formatSelectedDateLabel(selectedDate)}
+              </span>
 
-            <button
-              onClick={() => setSelectedDate(getNextDateString(selectedDate))}
-              disabled={isTodaySelected}
-              className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
-              style={{ background: 'var(--color-surface)' }}
-              aria-label="Jour suivant"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
-        )}
+              <button
+                onClick={() => setSelectedDate(getNextDateString(selectedDate))}
+                disabled={isTodaySelected}
+                className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Jour suivant"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handlePreviousMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Mois précédent"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <span className="text-sm font-bold text-text-primary min-w-[140px] text-center">
+                {formatViewMonthLabel(viewMonth, viewYear)}
+              </span>
+              <button
+                onClick={handleNextMonth}
+                disabled={isViewingCurrentMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
+                style={{ background: 'var(--color-surface)' }}
+                aria-label="Mois suivant"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
 
         {/* Onglets Jour / Mois */}
         <div className="flex border-b border-border-soft px-5 gap-1">
@@ -274,19 +320,27 @@ export default function ObjectivesPage() {
             </div>
 
             {daySubTab === 'pointing' && (
-              <DailyPointing
-                indicators={dailyIndicators}
-                currentUserColor={currentUser.color}
-                dateString={selectedDate}
-              />
+              isIndicatorsLoading ? (
+                <ObjectivesSkeleton />
+              ) : (
+                <DailyPointing
+                  indicators={dailyIndicators}
+                  currentUserColor={currentUser.color}
+                  dateString={selectedDate}
+                />
+              )
             )}
 
             {daySubTab === 'team' && (
-              <TeamStackedGauges
-                indicators={dailyIndicators}
-                dailySales={dailySales}
-                currentUserId={currentUser.id}
-              />
+              isDailySalesLoading || isIndicatorsLoading ? (
+                <ObjectivesSkeleton />
+              ) : (
+                <TeamStackedGauges
+                  indicators={dailyIndicators}
+                  dailySales={dailySales}
+                  currentUserId={currentUser.id}
+                />
+              )
             )}
           </>
         )}
@@ -294,34 +348,6 @@ export default function ObjectivesPage() {
         {/* ── Onglet Mois ── */}
         {mainTab === 'month' && (
           <>
-            {/* Navigation mois */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <button
-                onClick={handlePreviousMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-full"
-                style={{ background: 'var(--color-surface)' }}
-                aria-label="Mois précédent"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <span className="text-sm font-bold text-text-primary min-w-[140px] text-center">
-                {formatViewMonthLabel(viewMonth, viewYear)}
-              </span>
-              <button
-                onClick={handleNextMonth}
-                disabled={isViewingCurrentMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-30"
-                style={{ background: 'var(--color-surface)' }}
-                aria-label="Mois suivant"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </div>
-
             {/* Sélecteur de vendeur — admin uniquement */}
             {isAdmin && allUsers.length > 0 && (
               <div className="mb-4">
@@ -348,20 +374,24 @@ export default function ObjectivesPage() {
               </div>
             )}
 
-            <MonthlyProgress
-              progressEntries={monthlyProgress}
-              month={viewMonth}
-              year={viewYear}
-              vendorName={isAdmin ? selectedVendor?.name : undefined}
-              isEditMode={isEditingTargets}
-              editableTargets={targetEdits}
-              onTargetChange={handleTargetChange}
-              monthlyIndicatorIds={new Set(monthlyIndicators.map((i) => i.id))}
-              currentUserId={currentUser.id}
-              currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
-              allowSaleCorrection={isViewingCurrentMonth}
-              targetUserId={isAdmin ? resolvedVendorId : undefined}
-            />
+            {isMonthlyProgressLoading ? (
+              <ObjectivesSkeleton />
+            ) : (
+              <MonthlyProgress
+                progressEntries={monthlyProgress}
+                month={viewMonth}
+                year={viewYear}
+                vendorName={isAdmin ? selectedVendor?.name : undefined}
+                isEditMode={isEditingTargets}
+                editableTargets={targetEdits}
+                onTargetChange={handleTargetChange}
+                monthlyIndicatorIds={new Set(monthlyIndicators.map((i) => i.id))}
+                currentUserId={currentUser.id}
+                currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
+                allowSaleCorrection={isViewingCurrentMonth}
+                targetUserId={isAdmin ? resolvedVendorId : undefined}
+              />
+            )}
 
             {/* Barre actions — visible en mode édition */}
             {isEditingTargets && (

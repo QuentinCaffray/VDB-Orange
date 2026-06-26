@@ -15,6 +15,7 @@ export async function findUserById(userId: string) {
 
 export async function findAllUsers() {
   return prisma.user.findMany({
+    where: { isHidden: false },
     select: { id: true, cuid: true, name: true, role: true, color: true, isFirstLogin: true, lastLoginAt: true },
     orderBy: { name: 'asc' },
   })

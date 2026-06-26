@@ -5,6 +5,7 @@ const CHALLENGES_ORDER_BY = { order: 'asc' as const }
 
 export async function findAllVendorsWithTeamNotes() {
   const vendors = await prisma.user.findMany({
+    where: { isHidden: false },
     orderBy: { name: 'asc' },
     select: {
       id: true,
