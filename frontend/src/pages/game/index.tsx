@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuthContext } from '../../context/AuthContext'
 import {
   useActiveGame,
@@ -175,6 +175,8 @@ function CreateGameForm() {
     </div>
   )
 }
+
+const CLIMB_ANIMATION_DURATION_MS = 700
 
 const stepperButtonStyle: React.CSSProperties = {
   width: 40,
@@ -359,21 +361,61 @@ interface GameBuildingProps {
 }
 
 function GameBuilding({ game, currentUserId }: GameBuildingProps) {
+  const previousPawnFloors = useRef<Record<string, number> | null>(null)
+  const [animatingPawnIds, setAnimatingPawnIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (previousPawnFloors.current === null) {
+      previousPawnFloors.current = Object.fromEntries(
+        game.pawns.map((pawn) => [pawn.userId, pawn.currentFloor]),
+      )
+      return
+    }
+
+    const movedPawnUserIds = game.pawns
+      .filter((pawn) => {
+        const previousFloor = previousPawnFloors.current![pawn.userId]
+        return previousFloor !== undefined && pawn.currentFloor > previousFloor
+      })
+      .map((pawn) => pawn.userId)
+
+    for (const pawn of game.pawns) {
+      previousPawnFloors.current[pawn.userId] = pawn.currentFloor
+    }
+
+    if (movedPawnUserIds.length === 0) return
+
+    setAnimatingPawnIds((prev) => new Set([...prev, ...movedPawnUserIds]))
+    const timer = setTimeout(() => {
+      setAnimatingPawnIds((prev) => {
+        const nextSet = new Set(prev)
+        for (const userId of movedPawnUserIds) nextSet.delete(userId)
+        return nextSet
+      })
+    }, CLIMB_ANIMATION_DURATION_MS)
+    return () => clearTimeout(timer)
+  }, [game.pawns])
+
   const floors = buildFloorMap(game.pawns, game.floorCount)
+  const leaderUserId = findLeaderUserId(game.pawns)
 
   return (
     <div
       style={{
-        borderRadius: 16,
-        border: '1px solid var(--color-border-soft)',
+        borderRadius: 20,
         overflow: 'hidden',
+        border: '2px solid var(--color-building-border)',
+        boxShadow: '0 0 28px rgba(255,121,0,0.12), 0 8px 32px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.08)',
       }}
     >
       <FloorRow
         floorNumber={game.floorCount}
+        floorCount={game.floorCount}
         isGoal={true}
         pawns={floors[game.floorCount] ?? []}
         currentUserId={currentUserId}
+        animatingPawnIds={animatingPawnIds}
+        leaderUserId={leaderUserId}
       />
       {Array.from({ length: game.floorCount - 1 }, (_, index) => {
         const floorNumber = game.floorCount - 1 - index
@@ -381,21 +423,35 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
           <FloorRow
             key={floorNumber}
             floorNumber={floorNumber}
+            floorCount={game.floorCount}
             isGoal={false}
             pawns={floors[floorNumber] ?? []}
             currentUserId={currentUserId}
+            animatingPawnIds={animatingPawnIds}
+            leaderUserId={leaderUserId}
           />
         )
       })}
       <FloorRow
         floorNumber={0}
+        floorCount={game.floorCount}
         isGoal={false}
         isGround={true}
         pawns={floors[0] ?? []}
         currentUserId={currentUserId}
+        animatingPawnIds={animatingPawnIds}
+        leaderUserId={leaderUserId}
       />
     </div>
   )
+}
+
+function findLeaderUserId(pawns: GamePawn[]): string | null {
+  if (pawns.length === 0) return null
+  const leaderPawn = pawns.reduce((best, pawn) =>
+    pawn.currentFloor > best.currentFloor ? pawn : best
+  )
+  return leaderPawn.userId
 }
 
 function buildFloorMap(
@@ -415,51 +471,87 @@ function buildFloorMap(
 
 interface FloorRowProps {
   floorNumber: number
+  floorCount: number
   isGoal: boolean
   isGround?: boolean
   pawns: GamePawn[]
   currentUserId: string
+  animatingPawnIds: Set<string>
+  leaderUserId: string | null
 }
 
-function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: FloorRowProps) {
+function FloorRow({ floorNumber, floorCount, isGoal, isGround, pawns, currentUserId, animatingPawnIds, leaderUserId }: FloorRowProps) {
   const hasPawns = pawns.length > 0
+  const displayRank = floorCount - floorNumber
+
+  const labelColumnBackground = isGoal
+    ? 'linear-gradient(180deg, #FFD060 0%, #FF7900 100%)'
+    : 'var(--color-building-column)'
+
+  function getRankColor(): string {
+    if (displayRank === 1) return '#FFD700'
+    if (displayRank === 2) return '#C0C8D8'
+    if (displayRank === 3) return '#C8904A'
+    return 'var(--color-building-floor-text)'
+  }
+
+  function getRankGlow(): string | undefined {
+    if (displayRank === 1) return '0 0 10px rgba(255,215,0,0.70)'
+    if (displayRank === 2) return '0 0 8px rgba(184,200,216,0.55)'
+    if (displayRank === 3) return '0 0 8px rgba(200,144,74,0.45)'
+    return undefined
+  }
+
+  function getContentBackground(): string {
+    if (isGoal) return 'linear-gradient(135deg, #FF5E00 0%, #FFA500 55%, #FFB300 100%)'
+    if (isGround) return 'var(--color-building-ground)'
+    if (hasPawns) return 'var(--color-brand-tint)'
+    return 'var(--color-building-exterior)'
+  }
+
+  const occupiedAccent = hasPawns && !isGoal && !isGround ? 'inset 4px 0 0 #FF7900' : 'none'
 
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'stretch',
-        borderBottom: '1px solid var(--color-border-soft)',
-        minHeight: 52,
+        borderBottom: '1px solid var(--color-building-divider)',
+        minHeight: isGoal ? 74 : 52,
+        boxShadow: occupiedAccent,
       }}
     >
-      {/* Numéro de l'étage */}
+      {/* Badge de rang */}
       <div
         style={{
-          width: 40,
+          width: 44,
           flexShrink: 0,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRight: '1px solid var(--color-border-soft)',
-          background: isGoal
-            ? 'linear-gradient(180deg, #FFB300 0%, #FF7900 100%)'
-            : isGround
-            ? 'var(--color-surface)'
-            : 'var(--color-card)',
+          gap: 1,
+          borderRight: '1px solid var(--color-building-divider)',
+          background: labelColumnBackground,
         }}
       >
         {isGoal ? (
-          <span style={{ fontSize: 16 }}>🏆</span>
+          <span style={{ fontSize: 22 }}>🏆</span>
+        ) : isGround ? (
+          <span style={{ fontSize: 8, fontWeight: 800, color: 'var(--color-building-floor-text)', letterSpacing: '0.06em' }}>SOL</span>
         ) : (
-          <span style={{ fontSize: isGround ? 9 : 11, fontWeight: 800, color: 'var(--color-text-tertiary)' }}>
-            {isGround ? 'Sol' : floorNumber}
-          </span>
+          <>
+            <span style={{ fontSize: 7, fontWeight: 700, color: getRankColor(), opacity: 0.75, letterSpacing: '0.06em', lineHeight: 1 }}>LV</span>
+            <span style={{ fontSize: displayRank > 9 ? 11 : 14, fontWeight: 900, color: getRankColor(), lineHeight: 1, textShadow: getRankGlow() }}>
+              {displayRank}
+            </span>
+          </>
         )}
       </div>
 
       {/* Contenu de l'étage */}
       <div
+        className={isGoal ? 'goal-floor-content' : ''}
         style={{
           flex: 1,
           display: 'flex',
@@ -467,28 +559,23 @@ function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: Floor
           padding: '8px 12px',
           gap: 8,
           flexWrap: 'wrap',
-          background: isGoal
-            ? '#FF790008'
-            : isGround
-            ? 'var(--color-surface)'
-            : hasPawns
-            ? 'var(--color-brand-tint)'
-            : 'var(--color-card)',
+          background: getContentBackground(),
         }}
       >
         {isGoal && !hasPawns && (
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#FF7900', opacity: 0.6 }}>
-            Arrivée
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 18, filter: 'drop-shadow(0 0 6px rgba(255,255,170,0.9))' }}>⭐</span>
+            <span style={{ fontSize: 13, fontWeight: 900, color: 'white', letterSpacing: '0.12em', textTransform: 'uppercase', textShadow: '0 0 20px rgba(255,255,255,0.65)' }}>
+              Arrivée
+            </span>
+            <span style={{ fontSize: 18, filter: 'drop-shadow(0 0 6px rgba(255,255,170,0.9))' }}>⭐</span>
+          </div>
         )}
 
         {!hasPawns && !isGoal && (
-          <div style={{ display: 'flex', gap: 5, opacity: 0.12 }}>
+          <div style={{ display: 'flex', gap: 5 }}>
             {[0, 1, 2, 3].map((windowIndex) => (
-              <div
-                key={windowIndex}
-                style={{ width: 9, height: 12, borderRadius: 2, background: 'var(--color-text-secondary)' }}
-              />
+              <div key={windowIndex} className="building-window" />
             ))}
           </div>
         )}
@@ -498,6 +585,9 @@ function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: Floor
             key={pawn.id}
             pawn={pawn}
             isCurrentUser={pawn.userId === currentUserId}
+            isClimbing={animatingPawnIds.has(pawn.userId)}
+            isOnGoalFloor={isGoal}
+            isLeader={pawn.userId === leaderUserId}
           />
         ))}
       </div>
@@ -508,39 +598,64 @@ function FloorRow({ floorNumber, isGoal, isGround, pawns, currentUserId }: Floor
 interface PawnOnFloorProps {
   pawn: GamePawn
   isCurrentUser: boolean
+  isClimbing: boolean
+  isOnGoalFloor: boolean
+  isLeader: boolean
 }
 
-function PawnOnFloor({ pawn, isCurrentUser }: PawnOnFloorProps) {
+function PawnOnFloor({ pawn, isCurrentUser, isClimbing, isOnGoalFloor, isLeader }: PawnOnFloorProps) {
   const firstName = pawn.userName.split(' ')[0]
+  const pawnSize = isLeader ? 38 : 34
+
+  const nameColor = isOnGoalFloor
+    ? 'rgba(255,255,255,0.92)'
+    : isCurrentUser
+    ? pawn.userColor
+    : 'var(--color-building-floor-text)'
+
+  const pawnRingGapColor = isOnGoalFloor ? '#FF9500' : 'var(--color-building-exterior)'
+
+  const insetDepth = 'inset 0 -4px 8px rgba(0,0,0,0.28), inset 0 3px 8px rgba(255,255,255,0.22)'
+  const leaderGlow = isLeader ? ', 0 0 18px rgba(255,215,0,0.65)' : ''
+
+  const pawnShadow = isCurrentUser
+    ? `${insetDepth}, 0 0 0 2.5px ${pawnRingGapColor}, 0 0 0 4.5px ${pawn.userColor}, 0 4px 18px ${pawn.userColor}70${leaderGlow}`
+    : `${insetDepth}, 0 3px 10px rgba(0,0,0,0.25)${leaderGlow}`
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+    <div
+      className={isClimbing ? 'pawn-climbing' : ''}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative', paddingTop: isLeader ? 16 : 0 }}
+    >
+      {isLeader && (
+        <span style={{ position: 'absolute', top: 0, fontSize: 13, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.55))' }}>
+          👑
+        </span>
+      )}
       <div
         style={{
-          width: 28,
-          height: 28,
+          width: pawnSize,
+          height: pawnSize,
           borderRadius: '50%',
           background: pawn.userColor,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          boxShadow: isCurrentUser
-            ? `0 0 0 2px white, 0 0 0 3.5px ${pawn.userColor}`
-            : '0 1px 4px rgba(0,0,0,0.18)',
+          boxShadow: pawnShadow,
         }}
       >
-        <span style={{ fontSize: 11, fontWeight: 900, color: 'white' }}>
+        <span style={{ fontSize: isLeader ? 14 : 13, fontWeight: 900, color: 'white' }}>
           {pawn.userName.charAt(0).toUpperCase()}
         </span>
       </div>
       <span
         style={{
-          fontSize: 9,
+          fontSize: 10,
           fontWeight: isCurrentUser ? 800 : 600,
-          color: isCurrentUser ? pawn.userColor : 'var(--color-text-secondary)',
+          color: nameColor,
           lineHeight: 1,
-          maxWidth: 36,
+          maxWidth: 42,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
