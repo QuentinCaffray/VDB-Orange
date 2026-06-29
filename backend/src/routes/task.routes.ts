@@ -5,6 +5,7 @@ import {
   takeTaskHandler,
   completeTaskHandler,
   releaseTaskHandler,
+  adminCompleteTaskForUserHandler,
   getTaskHistoryForDateHandler,
   getActiveDatesHandler,
   deleteTaskHandler,
@@ -38,6 +39,9 @@ taskRouter.get('/history/active-dates', getActiveDatesHandler)
 
 // PATCH /tasks/:id/release — remet une tâche en cours dans "À faire" (assigné ou admin)
 taskRouter.patch('/:id/release', releaseTaskHandler)
+
+// PATCH /tasks/:id/complete-for — admin : attribue et termine une tâche pour un vendeur (correction rétroactive)
+taskRouter.patch('/:id/complete-for', requireAdmin, adminCompleteTaskForUserHandler)
 
 // DELETE /tasks/:id — supprime une tâche (admin uniquement)
 taskRouter.delete('/:id', requireAdmin, deleteTaskHandler)

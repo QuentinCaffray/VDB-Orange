@@ -61,10 +61,11 @@ function CreateGameForm() {
   const [objective, setObjective] = useState('')
   const [reward, setReward] = useState('')
   const { mutate: createGame, isPending } = useCreateGame()
-  const objectiveFieldRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
-    objectiveFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // La <main> garde sa position de scroll du jeu précédent (building long).
+    // On revient au top instantanément pour afficher le formulaire depuis le début.
+    const mainScrollContainer = document.querySelector('main')
+    mainScrollContainer?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
   }, [])
 
   const canSubmit = objective.trim() && reward.trim()
@@ -115,7 +116,7 @@ function CreateGameForm() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1" ref={objectiveFieldRef}>
+        <div className="flex flex-col gap-1">
           <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             Objectif pour avancer
           </label>

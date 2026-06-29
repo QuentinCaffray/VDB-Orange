@@ -123,6 +123,34 @@ export async function getActiveDatesHandler(
   }
 }
 
+const ADMIN_COMPLETE_BODY_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+export async function adminCompleteTaskForUserHandler(
+  request: Request<{ id: string }>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const taskId = request.params.id
+    const { userId: targetUserId, doneAt } = request.body as { userId: string; doneAt: string }
+
+    if (!targetUserId || typeof targetUserId !== 'string') {
+      response.status(400).json({ error: 'userId requis' })
+      return
+    }
+    if (!doneAt || !ADMIN_COMPLETE_BODY_DATE_REGEX.test(doneAt)) {
+      response.status(400).json({ error: 'doneAt requis — format attendu : YYYY-MM-DD' })
+      return
+    }
+
+    const updatedTask = await taskService.adminCompleteTaskForUser(taskId, targetUserId, doneAt)
+    eventBus.publishEvent({ type: 'task.completed', task: updatedTask })
+    response.json(updatedTask)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function deleteTaskHandler(
   request: Request<{ id: string }>,
   response: Response,

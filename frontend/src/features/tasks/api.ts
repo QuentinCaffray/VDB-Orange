@@ -36,6 +36,15 @@ export async function fetchActiveDates(month: number, year: number): Promise<str
   return response.data
 }
 
+export async function adminCompleteTaskForUser(
+  taskId: string,
+  targetUserId: string,
+  doneAt: string,
+): Promise<Task> {
+  const response = await api.patch<Task>(`/tasks/${taskId}/complete-for`, { userId: targetUserId, doneAt })
+  return response.data
+}
+
 export async function deleteTask(taskId: string): Promise<void> {
   await api.delete(`/tasks/${taskId}`)
 }

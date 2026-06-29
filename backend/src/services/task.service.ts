@@ -4,6 +4,7 @@ import {
   createTask as createTaskInDatabase,
   assignTaskToUser,
   markTaskAsDone as markTaskAsDoneInDatabase,
+  assignAndMarkTaskDone,
   releaseTask as releaseTaskInDatabase,
   findTasksDoneOnDate,
   findDoneTaskDatesInMonth,
@@ -142,6 +143,29 @@ export async function getActiveDatesForMonth(month: number, year: number): Promi
   )
 
   return Array.from(uniqueDateStrings).sort()
+}
+
+export async function adminCompleteTaskForUser(
+  taskId: string,
+  targetUserId: string,
+  doneAtString: string,
+): Promise<TaskResponse> {
+  const task = await findTaskById(taskId)
+
+  if (!task) {
+    throw new AppError('Tâche introuvable', 404)
+  }
+
+  const isAlreadyDone = task.status === TaskStatus.done
+  if (isAlreadyDone) {
+    throw new AppError('Cette tâche est déjà terminée', 409)
+  }
+
+  const [year, month, day] = doneAtString.split('-').map(Number)
+  const doneAt = new Date(year, month - 1, day, 12, 0, 0)
+
+  const updatedTask = await assignAndMarkTaskDone(taskId, targetUserId, doneAt)
+  return formatTaskResponse(updatedTask)
 }
 
 export async function deleteTask(taskId: string): Promise<void> {

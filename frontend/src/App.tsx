@@ -51,6 +51,7 @@ export default function App() {
               <Route path="/team" element={<TeamPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
                 <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
               </Route>

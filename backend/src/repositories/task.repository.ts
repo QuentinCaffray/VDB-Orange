@@ -79,6 +79,14 @@ export async function findDoneTaskDatesInMonth(month: number, year: number) {
   })
 }
 
+export async function assignAndMarkTaskDone(taskId: string, assigneeId: string, doneAt: Date) {
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { assigneeId, status: TaskStatus.done, doneAt },
+    include: { assignee: { select: ASSIGNEE_SELECT } },
+  })
+}
+
 export async function deleteTask(taskId: string) {
   return prisma.task.delete({ where: { id: taskId } })
 }

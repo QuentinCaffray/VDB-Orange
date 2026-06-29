@@ -76,7 +76,9 @@ export default function ProfilePage() {
               />
               <span className="text-sm font-semibold text-text-primary">Ma couleur</span>
             </div>
-            <span className="text-xs text-text-tertiary">Modifiable par admin</span>
+            <span className="text-xs text-text-tertiary">
+              {isAdmin ? 'Via Gestion des comptes' : 'Modifiable par admin'}
+            </span>
           </div>
         </div>
       </div>

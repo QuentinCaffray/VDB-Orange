@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MonthCalendar from '../../components/ui/MonthCalendar'
-import { useTaskHistory, useActiveDates } from '../../features/tasks/hooks/useTasks'
+import { useTaskHistory, useActiveDates, useTasks, useAdminCompleteTask } from '../../features/tasks/hooks/useTasks'
+import { useAllUsers } from '../../features/users/hooks/useUsers'
+import { useAuthContext } from '../../context/AuthContext'
 import { Task } from '../../types/task.types'
+import { UserSummary } from '../../features/users/api'
 
 function formatSelectedDateLabel(dateString: string, taskCount: number): string {
   const date = new Date(dateString + 'T12:00:00')
@@ -23,14 +26,23 @@ function formatDoneTime(doneAt: string | null): string {
 
 export default function HistoryPage() {
   const navigate = useNavigate()
-  const today = new Date()
+  const { currentUser } = useAuthContext()
+  const isAdmin = currentUser?.role === 'admin'
 
+  const today = new Date()
   const [calendarYear, setCalendarYear] = useState(today.getFullYear())
   const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
   const [selectedDate, setSelectedDate] = useState<string>(today.toISOString().split('T')[0])
+  const [isEditMode, setIsEditMode] = useState(false)
 
   const { data: activeDates = [] } = useActiveDates(calendarMonth, calendarYear)
-  const { data: historyTasks = [], isLoading: isLoadingTasks } = useTaskHistory(selectedDate)
+  const { data: historyTasks = [], isLoading: isLoadingHistory } = useTaskHistory(selectedDate)
+  const { data: allTasks = [] } = useTasks()
+  const { data: allUsers = [] } = useAllUsers()
+  const adminCompleteTask = useAdminCompleteTask(selectedDate)
+
+  const openTasks = allTasks.filter((task) => task.status !== 'done')
+  const vendorUsers = allUsers.filter((user) => !user.isFirstLogin)
 
   function handleNavigateMonth(direction: 'prev' | 'next'): void {
     if (direction === 'prev') {
@@ -64,12 +76,24 @@ export default function HistoryPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 pt-1">
-          {/* Chip lecture seule */}
-          <div className="flex items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full">
-            <LockIcon />
-            <span className="text-xs font-bold text-text-secondary">Lecture</span>
-          </div>
-          {/* Retour */}
+          {isAdmin ? (
+            <button
+              onClick={() => setIsEditMode((prev) => !prev)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
+              style={{
+                background: isEditMode ? 'var(--color-brand)' : 'var(--color-surface)',
+                color: isEditMode ? '#fff' : 'var(--color-text-secondary)',
+              }}
+            >
+              {isEditMode ? <PencilIcon /> : <LockIcon />}
+              {isEditMode ? 'Édition' : 'Lecture'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full">
+              <LockIcon />
+              <span className="text-xs font-bold text-text-secondary">Lecture</span>
+            </div>
+          )}
           <button
             onClick={() => navigate('/tasks')}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface text-text-secondary"
@@ -92,17 +116,47 @@ export default function HistoryPage() {
         />
       </div>
 
-      {/* Tâches du jour sélectionné */}
+      {/* Mode édition — tâches ouvertes à attribuer */}
+      {isEditMode && (
+        <div className="px-5 pb-6">
+          <p className="text-sm font-bold text-text-primary mb-1 m-0">Tâches à attribuer</p>
+          <p className="text-xs text-text-secondary mb-3 m-0">
+            Sélectionnez un vendeur pour terminer une tâche à la date affichée dans le calendrier.
+          </p>
+          {openTasks.length === 0 ? (
+            <p className="text-sm text-text-secondary text-center py-6 m-0">
+              Toutes les tâches sont terminées
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {openTasks.map((task) => (
+                <EditableTaskCard
+                  key={task.id}
+                  task={task}
+                  users={vendorUsers}
+                  isPending={adminCompleteTask.isPending}
+                  onComplete={(targetUserId) =>
+                    adminCompleteTask.mutate({ taskId: task.id, targetUserId })
+                  }
+                />
+              ))}
+            </div>
+          )}
+          <div className="mt-6 h-px bg-border-soft" />
+        </div>
+      )}
+
+      {/* Tâches terminées du jour sélectionné */}
       <div className="px-5 pb-10">
-        <p className="text-sm font-bold text-text-primary mb-3">
+        <p className="text-sm font-bold text-text-primary mb-3 m-0">
           {formatSelectedDateLabel(selectedDate, historyTasks.length)}
         </p>
 
-        {isLoadingTasks && (
+        {isLoadingHistory && (
           <p className="text-sm text-text-tertiary text-center py-6 m-0">Chargement…</p>
         )}
 
-        {!isLoadingTasks && historyTasks.length === 0 && (
+        {!isLoadingHistory && historyTasks.length === 0 && (
           <p className="text-sm text-text-secondary text-center py-8 m-0">
             Aucune tâche terminée ce jour-là
           </p>
@@ -118,15 +172,55 @@ export default function HistoryPage() {
   )
 }
 
+// ── Carte tâche en mode édition ───────────────────────────────────────────────
+
+interface EditableTaskCardProps {
+  task: Task
+  users: UserSummary[]
+  isPending: boolean
+  onComplete: (userId: string) => void
+}
+
+function EditableTaskCard({ task, users, isPending, onComplete }: EditableTaskCardProps) {
+  const defaultUserId = task.assignee?.id ?? (users[0]?.id ?? '')
+  const [selectedUserId, setSelectedUserId] = useState<string>(defaultUserId)
+
+  return (
+    <div className="bg-white rounded-2xl px-4 py-3.5 shadow-[0_4px_14px_rgba(0,0,0,0.05)]">
+      <p className="text-sm font-semibold text-text-primary m-0 mb-2">{task.title}</p>
+      <div className="flex items-center gap-2">
+        <select
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value)}
+          className="flex-1 text-sm rounded-xl px-3 py-2 border border-border bg-surface text-text-primary"
+        >
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => onComplete(selectedUserId)}
+          disabled={isPending || !selectedUserId}
+          className="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+          style={{ background: 'var(--color-success)' }}
+        >
+          ✓ Terminer
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Carte tâche en lecture ────────────────────────────────────────────────────
+
 function HistoryTaskCard({ task }: { task: Task }) {
   return (
     <div className="bg-white rounded-2xl px-4 py-3.5 shadow-[0_4px_14px_rgba(0,0,0,0.05)] flex items-center gap-3">
-      {/* Icône check verte */}
       <div className="w-8 h-8 rounded-full bg-success-tint flex items-center justify-center shrink-0">
         <CheckIcon />
       </div>
-
-      {/* Infos tâche */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-text-primary m-0 truncate">{task.title}</p>
         {task.assignee && (
@@ -142,11 +236,22 @@ function HistoryTaskCard({ task }: { task: Task }) {
   )
 }
 
+// ── Icônes ────────────────────────────────────────────────────────────────────
+
 function LockIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+function PencilIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   )
 }

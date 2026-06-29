@@ -9,6 +9,7 @@ import {
   deleteTask,
   fetchTaskHistory,
   fetchActiveDates,
+  adminCompleteTaskForUser,
 } from '../api'
 import { CreateTaskInput, Task, TaskStatus } from '../../../types/task.types'
 
@@ -92,6 +93,23 @@ export function useTaskHistory(dateString: string) {
     queryKey: ['tasks', 'history', dateString],
     queryFn: () => fetchTaskHistory(dateString),
     enabled: dateString.length > 0,
+  })
+}
+
+export function useAdminCompleteTask(dateString: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ taskId, targetUserId }: { taskId: string; targetUserId: string }) =>
+      adminCompleteTaskForUser(taskId, targetUserId, dateString),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'history', dateString] })
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'active-dates'] })
+      toast.success('Tâche attribuée et terminée')
+    },
+    onError: () => {
+      toast.error('Impossible de terminer cette tâche')
+    },
   })
 }
 
