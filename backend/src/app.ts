@@ -42,9 +42,19 @@ app.get('/health', (_request, response) => {
 // En production, Express sert le build React. __dirname = backend/dist/ → remonte à frontend/dist/
 if (process.env.NODE_ENV === 'production') {
   const frontendDistPath = path.join(__dirname, '..', '..', 'frontend', 'dist')
+
+  // sw.js ne doit jamais être caché : le navigateur doit toujours le re-télécharger
+  // pour détecter les mises à jour du service worker (règle Workbox obligatoire).
+  app.get('/sw.js', (_request, response, next) => {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+    next()
+  })
+
   app.use(express.static(frontendDistPath))
+
   // Catch-all SPA : toute route non-API renvoie index.html (React Router gère le reste)
   app.use((_request, response) => {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     response.sendFile(path.join(frontendDistPath, 'index.html'))
   })
 }
