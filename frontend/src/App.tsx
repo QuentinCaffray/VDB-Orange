@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 import { AuthProvider } from './context/AuthContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import ProtectedRoute from './components/layout/ProtectedRoute'
+import AdminRoute from './components/layout/AdminRoute'
 import ActivateRoute from './components/layout/ActivateRoute'
 import PageWrapper from './components/layout/PageWrapper'
 import LoginPage from './pages/login'
@@ -49,8 +50,10 @@ export default function App() {
               <Route path="/objectives" element={<ObjectivesPage />} />
               <Route path="/team" element={<TeamPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
-              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route element={<AdminRoute />}>
+                <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+              </Route>
               <Route path="/profile/change-password" element={<ChangePasswordPage />} />
               <Route path="/game" element={<GamePage />} />
             </Route>
