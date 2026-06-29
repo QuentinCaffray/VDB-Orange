@@ -98,8 +98,11 @@ export async function updateUserRole(userId: string, role: Role): Promise<void> 
 }
 
 export async function softDeleteUser(userId: string): Promise<void> {
+  // Le CUID est libéré pour permettre sa réutilisation immédiate sur un nouveau compte.
+  // Le suffixe _DEL + fragment d'id garantit l'unicité de la contrainte @unique.
+  const freedCuid = `DEL_${userId.slice(-10)}`
   await prisma.user.update({
     where: { id: userId },
-    data: { isHidden: true },
+    data: { isHidden: true, cuid: freedCuid },
   })
 }
