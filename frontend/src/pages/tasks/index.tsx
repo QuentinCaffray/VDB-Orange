@@ -48,7 +48,6 @@ export default function TasksPage() {
   const [filterAssigneeId, setFilterAssigneeId] = useState<string | null>(null)
 
   const navigate = useNavigate()
-  const isAdmin = currentUser?.role === 'admin'
   const taskCounts = countTasksByStatus(allTasks)
 
   const assigneesInActiveTasks = useMemo<TaskAssignee[]>(() => {

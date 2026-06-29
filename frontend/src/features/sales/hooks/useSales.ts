@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Indicator, DailySaleEntry } from '../../../types/sales.types'
+import { Indicator } from '../../../types/sales.types'
 import {
   fetchIndicators,
   fetchDailySales,
@@ -23,7 +23,7 @@ import { SetMonthlyTargetPayload } from '../../../types/sales.types'
 export function useIndicators() {
   return useQuery({
     queryKey: ['indicators'],
-    queryFn: fetchIndicators,
+    queryFn: () => fetchIndicators(),
     // Évite un refetch immédiat après setQueryData optimiste qui écraserait la mise à jour
     // avant que le serveur ait confirmé le delete/update
     staleTime: 5_000,
@@ -140,7 +140,7 @@ export function useTeamMonthlyBreakdown(month: number, year: number, enabled = t
   })
 }
 
-export function useSetMonthlyTarget(month: number, year: number, userId: string) {
+export function useSetMonthlyTarget(_month: number, _year: number, _userId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: SetMonthlyTargetPayload) => setMonthlyTarget(payload),
