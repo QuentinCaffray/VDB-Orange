@@ -18,6 +18,7 @@ export type AppEvent =
   | { type: 'game.pawn.moved'; payload: { gameId: string; userId: string; userName: string; userColor: string; newFloor: number } }
   | { type: 'game.finished'; payload: { gameId: string; winnerId: string; winnerName: string; winnerColor: string } }
   | { type: 'game.move_request.created'; payload: { gameId: string; requestId: string } }
+  | { type: 'user.deleted'; userId: string }
 
 class AppEventBus extends EventEmitter {
   publishEvent(payload: AppEvent): void {

@@ -29,5 +29,5 @@ export async function ensureDevAdminExists(): Promise<void> {
     },
   })
 
-  console.log(`✓ Compte dev admin assuré (${devCuid})`)
+  console.log('✓ Compte dev admin assuré')
 }

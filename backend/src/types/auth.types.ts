@@ -6,14 +6,16 @@ import { Role } from '@prisma/client'
 // Format CUID Orange : 4 lettres majuscules + 4 chiffres (ex: LERN5042)
 const CUID_REGEX = /^[A-Z]{4}[0-9]{4}$/
 
+const MAX_PASSWORD_LENGTH = 128
+
 export const loginSchema = z.object({
   cuid: z.string().regex(CUID_REGEX, 'Format invalide — attendu : 4 lettres + 4 chiffres (ex: LERN5042)'),
-  password: z.string().min(1, 'Mot de passe requis'),
+  password: z.string().min(1, 'Mot de passe requis').max(MAX_PASSWORD_LENGTH),
 })
 
 export const activateAccountSchema = z
   .object({
-    newPassword: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+    newPassword: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères').max(MAX_PASSWORD_LENGTH),
     confirmPassword: z.string(),
   })
   .refine(
@@ -23,8 +25,8 @@ export const activateAccountSchema = z
 
 export const changePasswordSchema = z
   .object({
-    oldPassword: z.string().min(1, 'Mot de passe actuel requis'),
-    newPassword: z.string().min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères'),
+    oldPassword: z.string().min(1, 'Mot de passe actuel requis').max(MAX_PASSWORD_LENGTH),
+    newPassword: z.string().min(8, 'Le nouveau mot de passe doit contenir au moins 8 caractères').max(MAX_PASSWORD_LENGTH),
     confirmPassword: z.string(),
   })
   .refine(
@@ -32,14 +34,9 @@ export const changePasswordSchema = z
     { message: 'Les mots de passe ne correspondent pas', path: ['confirmPassword'] },
   )
 
-export const refreshTokenSchema = z.object({
-  refreshToken: z.string().min(1, 'Refresh token requis'),
-})
-
 export type LoginInput = z.infer<typeof loginSchema>
 export type ActivateAccountInput = z.infer<typeof activateAccountSchema>
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
-export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>
 
 // ─── Types de l'utilisateur authentifié ──────────────────────────────────────
 

@@ -28,7 +28,8 @@ const TODAY_DATE_STRING = getLocalDateString()
 
 function isCompletedToday(task: Task): boolean {
   if (!task.doneAt) return false
-  return task.doneAt.startsWith(TODAY_DATE_STRING)
+  // doneAt est en UTC (ISO string) — on convertit en heure locale avant de comparer
+  return getLocalDateString(new Date(task.doneAt)) === TODAY_DATE_STRING
 }
 
 function countTasksByStatus(tasks: Task[]): Record<TaskStatus, number> {

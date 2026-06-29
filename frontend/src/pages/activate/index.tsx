@@ -39,11 +39,11 @@ export default function ActivatePage() {
   async function handleFormSubmit(formValues: ActivateFormValues): Promise<void> {
     setServerError(null)
     try {
-      const { accessToken, refreshToken, user } = await activateAccountWithNewPassword(
+      const { accessToken, user } = await activateAccountWithNewPassword(
         formValues.newPassword,
         formValues.confirmPassword,
       )
-      handleLoginSuccess({ accessToken, refreshToken }, user)
+      handleLoginSuccess(accessToken, user)
       navigate('/tasks', { replace: true })
     } catch {
       setServerError('Une erreur est survenue. Veuillez réessayer.')

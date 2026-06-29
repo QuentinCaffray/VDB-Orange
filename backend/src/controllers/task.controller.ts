@@ -84,6 +84,8 @@ export async function releaseTaskHandler(
   }
 }
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
 export async function getTaskHistoryForDateHandler(
   request: Request,
   response: Response,
@@ -91,6 +93,10 @@ export async function getTaskHistoryForDateHandler(
 ): Promise<void> {
   try {
     const date = request.query.date as string
+    if (!date || !DATE_REGEX.test(date)) {
+      response.status(400).json({ error: 'Paramètre date invalide — format attendu : YYYY-MM-DD' })
+      return
+    }
     const tasks = await taskService.getTaskHistoryForDate(date)
     response.json(tasks)
   } catch (error) {
@@ -106,6 +112,10 @@ export async function getActiveDatesHandler(
   try {
     const month = parseInt(request.query.month as string)
     const year = parseInt(request.query.year as string)
+    if (isNaN(month) || isNaN(year) || month < 1 || month > 12 || year < 2000) {
+      response.status(400).json({ error: 'Paramètres month (1-12) et year requis' })
+      return
+    }
     const dates = await taskService.getActiveDatesForMonth(month, year)
     response.json(dates)
   } catch (error) {

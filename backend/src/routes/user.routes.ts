@@ -1,9 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
-import { findAllUsers, updateUserColor, updateUserRole, deleteUser } from '../repositories/user.repository'
+import { findAllUsers, updateUserColor, updateUserRole, softDeleteUser } from '../repositories/user.repository'
 import { Role } from '@prisma/client'
 import { adminCreateVendor, adminUpdateUserProfile, adminResetPassword } from '../services/user.service'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
+import { validateBody } from '../middlewares/validate.middleware'
+import { updateRoleSchema } from '../types/user.types'
+import { eventBus } from '../lib/event-bus'
 
 const CUID_REGEX = /^[A-Z]{4}[0-9]{4}$/
 const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/
@@ -47,6 +50,7 @@ userRouter.post('/', requireAdmin, async (request: Request, response: Response, 
   try {
     const input = createVendorSchema.parse(request.body)
     const newUser = await adminCreateVendor(input)
+    console.log(JSON.stringify({ event: 'admin.user.created', adminId: request.authenticatedUser!.userId, newUserId: newUser.id, newUserCuid: newUser.cuid, timestamp: new Date().toISOString() }))
     response.status(201).json(newUser)
   } catch (error) {
     next(error)
@@ -78,7 +82,7 @@ userRouter.patch('/:userId/color', requireAdmin, async (request: Request, respon
 })
 
 // PATCH /users/:userId/role — admin : change le rôle d'un utilisateur (vendeur ↔ admin)
-userRouter.patch('/:userId/role', requireAdmin, async (request: Request, response: Response, next: NextFunction) => {
+userRouter.patch('/:userId/role', requireAdmin, validateBody(updateRoleSchema), async (request: Request, response: Response, next: NextFunction) => {
   try {
     const userId = request.params.userId as string
     const adminUserId = request.authenticatedUser!.userId
@@ -88,12 +92,9 @@ userRouter.patch('/:userId/role', requireAdmin, async (request: Request, respons
       return
     }
 
-    const roleSchema = z.object({
-      role: z.enum(['admin', 'vendeur'] as const),
-    })
-
-    const { role } = roleSchema.parse(request.body)
-    await updateUserRole(userId, role as Role)
+    const { role } = request.body as { role: Role }
+    await updateUserRole(userId, role)
+    console.log(JSON.stringify({ event: 'admin.user.role_changed', adminId: adminUserId, targetUserId: userId, newRole: role, timestamp: new Date().toISOString() }))
     response.json({ success: true })
   } catch (error) {
     next(error)
@@ -111,7 +112,9 @@ userRouter.delete('/:userId', requireAdmin, async (request: Request, response: R
       return
     }
 
-    await deleteUser(userId)
+    await softDeleteUser(userId)
+    eventBus.publishEvent({ type: 'user.deleted', userId })
+    console.log(JSON.stringify({ event: 'admin.user.deleted', adminId: adminUserId, targetUserId: userId, timestamp: new Date().toISOString() }))
     response.json({ success: true })
   } catch (error) {
     next(error)
@@ -124,6 +127,7 @@ userRouter.patch('/:userId/reset-password', requireAdmin, async (request: Reques
     const userId = request.params.userId as string
     const { newPassword } = resetPasswordSchema.parse(request.body)
     await adminResetPassword(userId, newPassword)
+    console.log(JSON.stringify({ event: 'admin.user.password_reset', adminId: request.authenticatedUser!.userId, targetUserId: userId, timestamp: new Date().toISOString() }))
     response.json({ success: true })
   } catch (error) {
     next(error)

@@ -29,17 +29,23 @@ export interface MoveRequestWithUser {
   createdAt: string
 }
 
-export interface CreateGameInput {
-  floorCount: number
-  objective: string
-  reward: string
-}
+import { z } from 'zod'
 
-export interface CreateMoveRequestInput {
-  reason: string
-}
+export const createGameSchema = z.object({
+  floorCount: z.number().int().min(2, 'Minimum 2 étages').max(50, 'Maximum 50 étages'),
+  objective: z.string().min(1, 'Objectif requis').max(200),
+  reward: z.string().min(1, 'Récompense requise').max(200),
+})
 
-export interface ResolveMoveRequestInput {
-  approved: boolean
-  adminNote?: string
-}
+export const createMoveRequestSchema = z.object({
+  reason: z.string().min(1, 'Raison requise').max(500),
+})
+
+export const resolveMoveRequestSchema = z.object({
+  approved: z.boolean(),
+  adminNote: z.string().max(300).optional(),
+})
+
+export type CreateGameInput = z.infer<typeof createGameSchema>
+export type CreateMoveRequestInput = z.infer<typeof createMoveRequestSchema>
+export type ResolveMoveRequestInput = z.infer<typeof resolveMoveRequestSchema>

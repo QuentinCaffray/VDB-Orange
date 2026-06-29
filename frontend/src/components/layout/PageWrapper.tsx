@@ -5,9 +5,9 @@ import { useAuthContext } from '../../context/AuthContext'
 import { useAppEventStream } from '../../hooks/useAppEventStream'
 
 export default function PageWrapper() {
-  const { currentUser } = useAuthContext()
+  const { currentUser, handleLogout } = useAuthContext()
   const isAuthenticated = currentUser !== null
-  useAppEventStream(isAuthenticated)
+  useAppEventStream(isAuthenticated, currentUser?.id ?? null, handleLogout)
   const location = useLocation()
   const navigate = useNavigate()
 

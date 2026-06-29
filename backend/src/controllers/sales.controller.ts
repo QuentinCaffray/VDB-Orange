@@ -9,13 +9,20 @@ import {
 import * as salesService from '../services/sales.service'
 import { eventBus } from '../lib/event-bus'
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
 export async function getDailySalesHandler(
   request: Request,
   response: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const date = (request.query.date as string) ?? new Date().toISOString().split('T')[0]
+    const rawDate = request.query.date as string | undefined
+    const date = rawDate ?? new Date().toISOString().split('T')[0]
+    if (rawDate && !DATE_REGEX.test(rawDate)) {
+      response.status(400).json({ error: 'Paramètre date invalide — format attendu : YYYY-MM-DD' })
+      return
+    }
     const sales = await salesService.getDailySalesForDate(date)
     response.json(sales)
   } catch (error) {

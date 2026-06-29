@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { JwtPayload } from '../types/auth.types'
+import { findUserById } from '../repositories/user.repository'
 
-export function requireAuth(request: Request, response: Response, next: NextFunction): void {
+export async function requireAuth(request: Request, response: Response, next: NextFunction): Promise<void> {
   const authorizationHeader = request.headers.authorization
 
   if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -14,6 +15,13 @@ export function requireAuth(request: Request, response: Response, next: NextFunc
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    const existingUser = await findUserById(payload.userId)
+
+    if (!existingUser) {
+      response.status(401).json({ error: 'Compte supprimé ou inexistant' })
+      return
+    }
+
     request.authenticatedUser = payload
     next()
   } catch {

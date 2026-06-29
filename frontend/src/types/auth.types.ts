@@ -9,13 +9,7 @@ export interface AuthenticatedUser {
   isFirstLogin: boolean
 }
 
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-}
-
 export interface AuthResponse {
   accessToken: string
-  refreshToken: string
   user: AuthenticatedUser
 }

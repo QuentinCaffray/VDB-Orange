@@ -95,6 +95,11 @@ export async function submitMoveRequest(
     throw new AppError('La partie n\'est pas active', 400)
   }
 
+  const hasPendingRequest = await gameRepository.hasPendingRequestForUser(gameId, userId)
+  if (hasPendingRequest) {
+    throw new AppError('Une demande d\'avancement est déjà en attente', 409)
+  }
+
   const request = await gameRepository.createMoveRequest(gameId, userId, reason)
   eventBus.publishEvent({
     type: 'game.move_request.created',

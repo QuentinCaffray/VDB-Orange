@@ -1,17 +1,37 @@
 import axios, { InternalAxiosRequestConfig } from 'axios'
 
+// ─── Token en mémoire — jamais exposé au localStorage ni accessible par JS tiers
+let inMemoryAccessToken: string | null = null
+
+export function setAccessToken(token: string): void {
+  inMemoryAccessToken = token
+}
+
+export function clearAccessToken(): void {
+  inMemoryAccessToken = null
+}
+
+export function getAccessToken(): string | null {
+  return inMemoryAccessToken
+}
+
+// ─── Instance axios ──────────────────────────────────────────────────────────
+
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
+  // Nécessaire pour que le navigateur envoie le cookie httpOnly avec les requêtes
+  withCredentials: true,
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (inMemoryAccessToken) {
+    config.headers.Authorization = `Bearer ${inMemoryAccessToken}`
+  }
   return config
 })
 
-// ─── Refresh token — renouvellement silencieux de l'access token ──────────────
+// ─── Refresh silencieux — renouvellement de l'access token sur 401 ───────────
 
 interface RequestWithRetryFlag extends InternalAxiosRequestConfig {
   _retried?: boolean
@@ -35,9 +55,8 @@ function rejectQueue(error: unknown): void {
   pendingRequestQueue = []
 }
 
-function clearAuthAndRedirect(): void {
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
+function clearSessionAndRedirect(): void {
+  clearAccessToken()
   localStorage.removeItem('current_user')
   window.location.href = '/login'
 }
@@ -52,12 +71,6 @@ api.interceptors.response.use(
     const hasAlreadyRetried = originalRequest?._retried
 
     if (!isUnauthorized || isRefreshEndpoint || hasAlreadyRetried) {
-      return Promise.reject(error)
-    }
-
-    const refreshToken = localStorage.getItem('refresh_token')
-    if (!refreshToken) {
-      clearAuthAndRedirect()
       return Promise.reject(error)
     }
 
@@ -78,17 +91,18 @@ api.interceptors.response.use(
     originalRequest._retried = true
 
     try {
-      const { data } = await api.post<{ accessToken: string }>('/auth/refresh', { refreshToken })
+      // Le cookie httpOnly est envoyé automatiquement — pas de body requis
+      const { data } = await api.post<{ accessToken: string }>('/auth/refresh')
       const newAccessToken = data.accessToken
 
-      localStorage.setItem('access_token', newAccessToken)
+      setAccessToken(newAccessToken)
       processQueue(newAccessToken)
 
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
       return api(originalRequest)
     } catch (refreshError) {
       rejectQueue(refreshError)
-      clearAuthAndRedirect()
+      clearSessionAndRedirect()
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false

@@ -31,8 +31,8 @@ export function useCreateTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+    onSuccess: (newTask) => {
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) => [newTask, ...previousTasks])
       toast.success('Tâche créée')
     },
   })
@@ -42,7 +42,11 @@ export function useTakeTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => takeTask(taskId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY }),
+    onSuccess: (updatedTask) => {
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) =>
+        previousTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+      )
+    },
   })
 }
 
@@ -50,8 +54,10 @@ export function useCompleteTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => completeTask(taskId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+    onSuccess: (completedTask) => {
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) =>
+        previousTasks.map((task) => (task.id === completedTask.id ? completedTask : task)),
+      )
       toast.success('Tâche terminée')
     },
   })
@@ -61,7 +67,11 @@ export function useReleaseTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => releaseTask(taskId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY }),
+    onSuccess: (releasedTask) => {
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) =>
+        previousTasks.map((task) => (task.id === releasedTask.id ? releasedTask : task)),
+      )
+    },
   })
 }
 
@@ -69,7 +79,11 @@ export function useDeleteTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => deleteTask(taskId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY }),
+    onSuccess: (_, taskId) => {
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) =>
+        previousTasks.filter((task) => task.id !== taskId),
+      )
+    },
   })
 }
 

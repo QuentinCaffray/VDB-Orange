@@ -97,6 +97,9 @@ export async function updateUserRole(userId: string, role: Role): Promise<void> 
   })
 }
 
-export async function deleteUser(userId: string): Promise<void> {
-  await prisma.user.delete({ where: { id: userId } })
+export async function softDeleteUser(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isHidden: true },
+  })
 }

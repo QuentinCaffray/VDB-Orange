@@ -39,11 +39,11 @@ export default function LoginPage() {
   async function handleFormSubmit(formValues: LoginFormValues): Promise<void> {
     setServerError(null)
     try {
-      const { accessToken, refreshToken, user } = await loginWithCuid(
+      const { accessToken, user } = await loginWithCuid(
         formValues.cuid,
         formValues.password,
       )
-      handleLoginSuccess({ accessToken, refreshToken }, user)
+      handleLoginSuccess(accessToken, user)
       navigate(user.isFirstLogin ? '/activate' : '/dashboard', { replace: true })
     } catch {
       setServerError('Identifiant ou mot de passe incorrect')

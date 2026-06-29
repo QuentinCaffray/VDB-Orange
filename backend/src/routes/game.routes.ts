@@ -12,6 +12,8 @@ import {
   resolveMoveRequestHandler,
 } from '../controllers/game.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
+import { validateBody } from '../middlewares/validate.middleware'
+import { createGameSchema, createMoveRequestSchema, resolveMoveRequestSchema } from '../types/game.types'
 
 const gameRouter = Router()
 
@@ -21,7 +23,7 @@ gameRouter.use(requireAuth)
 gameRouter.get('/', getActiveGameHandler)
 
 // POST /game — créer une nouvelle partie (admin)
-gameRouter.post('/', requireAdmin, createGameHandler)
+gameRouter.post('/', requireAdmin, validateBody(createGameSchema), createGameHandler)
 
 // PATCH /game/:id/pause — mettre en pause (admin)
 gameRouter.patch('/:id/pause', requireAdmin, pauseGameHandler)
@@ -39,12 +41,12 @@ gameRouter.patch('/:id/finish', requireAdmin, finishGameHandler)
 gameRouter.post('/:id/admin-advance', requireAdmin, adminAdvancePawnHandler)
 
 // POST /game/:id/move-request — vendeur soumet une demande d'avancement
-gameRouter.post('/:id/move-request', submitMoveRequestHandler)
+gameRouter.post('/:id/move-request', validateBody(createMoveRequestSchema), submitMoveRequestHandler)
 
 // GET /game/:id/move-requests — liste des demandes en attente (admin)
 gameRouter.get('/:id/move-requests', requireAdmin, getPendingMoveRequestsHandler)
 
 // PATCH /game/move-requests/:requestId/resolve — approuver ou rejeter (admin)
-gameRouter.patch('/move-requests/:requestId/resolve', requireAdmin, resolveMoveRequestHandler)
+gameRouter.patch('/move-requests/:requestId/resolve', requireAdmin, validateBody(resolveMoveRequestSchema), resolveMoveRequestHandler)
 
 export default gameRouter

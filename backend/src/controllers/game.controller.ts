@@ -136,6 +136,7 @@ export async function resolveMoveRequestHandler(
     const { approved, adminNote } = request.body
 
     await gameService.resolveMoveRequest(requestId, approved, adminNote)
+    console.log(JSON.stringify({ event: 'admin.game.move_request_resolved', adminId: request.authenticatedUser!.userId, requestId, approved, timestamp: new Date().toISOString() }))
     response.status(204).send()
   } catch (error) {
     next(error)
