@@ -14,19 +14,19 @@
   --color-brand-tint: #FFF3E6;
 
   /* Backgrounds */
-  --color-app-bg: #F3ECE3;
-  --color-canvas: #E7DDD2;
-  --color-surface: #EDE5DA;
-  --color-card: #FAF5EE;
+  --color-app-bg: #FBF7F3;
+  --color-canvas: #ECE6DF;
+  --color-surface: #F5F1EC;
+  --color-card: #FFFFFF;
 
   /* Text */
-  --color-text-primary: #261E17;
+  --color-text-primary: #1A1A1A;
   --color-text-secondary: #9A9088;
   --color-text-tertiary: #B0A89F;
 
   /* Borders */
-  --color-border: #E2D7CB;
-  --color-border-soft: #EAE1D8;
+  --color-border: #ECE4DA;
+  --color-border-soft: #F0EAE3;
 
   /* Status */
   --color-success: #22A650;
@@ -37,9 +37,9 @@
   --color-monthly-tint: #EEF2FF;
 
   /* Admin zone (slate) */
-  --color-admin-bg: #D8E0E9;
-  --color-admin-border: #BCC8D4;
-  --color-admin-text: #4A5C6A;
+  --color-admin-bg: #F3F5F8;
+  --color-admin-border: #C9D2DA;
+  --color-admin-text: #5B6B7B;
 
   /* Vendeur colors */
   --color-vendor-marie: #FF7900;
@@ -117,12 +117,7 @@ body {
   --color-admin-text: #7A8A9A;
 }
 
-/* En mode clair, bg-white suit la couleur de carte chaleureuse — évite le blanc pur agressif */
-.bg-white {
-  background-color: var(--color-card);
-}
-
-/* En mode sombre, bg-white suit la couleur de carte sombre */
+/* Remplace bg-white par la couleur de carte sombre — évite de modifier chaque composant */
 .dark .bg-white {
   background-color: var(--color-card);
 }
