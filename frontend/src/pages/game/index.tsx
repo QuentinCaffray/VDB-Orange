@@ -61,6 +61,11 @@ function CreateGameForm() {
   const [objective, setObjective] = useState('')
   const [reward, setReward] = useState('')
   const { mutate: createGame, isPending } = useCreateGame()
+  const objectiveFieldRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    objectiveFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
   const canSubmit = objective.trim() && reward.trim()
 
@@ -110,7 +115,7 @@ function CreateGameForm() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1" ref={objectiveFieldRef}>
           <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             Objectif pour avancer
           </label>
