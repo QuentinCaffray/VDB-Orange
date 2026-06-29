@@ -697,12 +697,7 @@ function AdminControls({ game, currentUserId }: AdminControlsProps) {
 
   useEffect(() => {
     if (!showNewGameForm || !newGameFormRef.current) return
-    const mainContainer = document.querySelector('main')
-    if (!mainContainer) return
-    const formRect = newGameFormRef.current.getBoundingClientRect()
-    const mainRect = mainContainer.getBoundingClientRect()
-    const targetScrollTop = mainContainer.scrollTop + (formRect.top - mainRect.top) - 20
-    mainContainer.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
+    newGameFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [showNewGameForm])
 
   const isGameActive = game.status === 'active'
