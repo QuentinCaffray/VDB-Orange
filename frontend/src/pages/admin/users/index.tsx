@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
@@ -84,9 +85,10 @@ export default function AdminUsersPage() {
         </button>
       </div>
 
-      {/* Formulaire d'ajout */}
-      {isAddFormOpen && (
-        <AddVendorForm onClose={() => setIsAddFormOpen(false)} />
+      {/* Formulaire d'ajout — portail pour échapper à overflow-y: auto du main */}
+      {isAddFormOpen && createPortal(
+        <AddVendorForm onClose={() => setIsAddFormOpen(false)} />,
+        document.body,
       )}
     </div>
   )
@@ -591,7 +593,6 @@ function AddVendorForm({ onClose }: AddVendorFormProps) {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Marie Dupont"
-              autoFocus
               className="w-full rounded-xl px-4 py-3 text-sm font-semibold outline-none border border-border-soft focus:border-brand"
               style={{ background: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
             />
