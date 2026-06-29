@@ -685,6 +685,7 @@ function AdminControls({ game, currentUserId }: AdminControlsProps) {
   const [newFloorCount, setNewFloorCount] = useState(game.floorCount)
   const [newObjective, setNewObjective] = useState('')
   const [newReward, setNewReward] = useState('')
+  const newGameFormRef = useRef<HTMLDivElement>(null)
   const { mutate: pauseGame, isPending: isPausing } = usePauseGame()
   const { mutate: resumeGame, isPending: isResuming } = useResumeGame()
   const { mutate: resetGame, isPending: isResetting } = useResetGame()
@@ -693,6 +694,16 @@ function AdminControls({ game, currentUserId }: AdminControlsProps) {
   const { mutate: adminAdvance, isPending: isAdvancing } = useAdminAdvancePawn()
   const { data: pendingRequests = [], isLoading: isLoadingRequests } = usePendingMoveRequests(game.id)
   const { mutate: resolveRequest, isPending: isResolving } = useResolveMoveRequest(game.id)
+
+  useEffect(() => {
+    if (!showNewGameForm || !newGameFormRef.current) return
+    const mainContainer = document.querySelector('main')
+    if (!mainContainer) return
+    const formRect = newGameFormRef.current.getBoundingClientRect()
+    const mainRect = mainContainer.getBoundingClientRect()
+    const targetScrollTop = mainContainer.scrollTop + (formRect.top - mainRect.top) - 20
+    mainContainer.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
+  }, [showNewGameForm])
 
   const isGameActive = game.status === 'active'
   const isGamePaused = game.status === 'paused'
@@ -718,7 +729,7 @@ function AdminControls({ game, currentUserId }: AdminControlsProps) {
     <div className="flex flex-col gap-4">
       {/* Nouvelle partie — formulaire inline quand la partie est terminée */}
       {isGameFinished && (
-        <div style={adminCardStyle}>
+        <div ref={newGameFormRef} style={adminCardStyle}>
           <p style={adminCardTitleStyle}>Partie terminée</p>
           {!showNewGameForm ? (
             <button onClick={() => setShowNewGameForm(true)} style={primaryButtonStyle}>
