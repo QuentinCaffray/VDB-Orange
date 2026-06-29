@@ -45,6 +45,15 @@ export async function adminCompleteTaskForUser(
   return response.data
 }
 
+export async function adminCreateCompletedTask(
+  title: string,
+  targetUserId: string,
+  doneAt: string,
+): Promise<Task> {
+  const response = await api.post<Task>('/tasks/retroactive', { title, targetUserId, doneAt })
+  return response.data
+}
+
 export async function deleteTask(taskId: string): Promise<void> {
   await api.delete(`/tasks/${taskId}`)
 }

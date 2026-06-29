@@ -87,6 +87,19 @@ export async function assignAndMarkTaskDone(taskId: string, assigneeId: string, 
   })
 }
 
+export async function createAndMarkTaskDone(
+  title: string,
+  description: string | undefined,
+  createdById: string,
+  assigneeId: string,
+  doneAt: Date,
+) {
+  return prisma.task.create({
+    data: { title, description, createdById, assigneeId, status: TaskStatus.done, doneAt },
+    include: { assignee: { select: ASSIGNEE_SELECT } },
+  })
+}
+
 export async function deleteTask(taskId: string) {
   return prisma.task.delete({ where: { id: taskId } })
 }

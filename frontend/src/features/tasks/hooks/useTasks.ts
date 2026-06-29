@@ -10,6 +10,7 @@ import {
   fetchTaskHistory,
   fetchActiveDates,
   adminCompleteTaskForUser,
+  adminCreateCompletedTask,
 } from '../api'
 import { CreateTaskInput, Task, TaskStatus } from '../../../types/task.types'
 
@@ -33,7 +34,10 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input),
     onSuccess: (newTask) => {
-      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) => [newTask, ...previousTasks])
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previousTasks = []) => {
+        const alreadyInCache = previousTasks.some((task) => task.id === newTask.id)
+        return alreadyInCache ? previousTasks : [newTask, ...previousTasks]
+      })
       toast.success('Tâche créée')
     },
   })
@@ -102,13 +106,29 @@ export function useAdminCompleteTask(dateString: string) {
     mutationFn: ({ taskId, targetUserId }: { taskId: string; targetUserId: string }) =>
       adminCompleteTaskForUser(taskId, targetUserId, dateString),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY, exact: true })
       queryClient.invalidateQueries({ queryKey: ['tasks', 'history', dateString] })
       queryClient.invalidateQueries({ queryKey: ['tasks', 'active-dates'] })
       toast.success('Tâche attribuée et terminée')
     },
     onError: () => {
       toast.error('Impossible de terminer cette tâche')
+    },
+  })
+}
+
+export function useAdminCreateCompletedTask(dateString: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ title, targetUserId }: { title: string; targetUserId: string }) =>
+      adminCreateCompletedTask(title, targetUserId, dateString),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'history', dateString] })
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'active-dates'] })
+      toast.success('Tâche créée et attribuée')
+    },
+    onError: () => {
+      toast.error('Impossible de créer la tâche')
     },
   })
 }

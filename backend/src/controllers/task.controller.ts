@@ -151,6 +151,49 @@ export async function adminCompleteTaskForUserHandler(
   }
 }
 
+const RETROACTIVE_TASK_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+export async function adminCreateCompletedTaskHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { title, description, targetUserId, doneAt } = request.body as {
+      title: string
+      description?: string
+      targetUserId: string
+      doneAt: string
+    }
+    const createdById = request.authenticatedUser!.userId
+
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      response.status(400).json({ error: 'Titre requis' })
+      return
+    }
+    if (!targetUserId || typeof targetUserId !== 'string') {
+      response.status(400).json({ error: 'targetUserId requis' })
+      return
+    }
+    if (!doneAt || !RETROACTIVE_TASK_DATE_REGEX.test(doneAt)) {
+      response.status(400).json({ error: 'doneAt requis — format attendu : YYYY-MM-DD' })
+      return
+    }
+
+    const newTask = await taskService.adminCreateCompletedTask(
+      title.trim(),
+      description,
+      createdById,
+      targetUserId,
+      doneAt,
+    )
+    eventBus.publishEvent({ type: 'task.completed', task: newTask })
+    response.status(201).json(newTask)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function deleteTaskHandler(
   request: Request<{ id: string }>,
   response: Response,

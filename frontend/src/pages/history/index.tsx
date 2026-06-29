@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MonthCalendar from '../../components/ui/MonthCalendar'
-import { useTaskHistory, useActiveDates, useTasks, useAdminCompleteTask } from '../../features/tasks/hooks/useTasks'
+import {
+  useTaskHistory,
+  useActiveDates,
+  useTasks,
+  useAdminCompleteTask,
+  useAdminCreateCompletedTask,
+} from '../../features/tasks/hooks/useTasks'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
 import { useAuthContext } from '../../context/AuthContext'
 import { Task } from '../../types/task.types'
@@ -40,6 +46,7 @@ export default function HistoryPage() {
   const { data: allTasks = [] } = useTasks()
   const { data: allUsers = [] } = useAllUsers()
   const adminCompleteTask = useAdminCompleteTask(selectedDate)
+  const adminCreateCompletedTask = useAdminCreateCompletedTask(selectedDate)
 
   const openTasks = allTasks.filter((task) => task.status !== 'done')
   const vendorUsers = allUsers.filter((user) => !user.isFirstLogin)
@@ -116,32 +123,43 @@ export default function HistoryPage() {
         />
       </div>
 
-      {/* Mode édition — tâches ouvertes à attribuer */}
+      {/* Mode édition */}
       {isEditMode && (
         <div className="px-5 pb-6">
-          <p className="text-sm font-bold text-text-primary mb-1 m-0">Tâches à attribuer</p>
-          <p className="text-xs text-text-secondary mb-3 m-0">
-            Sélectionnez un vendeur pour terminer une tâche à la date affichée dans le calendrier.
-          </p>
-          {openTasks.length === 0 ? (
-            <p className="text-sm text-text-secondary text-center py-6 m-0">
-              Toutes les tâches sont terminées
-            </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {openTasks.map((task) => (
-                <EditableTaskCard
-                  key={task.id}
-                  task={task}
-                  users={vendorUsers}
-                  isPending={adminCompleteTask.isPending}
-                  onComplete={(targetUserId) =>
-                    adminCompleteTask.mutate({ taskId: task.id, targetUserId })
-                  }
-                />
-              ))}
-            </div>
+
+          {/* Créer une nouvelle tâche rétroactive */}
+          <p className="text-sm font-bold text-text-primary mb-3 m-0">Créer une tâche</p>
+          <CreateRetroactiveTaskForm
+            users={vendorUsers}
+            isPending={adminCreateCompletedTask.isPending}
+            onSubmit={(title, targetUserId) =>
+              adminCreateCompletedTask.mutate({ title, targetUserId })
+            }
+          />
+
+          {/* Tâches existantes à attribuer */}
+          {openTasks.length > 0 && (
+            <>
+              <p className="text-sm font-bold text-text-primary mt-5 mb-1 m-0">Tâches existantes à attribuer</p>
+              <p className="text-xs text-text-secondary mb-3 m-0">
+                Attribuez une tâche déjà créée à un vendeur pour la date sélectionnée.
+              </p>
+              <div className="flex flex-col gap-3">
+                {openTasks.map((task) => (
+                  <EditableTaskCard
+                    key={task.id}
+                    task={task}
+                    users={vendorUsers}
+                    isPending={adminCompleteTask.isPending}
+                    onComplete={(targetUserId) =>
+                      adminCompleteTask.mutate({ taskId: task.id, targetUserId })
+                    }
+                  />
+                ))}
+              </div>
+            </>
           )}
+
           <div className="mt-6 h-px bg-border-soft" />
         </div>
       )}
@@ -172,7 +190,64 @@ export default function HistoryPage() {
   )
 }
 
-// ── Carte tâche en mode édition ───────────────────────────────────────────────
+// ── Formulaire de création rétroactive ────────────────────────────────────────
+
+interface CreateRetroactiveTaskFormProps {
+  users: UserSummary[]
+  isPending: boolean
+  onSubmit: (title: string, targetUserId: string) => void
+}
+
+function CreateRetroactiveTaskForm({ users, isPending, onSubmit }: CreateRetroactiveTaskFormProps) {
+  const defaultUserId = users[0]?.id ?? ''
+  const [taskTitle, setTaskTitle] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState<string>(defaultUserId)
+
+  function handleSubmit(): void {
+    const trimmedTitle = taskTitle.trim()
+    if (!trimmedTitle || !selectedUserId) return
+    onSubmit(trimmedTitle, selectedUserId)
+    setTaskTitle('')
+  }
+
+  const isSubmitDisabled = isPending || taskTitle.trim().length === 0 || !selectedUserId
+
+  return (
+    <div className="bg-white rounded-2xl px-4 py-4 shadow-[0_4px_14px_rgba(0,0,0,0.05)]">
+      <input
+        type="text"
+        placeholder="Titre de la tâche…"
+        value={taskTitle}
+        onChange={(e) => setTaskTitle(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+        className="w-full text-sm rounded-xl px-3 py-2.5 border border-border bg-surface text-text-primary placeholder:text-text-tertiary mb-2.5"
+      />
+      <div className="flex items-center gap-2">
+        <select
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value)}
+          className="flex-1 text-sm rounded-xl px-3 py-2 border border-border bg-surface text-text-primary"
+        >
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+          style={{ background: 'var(--color-brand)' }}
+        >
+          Créer
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Carte tâche existante en mode édition ─────────────────────────────────────
 
 interface EditableTaskCardProps {
   task: Task

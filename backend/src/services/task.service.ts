@@ -5,6 +5,7 @@ import {
   assignTaskToUser,
   markTaskAsDone as markTaskAsDoneInDatabase,
   assignAndMarkTaskDone,
+  createAndMarkTaskDone,
   releaseTask as releaseTaskInDatabase,
   findTasksDoneOnDate,
   findDoneTaskDatesInMonth,
@@ -166,6 +167,19 @@ export async function adminCompleteTaskForUser(
 
   const updatedTask = await assignAndMarkTaskDone(taskId, targetUserId, doneAt)
   return formatTaskResponse(updatedTask)
+}
+
+export async function adminCreateCompletedTask(
+  title: string,
+  description: string | undefined,
+  createdById: string,
+  targetUserId: string,
+  doneAtString: string,
+): Promise<TaskResponse> {
+  const [year, month, day] = doneAtString.split('-').map(Number)
+  const doneAt = new Date(year, month - 1, day, 12, 0, 0)
+  const newTask = await createAndMarkTaskDone(title, description, createdById, targetUserId, doneAt)
+  return formatTaskResponse(newTask)
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
