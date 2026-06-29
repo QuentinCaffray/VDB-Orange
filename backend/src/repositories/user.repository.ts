@@ -97,6 +97,17 @@ export async function updateUserRole(userId: string, role: Role): Promise<void> 
   })
 }
 
+export async function freeHiddenUserCuid(cuid: string): Promise<void> {
+  const hiddenUser = await prisma.user.findFirst({
+    where: { cuid, isHidden: true },
+  })
+  if (!hiddenUser) return
+  await prisma.user.update({
+    where: { id: hiddenUser.id },
+    data: { cuid: `DEL_${hiddenUser.id.slice(-10)}` },
+  })
+}
+
 export async function softDeleteUser(userId: string): Promise<void> {
   // Le CUID est libéré pour permettre sa réutilisation immédiate sur un nouveau compte.
   // Le suffixe _DEL + fragment d'id garantit l'unicité de la contrainte @unique.

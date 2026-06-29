@@ -1,9 +1,12 @@
 import argon2 from 'argon2'
+import { Prisma } from '@prisma/client'
 import {
   createVendor,
+  freeHiddenUserCuid,
   updateUserProfile,
   adminResetUserPassword,
 } from '../repositories/user.repository'
+import { AppError } from '../types/error.types'
 import { UserSummary } from '../types/user.types'
 
 export interface CreateVendorInput {
@@ -20,12 +23,20 @@ export interface UpdateUserProfileInput {
 
 export async function adminCreateVendor(input: CreateVendorInput): Promise<UserSummary> {
   const hashedPassword = await argon2.hash(input.password)
-  return createVendor({
-    name: input.name,
-    cuid: input.cuid,
-    hashedPassword,
-    color: input.color,
-  })
+  await freeHiddenUserCuid(input.cuid)
+  try {
+    return await createVendor({
+      name: input.name,
+      cuid: input.cuid,
+      hashedPassword,
+      color: input.color,
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new AppError('Ce CUID est déjà utilisé par un autre compte actif', 409)
+    }
+    throw error
+  }
 }
 
 export async function adminUpdateUserProfile(
