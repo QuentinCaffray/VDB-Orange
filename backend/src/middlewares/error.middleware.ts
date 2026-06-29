@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { ZodError } from 'zod'
 import { AppError } from '../types/error.types'
 
 export function globalErrorHandler(
@@ -9,6 +10,16 @@ export function globalErrorHandler(
 ): void {
   if (error instanceof AppError) {
     response.status(error.statusCode).json({ error: error.message })
+    return
+  }
+
+  // ZodError non interceptée par validateBody (ex: schema.parse() direct dans un controller)
+  if (error instanceof ZodError) {
+    const firstError = error.errors[0]
+    response.status(400).json({
+      error: firstError?.message ?? 'Données invalides',
+      field: firstError?.path.join('.'),
+    })
     return
   }
 

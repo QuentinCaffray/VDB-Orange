@@ -10,6 +10,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./src/__tests__/setup.ts'],
     singleFork: true,
+    fileParallelism: false, // Exécution séquentielle pour éviter les conflits sur la DB partagée
     testTimeout: 15000,
   },
 })

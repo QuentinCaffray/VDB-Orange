@@ -5,7 +5,8 @@
     "dev": "concurrently --names \"DB,BACK,FRONT\" --prefix-colors \"blue,yellow,green\" \"docker compose up\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "db": "docker compose up -d",
     "db:stop": "docker compose down",
-    "db:reset": "cd backend && npx prisma migrate reset --force"
+    "db:reset": "cd backend && npx prisma migrate reset --force",
+    "test": "npm run test --prefix backend && npm run test --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
