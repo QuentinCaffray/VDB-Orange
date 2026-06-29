@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Indicator } from '../../../types/sales.types'
+import { Indicator, DailySaleEntry } from '../../../types/sales.types'
+import { useAuthContext } from '../../../context/AuthContext'
 import {
   fetchIndicators,
   fetchDailySales,
@@ -75,13 +76,63 @@ export function useDailySales(dateString: string) {
 
 export function useRecordSaleDelta(dateString: string, targetUserId?: string) {
   const queryClient = useQueryClient()
+  const { currentUser } = useAuthContext()
+  const queryKey = ['sales', 'daily', dateString]
 
   return useMutation({
     mutationFn: ({ indicatorId, delta }: { indicatorId: string; delta: 1 | -1 }) =>
       recordSaleDelta(indicatorId, dateString, delta, targetUserId),
 
+    onMutate: async ({ indicatorId, delta }) => {
+      const effectiveUserId = targetUserId ?? currentUser?.id
+      if (!effectiveUserId) return
+
+      await queryClient.cancelQueries({ queryKey })
+      const previousSales = queryClient.getQueryData<DailySaleEntry[]>(queryKey)
+
+      queryClient.setQueryData<DailySaleEntry[]>(queryKey, (previous = []) => {
+        const existingEntry = previous.find(
+          (sale) => sale.indicatorId === indicatorId && sale.userId === effectiveUserId,
+        )
+
+        if (existingEntry) {
+          const newCount = Math.max(0, existingEntry.count + delta)
+          return previous.map((sale) =>
+            sale.indicatorId === indicatorId && sale.userId === effectiveUserId
+              ? { ...sale, count: newCount }
+              : sale,
+          )
+        }
+
+        if (delta === 1) {
+          return [
+            ...previous,
+            {
+              id: `optimistic-${indicatorId}-${effectiveUserId}`,
+              date: dateString,
+              userId: effectiveUserId,
+              userName: currentUser?.name ?? '',
+              userColor: currentUser?.color ?? '',
+              indicatorId,
+              count: 1,
+            },
+          ]
+        }
+
+        return previous
+      })
+
+      return { previousSales }
+    },
+
+    onError: (_error, _variables, context) => {
+      if (context?.previousSales !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousSales)
+      }
+    },
+
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales', 'daily', dateString] })
+      queryClient.invalidateQueries({ queryKey })
     },
   })
 }
