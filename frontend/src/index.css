@@ -79,6 +79,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   margin: 0;
+  touch-action: pan-x pan-y;
 }
 
 #root {
@@ -90,29 +91,29 @@ body {
 
 .dark {
   /* Gratte-ciel — façade nuit (mode sombre) */
-  --color-building-exterior: #152040;
-  --color-building-column: #0F1628;
-  --color-building-divider: #1E2D50;
-  --color-building-floor-text: #3A5272;
-  --color-building-ground: #0A1020;
-  --color-building-border: #0F1628;
+  --color-building-exterior: #1E2228;
+  --color-building-column: #161A1F;
+  --color-building-divider: #272D35;
+  --color-building-floor-text: #4A5568;
+  --color-building-ground: #0E1014;
+  --color-building-border: #161A1F;
 
-  --color-app-bg: #111110;
-  --color-canvas: #1A1917;
-  --color-surface: #222120;
-  --color-card: #3A3835;
-  --color-chip-bg: rgba(37, 35, 32, 0.92);
-  --color-brand-tint: #2A1200;
+  --color-app-bg: #272523;
+  --color-canvas: #302E2B;
+  --color-surface: #3A3835;
+  --color-card: #484542;
+  --color-chip-bg: rgba(62, 60, 57, 0.92);
+  --color-brand-tint: #3A1800;
   --color-text-primary: #EDEBE8;
   --color-text-secondary: #9A9490;
   --color-text-tertiary: #7A7773;
-  --color-border: #2E2B28;
-  --color-border-soft: #282522;
-  --color-success-tint: #0A2015;
-  --color-danger-tint: #2A0A0A;
-  --color-monthly-tint: #1A1A2E;
-  --color-admin-bg: #1A1E22;
-  --color-admin-border: #2A3540;
+  --color-border: #4A4744;
+  --color-border-soft: #403D3A;
+  --color-success-tint: #0E2A1A;
+  --color-danger-tint: #330D0D;
+  --color-monthly-tint: #1E1E35;
+  --color-admin-bg: #1E2226;
+  --color-admin-border: #2E3A46;
   --color-admin-text: #7A8A9A;
 }
 

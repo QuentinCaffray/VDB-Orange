@@ -23,6 +23,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <title>The Crew</title>
+    <!-- Bloque le pinch-to-zoom sur iOS Safari qui ignore user-scalable=no depuis iOS 10 -->
+    <script>
+      document.addEventListener('gesturestart', function (e) { e.preventDefault() })
+      document.addEventListener('gesturechange', function (e) { e.preventDefault() })
+      document.addEventListener('touchmove', function (e) {
+        if (e.touches.length > 1) e.preventDefault()
+      }, { passive: false })
+    </script>
   </head>
   <body>
     <div id="root"></div>
