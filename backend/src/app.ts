@@ -2,6 +2,7 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import path from 'path'
 import authRouter from './routes/auth.routes'
 import taskRouter from './routes/task.routes'
 import indicatorRouter from './routes/indicator.routes'
@@ -36,6 +37,17 @@ app.use('/api/events', sseRouter)
 app.get('/health', (_request, response) => {
   response.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
+
+// ─── Frontend statique (production uniquement) ─────────────────────────────────
+// En production, Express sert le build React. __dirname = backend/dist/ → remonte à frontend/dist/
+if (process.env.NODE_ENV === 'production') {
+  const frontendDistPath = path.join(__dirname, '..', '..', 'frontend', 'dist')
+  app.use(express.static(frontendDistPath))
+  // Catch-all SPA : toute route non-API renvoie index.html (React Router gère le reste)
+  app.use((_request, response) => {
+    response.sendFile(path.join(frontendDistPath, 'index.html'))
+  })
+}
 
 // ─── Gestion des erreurs (doit être enregistré en dernier) ────────────────────
 app.use(globalErrorHandler)
