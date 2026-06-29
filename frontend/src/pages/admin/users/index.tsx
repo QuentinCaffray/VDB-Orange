@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -118,12 +118,22 @@ function UserManagementCard({ user, currentAdminId }: UserManagementCardProps) {
 
   const isSelf = user.id === currentAdminId
 
-  function handleColorBlur(event: React.FocusEvent<HTMLInputElement>): void {
-    const newColor = event.target.value
-    if (newColor !== user.color) {
-      updateProfile({ userId: user.id, input: { color: newColor } })
+  // L'événement DOM natif "change" est le seul fiable sur iOS Safari pour
+  // détecter la fermeture du color picker natif — onBlur ne fire pas sur iOS.
+  useEffect(() => {
+    const inputElement = colorInputRef.current
+    if (!inputElement) return
+
+    function handleNativeColorChange(event: Event): void {
+      const newColor = (event.target as HTMLInputElement).value
+      if (newColor !== user.color) {
+        updateProfile({ userId: user.id, input: { color: newColor } })
+      }
     }
-  }
+
+    inputElement.addEventListener('change', handleNativeColorChange)
+    return () => inputElement.removeEventListener('change', handleNativeColorChange)
+  }, [user.id, user.color, updateProfile])
 
   function handleColorChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setLocalColor(event.target.value)
@@ -183,7 +193,6 @@ function UserManagementCard({ user, currentAdminId }: UserManagementCardProps) {
             type="color"
             value={localColor}
             onChange={handleColorChange}
-            onBlur={handleColorBlur}
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             aria-label={`Couleur de ${user.name}`}
           />
