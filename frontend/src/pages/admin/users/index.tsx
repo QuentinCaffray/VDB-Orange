@@ -180,23 +180,24 @@ function UserManagementCard({ user, currentAdminId }: UserManagementCardProps) {
     <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] overflow-hidden hover-lift">
       {/* Ligne principale */}
       <div className="flex items-center gap-3 px-4 py-3.5">
-        {/* Avatar couleur */}
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0 cursor-pointer relative"
+        {/* Avatar couleur — label natif pour iOS (évite le .click() programmatique) */}
+        <label
+          htmlFor={`color-input-${user.id}`}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0 cursor-pointer"
           style={{ background: localColor }}
-          onClick={() => colorInputRef.current?.click()}
           title="Modifier la couleur"
         >
           {userInitials}
           <input
+            id={`color-input-${user.id}`}
             ref={colorInputRef}
             type="color"
             value={localColor}
             onChange={handleColorChange}
-            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            className="sr-only"
             aria-label={`Couleur de ${user.name}`}
           />
-        </div>
+        </label>
 
         {/* Nom + rôle + CUID */}
         <div className="flex-1 min-w-0">
@@ -252,16 +253,16 @@ function UserManagementCard({ user, currentAdminId }: UserManagementCardProps) {
           {/* Couleur */}
           <div className="flex items-center gap-3">
             <p className="text-xs font-semibold text-text-secondary m-0 w-14 shrink-0">Couleur</p>
-            <div
+            <label
+              htmlFor={`color-input-${user.id}`}
               className="w-8 h-8 rounded-full cursor-pointer relative flex items-center justify-center"
               style={{ background: localColor, border: '2px solid var(--color-border)' }}
-              onClick={() => colorInputRef.current?.click()}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
-            </div>
+            </label>
             {isUpdatingProfile && (
               <span className="text-xs text-text-tertiary">Sauvegarde…</span>
             )}
