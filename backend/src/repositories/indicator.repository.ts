@@ -18,6 +18,10 @@ export async function findIndicatorById(indicatorId: string) {
   return prisma.indicator.findUnique({ where: { id: indicatorId } })
 }
 
+export async function findActiveIndicatorByOrder(order: number) {
+  return prisma.indicator.findFirst({ where: { order, isActive: true } })
+}
+
 export async function createIndicator(name: string, type: IndicatorType, order: number) {
   return prisma.indicator.create({ data: { name, type, order } })
 }

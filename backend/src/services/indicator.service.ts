@@ -2,6 +2,7 @@ import {
   findAllActiveIndicators,
   findAllIndicators,
   findIndicatorById,
+  findActiveIndicatorByOrder,
   createIndicator as createIndicatorInDatabase,
   updateIndicator as updateIndicatorInDatabase,
   hardDeleteIndicator,
@@ -40,6 +41,12 @@ export async function createIndicator(
   type: IndicatorType,
   order: number,
 ): Promise<IndicatorResponse> {
+  // P3-05: rejeter un order déjà utilisé par un indicateur actif
+  const conflictingIndicator = await findActiveIndicatorByOrder(order)
+  if (conflictingIndicator) {
+    throw new AppError(`Un indicateur actif avec l'ordre ${order} existe déjà`, 409)
+  }
+
   const newIndicator = await createIndicatorInDatabase(name, type, order)
   return formatIndicatorResponse(newIndicator)
 }
@@ -52,6 +59,14 @@ export async function updateIndicator(
 
   if (!indicator) {
     throw new AppError('Indicateur introuvable', 404)
+  }
+
+  // P3-05: si l'order change, vérifier qu'il n'est pas déjà pris par un autre indicateur actif
+  if (data.order !== undefined && data.order !== indicator.order) {
+    const conflictingIndicator = await findActiveIndicatorByOrder(data.order)
+    if (conflictingIndicator && conflictingIndicator.id !== indicatorId) {
+      throw new AppError(`Un indicateur actif avec l'ordre ${data.order} existe déjà`, 409)
+    }
   }
 
   const updatedIndicator = await updateIndicatorInDatabase(indicatorId, data)

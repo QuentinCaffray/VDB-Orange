@@ -19,7 +19,7 @@ const app = express()
 app.set('timeout', 0)
 
 app.use(helmet())
-app.use(cors({ origin: process.env.CLIENT_URL ?? 'http://localhost:5173', credentials: true }))
+app.use(cors({ origin: resolveClientOrigin(), credentials: true }))
 app.use(cookieParser())
 app.use(express.json())
 
@@ -36,6 +36,13 @@ app.use('/api/events', sseRouter)
 // ─── Santé ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_request, response) => {
   response.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// ─── 404 pour les routes /api/* inconnues ──────────────────────────────────────
+// Doit être AVANT le catch-all SPA : sinon Express renvoie 200/HTML pour tout /api/*
+// inexistant (authentifié), ce qui masque les bugs et noie les 404 réels (P3-04).
+app.use('/api', (_request, response) => {
+  response.status(404).json({ error: 'Route API introuvable' })
 })
 
 // ─── Frontend statique (production uniquement) ─────────────────────────────────
@@ -63,3 +70,12 @@ if (process.env.NODE_ENV === 'production') {
 app.use(globalErrorHandler)
 
 export default app
+
+// P2-04: en production, CLIENT_URL doit être défini explicitement — pas de fallback localhost.
+// Un fallback localhost en prod ouvrirait le CORS à n'importe quel domaine local côté attaquant.
+function resolveClientOrigin(): string {
+  if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_URL) {
+    throw new Error("Variable d'environnement CLIENT_URL manquante — démarrage impossible en production")
+  }
+  return process.env.CLIENT_URL ?? 'http://localhost:5173'
+}

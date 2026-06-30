@@ -36,17 +36,18 @@ enum IndicatorType {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  cuid         String    @unique // Format 4L+4D ex: LERN5042 — identifiant de connexion
-  name         String
-  password     String
-  role         Role      @default(vendeur)
-  color        String    // Hex assigné par un admin
-  isFirstLogin Boolean   @default(true)
-  isHidden     Boolean   @default(false)
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  cuid              String    @unique // Format 4L+4D ex: LERN5042 — identifiant de connexion
+  name              String
+  password          String
+  role              Role      @default(vendeur)
+  color             String    // Hex assigné par un admin
+  isFirstLogin      Boolean   @default(true)
+  isHidden          Boolean   @default(false)
+  lastLoginAt       DateTime?
+  refreshTokenHash  String?   // SHA-256 du refresh token actif — null = aucune session active (P2-02)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   tasksCreated   Task[]          @relation("TaskCreatedBy")
   tasksAssigned  Task[]          @relation("TaskAssignee")

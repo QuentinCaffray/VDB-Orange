@@ -21,10 +21,10 @@ const loginRateLimiter = rateLimit({
   legacyHeaders: false,
 })
 
-// Généreux (20/15 min) : le refresh est appelé au démarrage et toutes les ~55 min en usage normal
+// Tokens à 10 min → refresh toutes les ~10 min par session. 40/15 min = marge confortable pour 5-10 utilisateurs simultanés.
 const refreshRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 40,
   message: { error: 'Trop de tentatives de renouvellement de session, réessayez dans 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,

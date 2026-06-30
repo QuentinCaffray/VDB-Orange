@@ -180,6 +180,20 @@ export async function adminCreateCompletedTaskHandler(
       return
     }
 
+    // P3-02: rejeter les dates hors plage raisonnable (avant 2 ans ou dans le futur)
+    const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000
+    const doneAtDate = new Date(doneAt)
+    const now = new Date()
+    const twoYearsAgo = new Date(now.getTime() - TWO_YEARS_MS)
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(0, 0, 0, 0)
+
+    if (doneAtDate < twoYearsAgo || doneAtDate >= tomorrow) {
+      response.status(400).json({ error: 'La date doit être dans les 2 dernières années et ne pas être dans le futur' })
+      return
+    }
+
     const newTask = await taskService.adminCreateCompletedTask(
       title.trim(),
       description,

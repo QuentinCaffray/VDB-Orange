@@ -108,6 +108,20 @@ export async function freeHiddenUserCuid(cuid: string): Promise<void> {
   })
 }
 
+export async function updateRefreshTokenHash(userId: string, hash: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { refreshTokenHash: hash },
+  })
+}
+
+export async function clearRefreshTokenHash(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { refreshTokenHash: null },
+  })
+}
+
 export async function softDeleteUser(userId: string): Promise<void> {
   // Le CUID est libéré pour permettre sa réutilisation immédiate sur un nouveau compte.
   // Le suffixe _DEL + fragment d'id garantit l'unicité de la contrainte @unique.

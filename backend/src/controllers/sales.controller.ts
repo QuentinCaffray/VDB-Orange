@@ -18,11 +18,12 @@ export async function getDailySalesHandler(
 ): Promise<void> {
   try {
     const rawDate = request.query.date as string | undefined
-    const date = rawDate ?? new Date().toISOString().split('T')[0]
-    if (rawDate && !DATE_REGEX.test(rawDate)) {
+    // P3-03: rawDate === '' (chaîne vide depuis ?date=) n'est pas capturé par la garde `rawDate &&`
+    if (rawDate !== undefined && !DATE_REGEX.test(rawDate)) {
       response.status(400).json({ error: 'Paramètre date invalide — format attendu : YYYY-MM-DD' })
       return
     }
+    const date = rawDate ?? new Date().toISOString().split('T')[0]
     const sales = await salesService.getDailySalesForDate(date)
     response.json(sales)
   } catch (error) {

@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import { login, activateAccount, changePassword, refreshAccessToken } from '../services/auth.service'
+import {
+  login,
+  activateAccount,
+  changePassword,
+  refreshAccessToken,
+  logoutByRefreshToken,
+} from '../services/auth.service'
 import { LoginInput, ActivateAccountInput, ChangePasswordInput } from '../types/auth.types'
 
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
@@ -44,17 +50,27 @@ export async function refreshTokenHandler(
       return
     }
 
-    const result = await refreshAccessToken(refreshToken)
-    response.json(result)
+    // P2-02: la rotation génère un nouveau refresh token — mettre à jour le cookie
+    const newTokens = await refreshAccessToken(refreshToken)
+    setRefreshTokenCookie(response, newTokens.refreshToken)
+
+    response.json({ accessToken: newTokens.accessToken })
   } catch (error) {
     next(error)
   }
 }
 
 export async function logoutHandler(
-  _request: Request,
+  request: Request,
   response: Response,
 ): Promise<void> {
+  const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME] as string | undefined
+
+  if (refreshToken) {
+    // P2-02: invalider le hash en base pour bloquer tout rejeu du cookie après déconnexion
+    await logoutByRefreshToken(refreshToken).catch(() => undefined)
+  }
+
   response.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

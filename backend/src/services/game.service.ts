@@ -64,20 +64,42 @@ export async function createGame(floorCount: number, objective: string, reward: 
   return response
 }
 
+// P3-01: transitions autorisées par état courant — empêche resume sur game fini, finish sur game terminé, etc.
+const VALID_GAME_TRANSITIONS: Record<'active' | 'paused' | 'finished', ReadonlyArray<'active' | 'paused' | 'finished'>> = {
+  active: ['paused', 'finished'],
+  paused: ['active', 'finished'],
+  finished: [],
+}
+
 export async function updateGameStatus(
   gameId: string,
-  status: 'active' | 'paused' | 'finished',
+  targetStatus: 'active' | 'paused' | 'finished',
 ): Promise<void> {
   const game = await gameRepository.findGameById(gameId)
   if (!game) throw new AppError('Partie introuvable', 404)
 
-  await gameRepository.updateGameStatus(gameId, status)
-  eventBus.publishEvent({ type: 'game.status.changed', payload: { gameId, status } })
+  const currentStatus = game.status as 'active' | 'paused' | 'finished'
+  const allowedTargets = VALID_GAME_TRANSITIONS[currentStatus]
+
+  if (!allowedTargets.includes(targetStatus)) {
+    throw new AppError(
+      `Transition de statut invalide : ${currentStatus} → ${targetStatus}`,
+      409,
+    )
+  }
+
+  await gameRepository.updateGameStatus(gameId, targetStatus)
+  eventBus.publishEvent({ type: 'game.status.changed', payload: { gameId, status: targetStatus } })
 }
 
 export async function resetGame(gameId: string): Promise<void> {
   const game = await gameRepository.findGameById(gameId)
   if (!game) throw new AppError('Partie introuvable', 404)
+
+  const currentStatus = game.status as 'active' | 'paused' | 'finished'
+  if (currentStatus === 'active') {
+    throw new AppError("Impossible de remettre à zéro une partie en cours — terminez-la d'abord", 409)
+  }
 
   await gameRepository.resetGamePawns(gameId)
   await gameRepository.updateGameStatus(gameId, 'active')
