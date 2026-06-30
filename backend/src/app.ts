@@ -18,6 +18,10 @@ const app = express()
 // SSE requiert un timeout long — désactiver le timeout par défaut d'Express
 app.set('timeout', 0)
 
+// En production derrière Railway/nginx, X-Forwarded-For est positionné par le proxy.
+// Sans trust proxy, express-rate-limit ne peut pas identifier les IPs correctement (ERR_ERL_UNEXPECTED_X_FORWARDED_FOR).
+app.set('trust proxy', 1)
+
 app.use(helmet())
 app.use(cors({ origin: resolveClientOrigin(), credentials: true }))
 app.use(cookieParser())

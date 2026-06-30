@@ -13,9 +13,13 @@ export function globalErrorHandler(
     return
   }
 
-  // ZodError non interceptée par validateBody (ex: schema.parse() direct dans un controller)
-  if (error instanceof ZodError) {
-    const firstError = error.errors[0]
+  // ZodError non interceptée par validateBody (ex: schema.parse() direct dans un controller).
+  // Le fallback sur error.name couvre les cas où instanceof échoue à cause d'un décalage
+  // de version de module entre le dist compilé et node_modules (résolution CJS vs ESM).
+  const isZodError = error instanceof ZodError || (error instanceof Error && error.name === 'ZodError')
+  if (isZodError) {
+    const zodError = error as ZodError
+    const firstError = zodError.errors[0]
     response.status(400).json({
       error: firstError?.message ?? 'Données invalides',
       field: firstError?.path.join('.'),
