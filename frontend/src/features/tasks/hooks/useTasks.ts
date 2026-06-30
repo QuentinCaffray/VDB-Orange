@@ -92,6 +92,24 @@ export function useDeleteTask() {
   })
 }
 
+export function useDeleteHistoryTask(dateString: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (taskId: string) => deleteTask(taskId),
+    onSuccess: (_, taskId) => {
+      queryClient.setQueryData<Task[]>(['tasks', 'history', dateString], (previousTasks = []) =>
+        previousTasks.filter((task) => task.id !== taskId),
+      )
+      // Si le jour n'a plus de tâches, le point vert du calendrier doit disparaître
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'active-dates'] })
+      toast.success('Tâche supprimée de l\'historique')
+    },
+    onError: () => {
+      toast.error('Impossible de supprimer la tâche')
+    },
+  })
+}
+
 export function useTaskHistory(dateString: string) {
   return useQuery<Task[]>({
     queryKey: ['tasks', 'history', dateString],

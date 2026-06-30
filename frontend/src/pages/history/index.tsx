@@ -7,6 +7,7 @@ import {
   useTasks,
   useAdminCompleteTask,
   useAdminCreateCompletedTask,
+  useDeleteHistoryTask,
 } from '../../features/tasks/hooks/useTasks'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
 import { useAuthContext } from '../../context/AuthContext'
@@ -47,6 +48,7 @@ export default function HistoryPage() {
   const { data: allUsers = [] } = useAllUsers()
   const adminCompleteTask = useAdminCompleteTask(selectedDate)
   const adminCreateCompletedTask = useAdminCreateCompletedTask(selectedDate)
+  const deleteHistoryTask = useDeleteHistoryTask(selectedDate)
 
   const openTasks = allTasks.filter((task) => task.status !== 'done')
   const vendorUsers = allUsers.filter((user) => !user.isFirstLogin)
@@ -182,7 +184,12 @@ export default function HistoryPage() {
 
         <div className="flex flex-col gap-3">
           {historyTasks.map((task) => (
-            <HistoryTaskCard key={task.id} task={task} />
+            <HistoryTaskCard
+              key={task.id}
+              task={task}
+              onDelete={isAdmin && isEditMode ? () => deleteHistoryTask.mutate(task.id) : undefined}
+              isDeleting={deleteHistoryTask.isPending}
+            />
           ))}
         </div>
       </div>
@@ -288,9 +295,22 @@ function EditableTaskCard({ task, users, isPending, onComplete }: EditableTaskCa
   )
 }
 
-// ── Carte tâche en lecture ────────────────────────────────────────────────────
+// ── Carte tâche en lecture (+ suppression admin en mode édition) ──────────────
 
-function HistoryTaskCard({ task }: { task: Task }) {
+interface HistoryTaskCardProps {
+  task: Task
+  onDelete?: () => void
+  isDeleting?: boolean
+}
+
+function HistoryTaskCard({ task, onDelete, isDeleting }: HistoryTaskCardProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+
+  function handleConfirmDelete(): void {
+    onDelete?.()
+    setConfirmingDelete(false)
+  }
+
   return (
     <div className="bg-white rounded-2xl px-4 py-3.5 shadow-[0_4px_14px_rgba(0,0,0,0.05)] flex items-center gap-3">
       <div className="w-8 h-8 rounded-full bg-success-tint flex items-center justify-center shrink-0">
@@ -307,6 +327,35 @@ function HistoryTaskCard({ task }: { task: Task }) {
           </div>
         )}
       </div>
+      {onDelete && (
+        confirmingDelete ? (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="text-[11px] font-bold px-2 py-1 rounded-lg text-white bg-danger disabled:opacity-40"
+              aria-label="Confirmer la suppression"
+            >
+              Suppr. ?
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(false)}
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary transition-colors"
+              aria-label="Annuler"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-text-tertiary hover:bg-[#FDF2F2] hover:text-danger transition-colors"
+            aria-label="Supprimer la tâche de l'historique"
+          >
+            <TrashIcon />
+          </button>
+        )
+      )}
     </div>
   )
 }
@@ -344,6 +393,16 @@ function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22A650" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6M9 6V4h6v2" />
     </svg>
   )
 }
