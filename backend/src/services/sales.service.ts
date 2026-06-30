@@ -53,6 +53,10 @@ export async function getDailySalesForDate(dateString: string): Promise<DailySal
   const [year, month, day] = dateString.split('-').map(Number)
   const date = new Date(year, month - 1, day)
 
+  if (isNaN(date.getTime())) {
+    throw new AppError('Format de date invalide', 400)
+  }
+
   const sales = await findDailySalesByDate(date)
   return sales.map(formatDailySaleEntry)
 }

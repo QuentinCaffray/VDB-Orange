@@ -5,7 +5,11 @@ const USER_SELECT = { id: true, name: true, color: true }
 // Convertit une chaîne YYYY-MM-DD en objet Date sans décalage horaire
 function parseDateString(dateString: string): Date {
   const [year, month, day] = dateString.split('-').map(Number)
-  return new Date(year, month - 1, day)
+  const date = new Date(year, month - 1, day)
+  if (isNaN(date.getTime())) {
+    throw new Error(`Date invalide : "${dateString}"`)
+  }
+  return date
 }
 
 export async function findDailySalesByDate(date: Date) {

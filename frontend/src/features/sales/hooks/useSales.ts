@@ -70,6 +70,7 @@ export function useDailySales(dateString: string) {
   return useQuery({
     queryKey: ['sales', 'daily', dateString],
     queryFn: ({ signal }) => fetchDailySales(dateString, signal),
+    enabled: dateString.length > 0,
     refetchOnWindowFocus: false,
   })
 }
