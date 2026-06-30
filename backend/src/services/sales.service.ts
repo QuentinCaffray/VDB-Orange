@@ -12,6 +12,7 @@ import {
   findMonthlySalesPerUserAndIndicator,
   findAllMonthlyTargetsForMonth,
 } from '../repositories/sales.repository'
+import { AppError } from '../types/error.types'
 import { findAllActiveIndicators } from '../repositories/indicator.repository'
 import { findAllUsers } from '../repositories/user.repository'
 import {
