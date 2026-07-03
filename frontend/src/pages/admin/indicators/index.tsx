@@ -302,12 +302,9 @@ export default function AdminManageIndicatorsPage() {
 
       {createPortal(
         <div
-          className="z-30 border-t border-border-soft flex gap-3 px-5 py-4"
+          className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 border-t border-border-soft flex gap-3 px-5 py-4"
           style={{
             position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
             background: 'var(--color-card)',
             paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
           }}
