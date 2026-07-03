@@ -161,7 +161,7 @@ export default function TasksPage() {
       {/* Checklist quotidienne — visible uniquement dans l'onglet "À faire" */}
       {activeTab === 'todo' && (
         <>
-          <DailyChecklistSection currentUserRole={currentUser.role} />
+          <DailyChecklistSection currentUserId={currentUser.id} currentUserRole={currentUser.role} />
           <div className="mx-5 border-t border-border-soft mb-1" />
         </>
       )}

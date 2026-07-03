@@ -8,6 +8,7 @@ import { Skeleton } from '../../../components/ui/Skeleton'
 const MAX_DAYS_BACK = 30
 
 interface DailyChecklistSectionProps {
+  currentUserId: string
   currentUserRole: string
 }
 
@@ -38,7 +39,7 @@ function formatCompletionTime(isoString: string): string {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function DailyChecklistSection({ currentUserRole }: DailyChecklistSectionProps) {
+export default function DailyChecklistSection({ currentUserId, currentUserRole }: DailyChecklistSectionProps) {
   const todayDate = new Date()
   const todayDateString = getLocalDateString(todayDate)
   const [selectedDate, setSelectedDate] = useState<Date>(todayDate)
@@ -129,6 +130,7 @@ export default function DailyChecklistSection({ currentUserRole }: DailyChecklis
               isLastRow={index === tasks.length - 1}
               isViewingToday={isViewingToday}
               isAdmin={isAdmin}
+              currentUserId={currentUserId}
               isMutationPending={isMutating}
               onComplete={handleCompleteTask}
               onUncomplete={handleUncompleteTask}
@@ -147,6 +149,7 @@ interface CompactChecklistRowProps {
   isLastRow: boolean
   isViewingToday: boolean
   isAdmin: boolean
+  currentUserId: string
   isMutationPending: boolean
   onComplete: (taskId: string) => void
   onUncomplete: (taskId: string) => void
@@ -157,6 +160,7 @@ function CompactChecklistRow({
   isLastRow,
   isViewingToday,
   isAdmin,
+  currentUserId,
   isMutationPending,
   onComplete,
   onUncomplete,
@@ -166,8 +170,9 @@ function CompactChecklistRow({
   // Une tâche est cochable uniquement si on consulte aujourd'hui et qu'elle n'est pas déjà cochée
   const canComplete = isViewingToday && !isCompleted && !isMutationPending
 
-  // Un admin peut décocher uniquement sur la vue d'aujourd'hui
-  const canUncomplete = isViewingToday && isAdmin && isCompleted && !isMutationPending
+  // L'auteur de la coche ou un admin peut décocher (missclic), uniquement sur aujourd'hui
+  const isCompletedByCurrentUser = task.completion?.userId === currentUserId
+  const canUncomplete = isViewingToday && isCompleted && (isAdmin || isCompletedByCurrentUser) && !isMutationPending
 
   return (
     <div
