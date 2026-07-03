@@ -98,10 +98,6 @@ interface WorkingDaysStepperProps {
 }
 
 function WorkingDaysStepper({ value, onChange, vendorName }: WorkingDaysStepperProps) {
-  // Valeur affichée : null signifie "non défini par l'admin" → on affiche un tiret
-  // pour indiquer que le calcul utilisera les jours calendaires par défaut.
-  const displayedValue = value ?? null
-
   function handleDecrement(): void {
     const current = value ?? MIN_WORKING_DAYS
     if (current > MIN_WORKING_DAYS) onChange(current - 1)
@@ -110,6 +106,13 @@ function WorkingDaysStepper({ value, onChange, vendorName }: WorkingDaysStepperP
   function handleIncrement(): void {
     const current = value ?? MIN_WORKING_DAYS
     if (current < MAX_WORKING_DAYS) onChange(current + 1)
+  }
+
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    const parsed = parseInt(event.target.value, 10)
+    if (!isNaN(parsed) && parsed >= MIN_WORKING_DAYS && parsed <= MAX_WORKING_DAYS) {
+      onChange(parsed)
+    }
   }
 
   return (
@@ -132,9 +135,16 @@ function WorkingDaysStepper({ value, onChange, vendorName }: WorkingDaysStepperP
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </button>
-        <span className="w-8 text-center text-sm font-bold text-text-primary tabular-nums">
-          {displayedValue ?? '—'}
-        </span>
+        <input
+          type="number"
+          min={MIN_WORKING_DAYS}
+          max={MAX_WORKING_DAYS}
+          value={value ?? ''}
+          placeholder="—"
+          onChange={handleInputChange}
+          className="w-10 text-center text-sm font-bold text-text-primary bg-transparent outline-none tabular-nums"
+          aria-label="Nombre de jours travaillés"
+        />
         <button
           onClick={handleIncrement}
           disabled={value !== null && value >= MAX_WORKING_DAYS}
