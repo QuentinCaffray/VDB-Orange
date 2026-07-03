@@ -49,14 +49,15 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  tasksCreated   Task[]          @relation("TaskCreatedBy")
-  tasksAssigned  Task[]          @relation("TaskAssignee")
-  dailySales     DailySale[]
-  monthlyTargets MonthlyTarget[]
-  teamNote       TeamNote?
-  gamePawns      GamePawn[]
-  moveRequests   MoveRequest[]
-  gameWins       Game[]          @relation("GameWinner")
+  tasksCreated               Task[]                    @relation("TaskCreatedBy")
+  tasksAssigned              Task[]                    @relation("TaskAssignee")
+  dailySales                 DailySale[]
+  monthlyTargets             MonthlyTarget[]
+  teamNote                   TeamNote?
+  gamePawns                  GamePawn[]
+  moveRequests               MoveRequest[]
+  gameWins                   Game[]                    @relation("GameWinner")
+  recurringTaskCompletions   RecurringTaskCompletion[]
 
   @@map("users")
 }
@@ -185,6 +186,30 @@ model MoveRequest {
   user User @relation(fields: [userId], references: [id])
 
   @@map("move_requests")
+}
+
+model RecurringTask {
+  id          String                    @id @default(cuid())
+  title       String
+  order       Int                       @default(0)
+  isActive    Boolean                   @default(true)
+  completions RecurringTaskCompletion[]
+  createdAt   DateTime                  @default(now())
+
+  @@map("recurring_tasks")
+}
+
+model RecurringTaskCompletion {
+  id              String        @id @default(cuid())
+  recurringTaskId String
+  recurringTask   RecurringTask @relation(fields: [recurringTaskId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  date            DateTime      @db.Date
+  completedAt     DateTime      @default(now())
+
+  @@unique([recurringTaskId, date])
+  @@map("recurring_task_completions")
 }
 
 model TeamChallenge {

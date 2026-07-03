@@ -120,10 +120,16 @@ async function main(): Promise<void> {
   console.log('🌱 Démarrage du seed...\n')
 
   // Nettoyage dans l'ordre des dépendances
+  // Les completions référencent les users → supprimer avant les users
+  await prisma.recurringTaskCompletion.deleteMany()
+  await prisma.recurringTask.deleteMany()
   await prisma.teamNote.deleteMany()
   await prisma.monthlyTarget.deleteMany()
   await prisma.dailySale.deleteMany()
   await prisma.task.deleteMany()
+  await prisma.moveRequest.deleteMany()
+  await prisma.gamePawn.deleteMany()
+  await prisma.game.deleteMany()
   await prisma.user.deleteMany()
   await prisma.indicator.deleteMany()
 
@@ -289,6 +295,21 @@ async function main(): Promise<void> {
     ],
   })
   console.log('✓ Notes équipe créées pour Léa (2 challenges)')
+
+  // ── Tâches récurrentes (checklist quotidienne) ───────────────────────────────
+  const recurringTasksToCreate = [
+    { title: 'Qualifs',                    order: 1 },
+    { title: 'MAJ tableau chiffres',       order: 2 },
+    { title: 'Collecte et SAVI',           order: 3 },
+    { title: 'Reprises',                   order: 4 },
+    { title: 'Merch/étiquettes prix',      order: 5 },
+    { title: 'Verifs AOD',                 order: 6 },
+    { title: 'Rangement BO/reserve',       order: 7 },
+    { title: 'Banque/café',                order: 8 },
+    { title: 'Mobile démo/Mobile pricing', order: 9 },
+  ]
+  await prisma.recurringTask.createMany({ data: recurringTasksToCreate })
+  console.log(`✓ ${recurringTasksToCreate.length} tâches récurrentes créées`)
 
   console.log('\n✅ Seed terminé avec succès !')
 }

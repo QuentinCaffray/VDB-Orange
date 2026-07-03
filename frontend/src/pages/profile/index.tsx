@@ -17,6 +17,10 @@ export default function ProfilePage() {
     navigate('/admin/users')
   }
 
+  function handleManageRecurringTasksClick(): void {
+    navigate('/admin/recurring-tasks')
+  }
+
   return (
     <div className="p-6 flex flex-col gap-6">
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--color-text-primary)' }}>
@@ -107,6 +111,30 @@ export default function ProfilePage() {
             <div className="flex-1">
               <p className="text-sm font-bold text-text-primary m-0">Gestion des comptes</p>
               <p className="text-xs text-text-secondary m-0 mt-0.5">Créer un vendeur · réinitialiser un mdp</p>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+
+          <button
+            onClick={handleManageRecurringTasksClick}
+            className="w-full bg-white rounded-2xl px-4 py-4 shadow-[0_4px_14px_rgba(0,0,0,0.05)] flex items-center gap-3 text-left hover-lift"
+            style={{ border: '1px solid var(--color-brand-tint)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'var(--color-brand-tint)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF7900" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+                <rect x="9" y="3" width="6" height="4" rx="1" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-text-primary m-0">Tâches récurrentes</p>
+              <p className="text-xs text-text-secondary m-0 mt-0.5">Gérer la checklist quotidienne</p>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
