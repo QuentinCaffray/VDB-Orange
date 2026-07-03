@@ -659,7 +659,7 @@ function PawnOnFloor({ pawn, isCurrentUser, isClimbing, isOnGoalFloor, isLeader,
       )}
       {isLastPlace && (
         <span style={{ position: 'absolute', top: 0, fontSize: 13, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.55))' }}>
-          🫏
+          💩
         </span>
       )}
       <div
