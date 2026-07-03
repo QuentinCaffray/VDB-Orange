@@ -11,6 +11,7 @@ import userRouter from './routes/user.routes'
 import teamNoteRouter from './routes/team-note.routes'
 import gameRouter from './routes/game.routes'
 import sseRouter from './routes/sse.routes'
+import recurringTaskRouter from './routes/recurring-task.routes'
 import { globalErrorHandler } from './middlewares/error.middleware'
 
 const app = express()
@@ -36,6 +37,7 @@ app.use('/api/users', userRouter)
 app.use('/api/team-notes', teamNoteRouter)
 app.use('/api/game', gameRouter)
 app.use('/api/events', sseRouter)
+app.use('/api/recurring-tasks', recurringTaskRouter)
 
 // ─── Santé ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_request, response) => {

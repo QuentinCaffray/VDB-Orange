@@ -16,6 +16,7 @@ import TeamPage from './pages/team'
 import ProfilePage from './pages/profile'
 import AdminManageIndicatorsPage from './pages/admin/indicators'
 import AdminUsersPage from './pages/admin/users'
+import AdminRecurringTasksPage from './pages/admin/recurring-tasks'
 import ChangePasswordPage from './pages/profile/change-password'
 import GamePage from './pages/game'
 
@@ -54,6 +55,7 @@ export default function App() {
                 <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
                 <Route path="/admin/indicators" element={<AdminManageIndicatorsPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/recurring-tasks" element={<AdminRecurringTasksPage />} />
               </Route>
               <Route path="/profile/change-password" element={<ChangePasswordPage />} />
               <Route path="/game" element={<GamePage />} />
