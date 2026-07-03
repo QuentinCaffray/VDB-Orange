@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 import {
@@ -393,10 +394,11 @@ export default function ObjectivesPage() {
               />
             )}
 
-            {/* Barre actions — visible en mode édition */}
-            {isEditingTargets && (
+            {/* Barre actions — portail dans document.body pour échapper au transform de page-enter
+                qui casserait le position:fixed en le rendant relatif au div animé plutôt qu'au viewport */}
+            {isEditingTargets && createPortal(
               <div
-                className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 px-5 py-4 bg-white border-t border-border-soft flex gap-3"
+                className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 px-5 py-4 bg-white dark:bg-[#1c1c1e] border-t border-border-soft flex gap-3"
                 style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
               >
                 <button
@@ -413,7 +415,8 @@ export default function ObjectivesPage() {
                 >
                   {isSavingTargets ? 'Enregistrement…' : `Enregistrer pour ${selectedVendor?.name ?? '…'}`}
                 </button>
-              </div>
+              </div>,
+              document.body,
             )}
           </>
         )}
