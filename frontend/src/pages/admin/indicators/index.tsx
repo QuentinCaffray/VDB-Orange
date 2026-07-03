@@ -5,6 +5,7 @@ import {
   useIndicators,
   useCreateIndicator,
   useUpdateIndicator,
+  useReorderIndicators,
   useDeleteIndicator,
 } from '../../../features/sales/hooks/useSales'
 import { Indicator, IndicatorType } from '../../../types/sales.types'
@@ -32,6 +33,7 @@ export default function AdminManageIndicatorsPage() {
   const { data: indicators = [] } = useIndicators()
   const { mutateAsync: createIndicatorAsync, isPending: isCreating } = useCreateIndicator()
   const { mutateAsync: updateIndicatorAsync, isPending: isUpdating } = useUpdateIndicator()
+  const { mutateAsync: reorderIndicatorsAsync } = useReorderIndicators()
   const { mutate: deleteIndicator } = useDeleteIndicator()
 
   const [drafts, setDrafts] = useState<IndicatorDraft[]>([])
@@ -97,20 +99,19 @@ export default function AdminManageIndicatorsPage() {
     const currentOrder = drafts[globalIndex].order
     const previousOrder = previousDraft.order
 
-    setDrafts((previous) =>
-      previous.map((draft, i) => {
-        if (i === globalIndex) return { ...draft, order: previousOrder }
-        if (i === previousGlobalIndex) return { ...draft, order: currentOrder }
-        return draft
-      }),
-    )
+    const updatedDrafts = drafts.map((draft, i) => {
+      if (i === globalIndex) return { ...draft, order: previousOrder }
+      if (i === previousGlobalIndex) return { ...draft, order: currentOrder }
+      return draft
+    })
+    setDrafts(updatedDrafts)
 
-    if (drafts[globalIndex].id && previousDraft.id) {
-      await Promise.all([
-        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: previousOrder } }),
-        updateIndicatorAsync({ id: previousDraft.id!, payload: { order: currentOrder } }),
-      ])
-    }
+    const orderedIds = updatedDrafts
+      .filter((draft) => draft.id !== null)
+      .sort((a, b) => a.order - b.order)
+      .map((draft) => draft.id!)
+
+    await reorderIndicatorsAsync(orderedIds)
   }
 
   async function handleMoveDown(globalIndex: number): Promise<void> {
@@ -125,20 +126,19 @@ export default function AdminManageIndicatorsPage() {
     const currentOrder = drafts[globalIndex].order
     const nextOrder = nextDraft.order
 
-    setDrafts((previous) =>
-      previous.map((draft, i) => {
-        if (i === globalIndex) return { ...draft, order: nextOrder }
-        if (i === nextGlobalIndex) return { ...draft, order: currentOrder }
-        return draft
-      }),
-    )
+    const updatedDrafts = drafts.map((draft, i) => {
+      if (i === globalIndex) return { ...draft, order: nextOrder }
+      if (i === nextGlobalIndex) return { ...draft, order: currentOrder }
+      return draft
+    })
+    setDrafts(updatedDrafts)
 
-    if (drafts[globalIndex].id && nextDraft.id) {
-      await Promise.all([
-        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: nextOrder } }),
-        updateIndicatorAsync({ id: nextDraft.id!, payload: { order: currentOrder } }),
-      ])
-    }
+    const orderedIds = updatedDrafts
+      .filter((draft) => draft.id !== null)
+      .sort((a, b) => a.order - b.order)
+      .map((draft) => draft.id!)
+
+    await reorderIndicatorsAsync(orderedIds)
   }
 
   function validateDrafts(): string | null {
