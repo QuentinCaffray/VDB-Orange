@@ -7,7 +7,9 @@ import {
   useDailySales,
   useMonthlyProgress,
   useSetMonthlyTarget,
+  useUpdateIndicator,
 } from '../../features/sales/hooks/useSales'
+import { MonthlyProgressEntry } from '../../types/sales.types'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
 import { useCurrentDate } from '../../hooks/useCurrentDate'
 import { getLocalDateString } from '../../lib/date'
@@ -99,10 +101,10 @@ export default function ObjectivesPage() {
   const [targetEdits, setTargetEdits] = useState<Record<string, number | null>>({})
   const [viewMonth, setViewMonth] = useState<number>(currentMonth)
   const [viewYear, setViewYear] = useState<number>(currentYear)
+  const [reorderedEntryIds, setReorderedEntryIds] = useState<string[]>([])
 
   const isTodaySelected = selectedDate === todayString
   const isViewingCurrentMonth = viewMonth === currentMonth && viewYear === currentYear
-
   const isAdmin = currentUser?.role === 'admin'
 
   function handlePreviousMonth(): void {
@@ -125,8 +127,6 @@ export default function ObjectivesPage() {
   }
 
   const { data: allUsers = [] } = useAllUsers()
-
-  // Admins et vendeurs participent tous aux ventes — le sélecteur inclut tout le monde
   const resolvedVendorId = selectedVendorId || currentUser?.id || ''
 
   const { data: indicators = [], isLoading: isIndicatorsLoading } = useIndicators()
@@ -145,6 +145,7 @@ export default function ObjectivesPage() {
     viewYear,
     resolvedVendorId,
   )
+  const { mutateAsync: updateIndicatorOrder } = useUpdateIndicator()
 
   const selectedVendor = allUsers.find((user) => user.id === resolvedVendorId)
 
@@ -152,7 +153,23 @@ export default function ObjectivesPage() {
   useEffect(() => {
     setIsEditingTargets(false)
     setTargetEdits({})
+    setReorderedEntryIds([])
   }, [selectedVendorId, viewMonth, viewYear])
+
+  // Initialise l'ordre local à l'entrée en mode édition
+  useEffect(() => {
+    if (isEditingTargets && monthlyProgress.length > 0) {
+      setReorderedEntryIds(monthlyProgress.map((entry) => entry.indicatorId))
+    } else if (!isEditingTargets) {
+      setReorderedEntryIds([])
+    }
+  }, [isEditingTargets]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const displayedProgressEntries: MonthlyProgressEntry[] = reorderedEntryIds.length > 0
+    ? reorderedEntryIds
+        .map((id) => monthlyProgress.find((entry) => entry.indicatorId === id))
+        .filter((entry): entry is MonthlyProgressEntry => entry !== undefined)
+    : monthlyProgress
 
   function handleVendorSelect(vendorId: string): void {
     setSelectedVendorId(vendorId)
@@ -162,30 +179,47 @@ export default function ObjectivesPage() {
     setTargetEdits((previous) => ({ ...previous, [indicatorId]: value }))
   }
 
+  function handleMoveEntry(indicatorId: string, direction: 'up' | 'down'): void {
+    setReorderedEntryIds((current) => {
+      const index = current.indexOf(indicatorId)
+      if (index === -1) return current
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= current.length) return current
+      const updated = [...current]
+      updated[index] = current[targetIndex]
+      updated[targetIndex] = indicatorId
+      return updated
+    })
+  }
+
   function handleCancelEdit(): void {
     setIsEditingTargets(false)
     setTargetEdits({})
+    setReorderedEntryIds([])
   }
 
   async function handleSaveTargets(): Promise<void> {
-    const indicatorIdsWithChanges = Object.keys(targetEdits)
-
-    for (const indicatorId of indicatorIdsWithChanges) {
+    for (const indicatorId of Object.keys(targetEdits)) {
       const newTarget = targetEdits[indicatorId]
       if (newTarget === null) continue
+      await saveTarget({ userId: resolvedVendorId, indicatorId, month: viewMonth, year: viewYear, target: newTarget })
+    }
 
-      await saveTarget({
-        userId: resolvedVendorId,
-        indicatorId,
-        month: viewMonth,
-        year: viewYear,
-        target: newTarget,
-      })
+    const originalOrder = monthlyProgress.map((entry) => entry.indicatorId)
+    const orderChanged = reorderedEntryIds.some((id, index) => originalOrder[index] !== id)
+    if (orderChanged) {
+      for (const [index, indicatorId] of reorderedEntryIds.entries()) {
+        await updateIndicatorOrder({ id: indicatorId, payload: { order: index } })
+      }
     }
 
     setIsEditingTargets(false)
     setTargetEdits({})
+    setReorderedEntryIds([])
   }
+
+  const hasChangesToSave = Object.keys(targetEdits).length > 0 ||
+    reorderedEntryIds.some((id, index) => monthlyProgress[index]?.indicatorId !== id)
 
   if (!currentUser) return null
 
@@ -379,13 +413,14 @@ export default function ObjectivesPage() {
               <ObjectivesSkeleton />
             ) : (
               <MonthlyProgress
-                progressEntries={monthlyProgress}
+                progressEntries={displayedProgressEntries}
                 month={viewMonth}
                 year={viewYear}
                 vendorName={isAdmin ? selectedVendor?.name : undefined}
                 isEditMode={isEditingTargets}
                 editableTargets={targetEdits}
                 onTargetChange={handleTargetChange}
+                onMoveEntry={isEditingTargets ? handleMoveEntry : undefined}
                 monthlyIndicatorIds={new Set(monthlyIndicators.map((i) => i.id))}
                 currentUserId={currentUser.id}
                 currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
@@ -409,7 +444,7 @@ export default function ObjectivesPage() {
                 </button>
                 <button
                   onClick={handleSaveTargets}
-                  disabled={isSavingTargets || Object.keys(targetEdits).length === 0}
+                  disabled={isSavingTargets || !hasChangesToSave}
                   className="flex-[2] py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-40"
                   style={{ background: '#FF7900' }}
                 >

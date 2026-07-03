@@ -41,11 +41,11 @@ interface MonthlyProgressProps {
   isEditMode?: boolean
   editableTargets?: Record<string, number | null>
   onTargetChange?: (indicatorId: string, value: number | null) => void
+  onMoveEntry?: (indicatorId: string, direction: 'up' | 'down') => void
   monthlyIndicatorIds?: Set<string>
   currentUserId?: string
   currentUserColor?: string
   allowSaleCorrection?: boolean
-  // ID du vendeur cible — si défini, les actions d'édition s'appliquent à ce vendeur (vue admin)
   targetUserId?: string
 }
 
@@ -57,6 +57,7 @@ export default function MonthlyProgress({
   isEditMode = false,
   editableTargets = {},
   onTargetChange,
+  onMoveEntry,
   monthlyIndicatorIds,
   currentUserId,
   currentUserColor,
@@ -100,7 +101,9 @@ export default function MonthlyProgress({
 
       {/* Barres de progression */}
       <div className="flex flex-col gap-3">
-        {progressEntries.map((entry) => {
+        {progressEntries.map((entry, index) => {
+          const isFirstEntry = index === 0
+          const isLastEntry = index === progressEntries.length - 1
           const displayTarget = isEditMode
             ? (editableTargets[entry.indicatorId] ?? entry.target)
             : entry.target
@@ -118,7 +121,33 @@ export default function MonthlyProgress({
             <div key={entry.indicatorId} className="bg-white rounded-2xl px-5 py-5 shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover-lift">
               <div className="flex items-center justify-between mb-2">
 
-                {/* Nom + badge */}
+                {/* Boutons de réordonnancement — mode édition admin uniquement */}
+                {isEditMode && onMoveEntry && (
+                  <div className="flex flex-col gap-0.5 shrink-0 mr-1">
+                    <button
+                      onClick={() => onMoveEntry(entry.indicatorId, 'up')}
+                      disabled={isFirstEntry}
+                      className="w-6 h-5 flex items-center justify-center rounded text-text-tertiary disabled:opacity-20 hover:text-text-primary transition-colors"
+                      aria-label="Monter"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="18 15 12 9 6 15" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => onMoveEntry(entry.indicatorId, 'down')}
+                      disabled={isLastEntry}
+                      className="w-6 h-5 flex items-center justify-center rounded text-text-tertiary disabled:opacity-20 hover:text-text-primary transition-colors"
+                      aria-label="Descendre"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+              {/* Nom + badge */}
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <span className="text-sm font-bold text-text-primary truncate">
                     {entry.indicatorName}
