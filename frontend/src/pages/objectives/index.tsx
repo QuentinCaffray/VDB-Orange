@@ -298,7 +298,7 @@ export default function ObjectivesPage() {
         </div>
       </div>
 
-      <div className="px-5 py-4">
+      <div className={`px-5 py-4${isEditingTargets ? ' pb-36 md:pb-24' : ''}`}>
 
         {/* ── Onglet Jour ── */}
         {mainTab === 'day' && (
