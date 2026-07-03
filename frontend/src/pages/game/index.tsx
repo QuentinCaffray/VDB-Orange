@@ -404,6 +404,7 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
 
   const floors = buildFloorMap(game.pawns, game.floorCount)
   const leaderUserId = findLeaderUserId(game.pawns)
+  const lastPlaceUserId = findLastPlaceUserId(game.pawns)
 
   return (
     <div
@@ -422,6 +423,7 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
         currentUserId={currentUserId}
         animatingPawnIds={animatingPawnIds}
         leaderUserId={leaderUserId}
+        lastPlaceUserId={lastPlaceUserId}
       />
       {Array.from({ length: game.floorCount - 1 }, (_, index) => {
         const floorNumber = game.floorCount - 1 - index
@@ -435,6 +437,7 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
             currentUserId={currentUserId}
             animatingPawnIds={animatingPawnIds}
             leaderUserId={leaderUserId}
+            lastPlaceUserId={lastPlaceUserId}
           />
         )
       })}
@@ -447,6 +450,7 @@ function GameBuilding({ game, currentUserId }: GameBuildingProps) {
         currentUserId={currentUserId}
         animatingPawnIds={animatingPawnIds}
         leaderUserId={leaderUserId}
+        lastPlaceUserId={lastPlaceUserId}
       />
     </div>
   )
@@ -458,6 +462,15 @@ function findLeaderUserId(pawns: GamePawn[]): string | null {
     pawn.currentFloor > best.currentFloor ? pawn : best
   )
   return leaderPawn.userId
+}
+
+function findLastPlaceUserId(pawns: GamePawn[]): string | null {
+  if (pawns.length <= 1) return null
+  const lowestFloor = Math.min(...pawns.map((pawn) => pawn.currentFloor))
+  const highestFloor = Math.max(...pawns.map((pawn) => pawn.currentFloor))
+  // Si tout le monde est au même étage, pas de dernier
+  if (lowestFloor === highestFloor) return null
+  return pawns.find((pawn) => pawn.currentFloor === lowestFloor)?.userId ?? null
 }
 
 function buildFloorMap(
@@ -484,27 +497,31 @@ interface FloorRowProps {
   currentUserId: string
   animatingPawnIds: Set<string>
   leaderUserId: string | null
+  lastPlaceUserId: string | null
 }
 
-function FloorRow({ floorNumber, floorCount, isGoal, isGround, pawns, currentUserId, animatingPawnIds, leaderUserId }: FloorRowProps) {
+function FloorRow({ floorNumber, floorCount, isGoal, isGround, pawns, currentUserId, animatingPawnIds, leaderUserId, lastPlaceUserId }: FloorRowProps) {
   const hasPawns = pawns.length > 0
-  const displayRank = floorCount - floorNumber
+  // Numéro affiché : l'étage réel (1 en bas, floorCount-1 en haut)
+  const floorLabel = floorNumber
+  // Rang pour les couleurs : 1 = étage le plus haut = doré (indépendant du label)
+  const rankForColor = floorCount - floorNumber
 
   const labelColumnBackground = isGoal
     ? 'linear-gradient(180deg, #FFD060 0%, #FF7900 100%)'
     : 'var(--color-building-column)'
 
   function getRankColor(): string {
-    if (displayRank === 1) return '#FFD700'
-    if (displayRank === 2) return '#C0C8D8'
-    if (displayRank === 3) return '#C8904A'
+    if (rankForColor === 1) return '#FFD700'
+    if (rankForColor === 2) return '#C0C8D8'
+    if (rankForColor === 3) return '#C8904A'
     return 'var(--color-building-floor-text)'
   }
 
   function getRankGlow(): string | undefined {
-    if (displayRank === 1) return '0 0 10px rgba(255,215,0,0.70)'
-    if (displayRank === 2) return '0 0 8px rgba(184,200,216,0.55)'
-    if (displayRank === 3) return '0 0 8px rgba(200,144,74,0.45)'
+    if (rankForColor === 1) return '0 0 10px rgba(255,215,0,0.70)'
+    if (rankForColor === 2) return '0 0 8px rgba(184,200,216,0.55)'
+    if (rankForColor === 3) return '0 0 8px rgba(200,144,74,0.45)'
     return undefined
   }
 
@@ -548,8 +565,8 @@ function FloorRow({ floorNumber, floorCount, isGoal, isGround, pawns, currentUse
         ) : (
           <>
             <span style={{ fontSize: 7, fontWeight: 700, color: getRankColor(), opacity: 0.75, letterSpacing: '0.06em', lineHeight: 1 }}>LV</span>
-            <span style={{ fontSize: displayRank > 9 ? 11 : 14, fontWeight: 900, color: getRankColor(), lineHeight: 1, textShadow: getRankGlow() }}>
-              {displayRank}
+            <span style={{ fontSize: floorLabel > 9 ? 11 : 14, fontWeight: 900, color: getRankColor(), lineHeight: 1, textShadow: getRankGlow() }}>
+              {floorLabel}
             </span>
           </>
         )}
@@ -594,6 +611,7 @@ function FloorRow({ floorNumber, floorCount, isGoal, isGround, pawns, currentUse
             isClimbing={animatingPawnIds.has(pawn.userId)}
             isOnGoalFloor={isGoal}
             isLeader={pawn.userId === leaderUserId}
+            isLastPlace={pawn.userId === lastPlaceUserId}
           />
         ))}
       </div>
@@ -607,9 +625,10 @@ interface PawnOnFloorProps {
   isClimbing: boolean
   isOnGoalFloor: boolean
   isLeader: boolean
+  isLastPlace: boolean
 }
 
-function PawnOnFloor({ pawn, isCurrentUser, isClimbing, isOnGoalFloor, isLeader }: PawnOnFloorProps) {
+function PawnOnFloor({ pawn, isCurrentUser, isClimbing, isOnGoalFloor, isLeader, isLastPlace }: PawnOnFloorProps) {
   const firstName = pawn.userName.split(' ')[0]
   const pawnSize = isLeader ? 38 : 34
 
@@ -631,11 +650,16 @@ function PawnOnFloor({ pawn, isCurrentUser, isClimbing, isOnGoalFloor, isLeader 
   return (
     <div
       className={isClimbing ? 'pawn-climbing' : ''}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative', paddingTop: isLeader ? 16 : 0 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative', paddingTop: (isLeader || isLastPlace) ? 16 : 0 }}
     >
       {isLeader && (
         <span style={{ position: 'absolute', top: 0, fontSize: 13, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.55))' }}>
           👑
+        </span>
+      )}
+      {isLastPlace && (
+        <span style={{ position: 'absolute', top: 0, fontSize: 13, lineHeight: 1, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.55))' }}>
+          🫏
         </span>
       )}
       <div
