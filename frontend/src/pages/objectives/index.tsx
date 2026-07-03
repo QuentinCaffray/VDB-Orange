@@ -432,7 +432,7 @@ export default function ObjectivesPage() {
             {isEditingTargets && createPortal(
               <div
                 className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 px-5 py-4 bg-white dark:bg-[#1c1c1e] border-t border-border-soft flex gap-3"
-                style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+                style={{ position: 'fixed', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
               >
                 <button
                   onClick={handleCancelEdit}
