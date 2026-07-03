@@ -3,11 +3,12 @@ import {
   getAllIndicatorsHandler,
   createIndicatorHandler,
   updateIndicatorHandler,
+  reorderIndicatorsHandler,
   deleteIndicatorHandler,
 } from '../controllers/indicator.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
-import { createIndicatorSchema, updateIndicatorSchema } from '../types/indicator.types'
+import { createIndicatorSchema, updateIndicatorSchema, reorderIndicatorsSchema } from '../types/indicator.types'
 
 const indicatorRouter = Router()
 
@@ -18,6 +19,9 @@ indicatorRouter.get('/', getAllIndicatorsHandler)
 
 // POST /indicators — créer un indicateur (admin)
 indicatorRouter.post('/', requireAdmin, validateBody(createIndicatorSchema), createIndicatorHandler)
+
+// PATCH /indicators/reorder — réordonnancer en bulk via transaction (avant /:id pour éviter l'ambiguïté)
+indicatorRouter.patch('/reorder', requireAdmin, validateBody(reorderIndicatorsSchema), reorderIndicatorsHandler)
 
 // PATCH /indicators/:id — modifier nom / type / ordre / visibilité (admin)
 indicatorRouter.patch('/:id', requireAdmin, validateBody(updateIndicatorSchema), updateIndicatorHandler)

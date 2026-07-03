@@ -37,6 +37,10 @@ export async function updateIndicator(id: string, payload: UpdateIndicatorPayloa
   return response.data
 }
 
+export async function reorderIndicators(orderedIds: string[]): Promise<void> {
+  await api.patch('/indicators/reorder', { orderedIds })
+}
+
 export async function deleteIndicator(id: string): Promise<void> {
   await api.delete(`/indicators/${id}`)
 }

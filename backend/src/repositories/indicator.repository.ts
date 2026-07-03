@@ -36,3 +36,11 @@ export async function updateIndicator(
 export async function hardDeleteIndicator(indicatorId: string) {
   return prisma.indicator.delete({ where: { id: indicatorId } })
 }
+
+export async function reorderIndicators(orderedIds: string[]): Promise<void> {
+  await prisma.$transaction(
+    orderedIds.map((indicatorId, index) =>
+      prisma.indicator.update({ where: { id: indicatorId }, data: { order: index } }),
+    ),
+  )
+}

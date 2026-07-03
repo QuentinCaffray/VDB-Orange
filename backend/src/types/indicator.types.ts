@@ -17,8 +17,13 @@ export const updateIndicatorSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
+export const reorderIndicatorsSchema = z.object({
+  orderedIds: z.array(z.string().cuid()).min(1, 'Au moins un indicateur requis'),
+})
+
 export type CreateIndicatorInput = z.infer<typeof createIndicatorSchema>
 export type UpdateIndicatorInput = z.infer<typeof updateIndicatorSchema>
+export type ReorderIndicatorsInput = z.infer<typeof reorderIndicatorsSchema>
 
 export interface IndicatorResponse {
   id: string

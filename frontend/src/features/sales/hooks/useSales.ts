@@ -13,6 +13,7 @@ import {
   setMonthlyTarget,
   createIndicator,
   updateIndicator,
+  reorderIndicators,
   deleteIndicator,
   setTargetForAllVendors,
   CreateIndicatorPayload,
@@ -46,6 +47,14 @@ export function useUpdateIndicator() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateIndicatorPayload }) =>
       updateIndicator(id, payload),
     // Préfixe ['indicators'] invalide toutes les queries indicateurs (['indicators'] et ['indicators', 'all'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['indicators'] }),
+  })
+}
+
+export function useReorderIndicators() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (orderedIds: string[]) => reorderIndicators(orderedIds),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['indicators'] }),
   })
 }
