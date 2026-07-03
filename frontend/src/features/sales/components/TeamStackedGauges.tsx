@@ -49,7 +49,7 @@ export default function TeamStackedGauges({
           <div key={indicator.id} className="bg-white rounded-2xl px-4 py-4 shadow-[0_4px_14px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-bold text-text-primary m-0">{indicator.name}</p>
-              <span className="text-sm font-bold text-text-secondary">{total}</span>
+              <span className="text-sm font-bold text-text-primary">{total}</span>
             </div>
 
             {total === 0 ? (
