@@ -16,21 +16,27 @@ function calculateDailyPace(
   target: number,
   month: number,
   year: number,
+  workingDaysOverride?: number | null,
 ): DailyPaceInfo {
   const today = new Date()
   const daysInMonth = new Date(year, month, 0).getDate()
   const isCurrentMonth = today.getMonth() + 1 === month && today.getFullYear() === year
   const currentDay = isCurrentMonth ? today.getDate() : daysInMonth
 
-  const daysRemaining = daysInMonth - currentDay
+  // Si un nombre de jours travaillés est défini, on proratise pour estimer
+  // combien de ces jours sont déjà écoulés, plutôt que d'utiliser les jours calendaires bruts.
+  const effectiveWorkingDays = workingDaysOverride ?? daysInMonth
+  const workingDaysElapsed = Math.round(effectiveWorkingDays * (currentDay / daysInMonth))
+  const workingDaysRemaining = effectiveWorkingDays - workingDaysElapsed
+
   const salesNeeded = target - totalSales
 
-  if (daysRemaining <= 0 || salesNeeded <= 0) return { type: 'none' }
+  if (workingDaysRemaining <= 0 || salesNeeded <= 0) return { type: 'none' }
 
-  const paceNeeded = salesNeeded / daysRemaining
-  const currentPace = currentDay > 0 ? totalSales / currentDay : 0
+  const paceNeeded = salesNeeded / workingDaysRemaining
+  const currentPace = workingDaysElapsed > 0 ? totalSales / workingDaysElapsed : 0
 
-  return { type: 'pace', paceNeeded, currentPace, daysRemaining }
+  return { type: 'pace', paceNeeded, currentPace, daysRemaining: workingDaysRemaining }
 }
 
 interface MonthlyProgressProps {
@@ -47,6 +53,9 @@ interface MonthlyProgressProps {
   currentUserColor?: string
   allowSaleCorrection?: boolean
   targetUserId?: string
+  // Nombre de jours travaillés par le vendeur ce mois (défini par l'admin).
+  // Si absent, le calcul du rythme journalier utilise les jours calendaires du mois.
+  workingDays?: number | null
 }
 
 export default function MonthlyProgress({
@@ -63,6 +72,7 @@ export default function MonthlyProgress({
   currentUserColor,
   allowSaleCorrection = false,
   targetUserId,
+  workingDays,
 }: MonthlyProgressProps) {
   const [animationReady, setAnimationReady] = useState(false)
 
@@ -96,6 +106,11 @@ export default function MonthlyProgress({
           <p className="text-xs text-white/50 m-0 mt-1">
             Modifiez les cibles pour ce vendeur
           </p>
+        )}
+        {!isEditMode && workingDays != null && (
+          <span className="self-start mt-2 text-xs font-semibold text-white/70 bg-white/10 px-2.5 py-1 rounded-full">
+            {workingDays} j. travaillés ce mois
+          </span>
         )}
       </div>
 
@@ -234,7 +249,7 @@ export default function MonthlyProgress({
 
               {/* Rythme journalier — uniquement pour les indicateurs journaliers, vue vendeur, objectif non atteint */}
               {allowSaleCorrection && !isEditMode && !isMonthlyEntry && displayTarget !== null && displayTarget > 0 && !isValidated && (() => {
-                const paceInfo = calculateDailyPace(entry.totalSales, displayTarget, month, year)
+                const paceInfo = calculateDailyPace(entry.totalSales, displayTarget, month, year, workingDays)
                 if (paceInfo.type === 'none') return null
 
                 const { paceNeeded, currentPace, daysRemaining } = paceInfo as Required<DailyPaceInfo>

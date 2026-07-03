@@ -176,3 +176,27 @@ export async function upsertMonthlyTarget(
     update: { target },
   })
 }
+
+export async function findMonthlyWorkingDays(
+  userId: string,
+  month: number,
+  year: number,
+): Promise<number | null> {
+  const record = await prisma.monthlyWorkingDays.findUnique({
+    where: { month_year_userId: { month, year, userId } },
+  })
+  return record?.workingDays ?? null
+}
+
+export async function upsertMonthlyWorkingDays(
+  userId: string,
+  month: number,
+  year: number,
+  workingDays: number,
+): Promise<void> {
+  await prisma.monthlyWorkingDays.upsert({
+    where: { month_year_userId: { month, year, userId } },
+    update: { workingDays },
+    create: { userId, month, year, workingDays },
+  })
+}

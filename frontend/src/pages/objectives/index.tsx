@@ -8,6 +8,8 @@ import {
   useMonthlyProgress,
   useSetMonthlyTarget,
   useReorderIndicators,
+  useMonthlyWorkingDays,
+  useSetMonthlyWorkingDays,
 } from '../../features/sales/hooks/useSales'
 import { MonthlyProgressEntry } from '../../types/sales.types'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
@@ -86,6 +88,70 @@ function ObjectivesSkeleton() {
   )
 }
 
+const MIN_WORKING_DAYS = 1
+const MAX_WORKING_DAYS = 31
+
+interface WorkingDaysStepperProps {
+  value: number | null
+  onChange: (newValue: number) => void
+  vendorName: string
+}
+
+function WorkingDaysStepper({ value, onChange, vendorName }: WorkingDaysStepperProps) {
+  // Valeur affichée : null signifie "non défini par l'admin" → on affiche un tiret
+  // pour indiquer que le calcul utilisera les jours calendaires par défaut.
+  const displayedValue = value ?? null
+
+  function handleDecrement(): void {
+    const current = value ?? MIN_WORKING_DAYS
+    if (current > MIN_WORKING_DAYS) onChange(current - 1)
+  }
+
+  function handleIncrement(): void {
+    const current = value ?? MIN_WORKING_DAYS
+    if (current < MAX_WORKING_DAYS) onChange(current + 1)
+  }
+
+  return (
+    <div className="mt-3 rounded-2xl px-4 py-3 flex items-center justify-between gap-3" style={{ background: 'var(--color-surface)' }}>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs font-bold text-text-primary">Jours travaillés ce mois</span>
+        <span className="text-[11px] text-text-tertiary">
+          Pour {vendorName} — sert au calcul du rythme journalier
+        </span>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={handleDecrement}
+          disabled={value !== null && value <= MIN_WORKING_DAYS}
+          className="w-8 h-8 flex items-center justify-center rounded-xl text-text-secondary disabled:opacity-30 transition-opacity"
+          style={{ background: 'var(--color-canvas)' }}
+          aria-label="Réduire les jours travaillés"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <span className="w-8 text-center text-sm font-bold text-text-primary tabular-nums">
+          {displayedValue ?? '—'}
+        </span>
+        <button
+          onClick={handleIncrement}
+          disabled={value !== null && value >= MAX_WORKING_DAYS}
+          className="w-8 h-8 flex items-center justify-center rounded-xl text-text-secondary disabled:opacity-30 transition-opacity"
+          style={{ background: 'var(--color-canvas)' }}
+          aria-label="Augmenter les jours travaillés"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ObjectivesPage() {
   const navigate = useNavigate()
   const { currentUser } = useAuthContext()
@@ -102,6 +168,8 @@ export default function ObjectivesPage() {
   const [viewMonth, setViewMonth] = useState<number>(currentMonth)
   const [viewYear, setViewYear] = useState<number>(currentYear)
   const [reorderedEntryIds, setReorderedEntryIds] = useState<string[]>([])
+  // Nombre de jours travaillés en cours d'édition — null tant que l'admin n'a pas touché au stepper
+  const [editableWorkingDays, setEditableWorkingDays] = useState<number | null>(null)
 
   const isTodaySelected = selectedDate === todayString
   const isViewingCurrentMonth = viewMonth === currentMonth && viewYear === currentYear
@@ -147,6 +215,9 @@ export default function ObjectivesPage() {
   )
   const { mutateAsync: saveIndicatorOrder } = useReorderIndicators()
 
+  const workingDaysQuery = useMonthlyWorkingDays(resolvedVendorId, viewMonth, viewYear)
+  const { mutateAsync: saveWorkingDays } = useSetMonthlyWorkingDays()
+
   const selectedVendor = allUsers.find((user) => user.id === resolvedVendorId)
 
   // Réinitialiser l'édition quand on change de vendeur ou de mois
@@ -154,6 +225,7 @@ export default function ObjectivesPage() {
     setIsEditingTargets(false)
     setTargetEdits({})
     setReorderedEntryIds([])
+    setEditableWorkingDays(null)
   }, [selectedVendorId, viewMonth, viewYear])
 
   // Initialise l'ordre local à l'entrée en mode édition
@@ -196,6 +268,7 @@ export default function ObjectivesPage() {
     setIsEditingTargets(false)
     setTargetEdits({})
     setReorderedEntryIds([])
+    setEditableWorkingDays(null)
   }
 
   async function handleSaveTargets(): Promise<void> {
@@ -211,13 +284,29 @@ export default function ObjectivesPage() {
       await saveIndicatorOrder(reorderedEntryIds)
     }
 
+    const savedWorkingDays = workingDaysQuery.data?.workingDays ?? null
+    const workingDaysChanged = editableWorkingDays !== null && editableWorkingDays !== savedWorkingDays
+    if (workingDaysChanged) {
+      await saveWorkingDays({
+        userId: resolvedVendorId,
+        month: viewMonth,
+        year: viewYear,
+        workingDays: editableWorkingDays,
+      })
+    }
+
     setIsEditingTargets(false)
     setTargetEdits({})
     setReorderedEntryIds([])
+    setEditableWorkingDays(null)
   }
 
-  const hasChangesToSave = Object.keys(targetEdits).length > 0 ||
-    reorderedEntryIds.some((id, index) => monthlyProgress[index]?.indicatorId !== id)
+  const savedWorkingDays = workingDaysQuery.data?.workingDays ?? null
+  const workingDaysEdited = editableWorkingDays !== null && editableWorkingDays !== savedWorkingDays
+  const hasChangesToSave =
+    Object.keys(targetEdits).length > 0 ||
+    reorderedEntryIds.some((id, index) => monthlyProgress[index]?.indicatorId !== id) ||
+    workingDaysEdited
 
   if (!currentUser) return null
 
@@ -393,7 +482,10 @@ export default function ObjectivesPage() {
                 {/* Bouton modifier les objectifs — uniquement sur le mois en cours */}
                 {!isEditingTargets && isViewingCurrentMonth && (
                   <button
-                    onClick={() => setIsEditingTargets(true)}
+                    onClick={() => {
+                      setEditableWorkingDays(workingDaysQuery.data?.workingDays ?? null)
+                      setIsEditingTargets(true)
+                    }}
                     className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
                     style={{ background: 'var(--color-brand-tint)', color: '#FF7900' }}
                   >
@@ -403,6 +495,15 @@ export default function ObjectivesPage() {
                     </svg>
                     Modifier les objectifs de {selectedVendor?.name ?? '…'}
                   </button>
+                )}
+
+                {/* Stepper jours travaillés — visible uniquement en mode édition */}
+                {isEditingTargets && (
+                  <WorkingDaysStepper
+                    value={editableWorkingDays}
+                    onChange={setEditableWorkingDays}
+                    vendorName={selectedVendor?.name ?? '…'}
+                  />
                 )}
               </div>
             )}
@@ -424,6 +525,7 @@ export default function ObjectivesPage() {
                 currentUserColor={isAdmin ? (selectedVendor?.color ?? currentUser.color) : currentUser.color}
                 allowSaleCorrection={isViewingCurrentMonth}
                 targetUserId={isAdmin ? resolvedVendorId : undefined}
+                workingDays={workingDaysQuery.data?.workingDays}
               />
             )}
 

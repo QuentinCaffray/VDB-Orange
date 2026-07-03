@@ -49,3 +49,14 @@ export interface SetMonthlyTargetPayload {
   year: number
   target: number
 }
+
+export interface MonthlyWorkingDaysResponse {
+  workingDays: number | null
+}
+
+export interface SetMonthlyWorkingDaysPayload {
+  userId: string
+  month: number
+  year: number
+  workingDays: number
+}

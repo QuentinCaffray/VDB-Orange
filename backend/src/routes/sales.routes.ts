@@ -9,6 +9,8 @@ import {
   getTeamMonthlyBreakdownHandler,
   setMonthlyTargetHandler,
   setTargetForAllVendorsHandler,
+  getMonthlyWorkingDaysHandler,
+  setMonthlyWorkingDaysHandler,
 } from '../controllers/sales.controller'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
@@ -18,6 +20,7 @@ import {
   setMonthlyAbsoluteTotalSchema,
   setMonthlyTargetSchema,
   setTargetForAllVendorsSchema,
+  setMonthlyWorkingDaysSchema,
 } from '../types/sales.types'
 
 const salesRouter = Router()
@@ -50,5 +53,11 @@ salesRouter.put('/targets', requireAdmin, validateBody(setMonthlyTargetSchema), 
 
 // PUT /sales/targets/all-vendors — définir le même objectif pour tous les vendeurs (admin)
 salesRouter.put('/targets/all-vendors', requireAdmin, validateBody(setTargetForAllVendorsSchema), setTargetForAllVendorsHandler)
+
+// GET /sales/working-days?userId=ID&month=N&year=N — jours travaillés d'un vendeur pour un mois
+salesRouter.get('/working-days', getMonthlyWorkingDaysHandler)
+
+// PUT /sales/working-days — définir les jours travaillés d'un vendeur pour un mois (admin)
+salesRouter.put('/working-days', requireAdmin, validateBody(setMonthlyWorkingDaysSchema), setMonthlyWorkingDaysHandler)
 
 export default salesRouter
