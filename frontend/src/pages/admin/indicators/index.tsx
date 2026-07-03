@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   useIndicators,
   useCreateIndicator,
   useUpdateIndicator,
+  useReorderIndicators,
   useDeleteIndicator,
 } from '../../../features/sales/hooks/useSales'
 import { Indicator, IndicatorType } from '../../../types/sales.types'
@@ -32,12 +34,21 @@ export default function AdminManageIndicatorsPage() {
   const { data: indicators = [] } = useIndicators()
   const { mutateAsync: createIndicatorAsync, isPending: isCreating } = useCreateIndicator()
   const { mutateAsync: updateIndicatorAsync, isPending: isUpdating } = useUpdateIndicator()
+  const { mutateAsync: reorderIndicatorsAsync } = useReorderIndicators()
   const { mutate: deleteIndicator } = useDeleteIndicator()
 
   const [drafts, setDrafts] = useState<IndicatorDraft[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [movedIndicatorId, setMovedIndicatorId] = useState<string | null>(null)
   const hasInitialized = useRef(false)
+  const movedIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function flashMovedIndicator(indicatorId: string | null): void {
+    if (movedIndicatorTimeoutRef.current) clearTimeout(movedIndicatorTimeoutRef.current)
+    setMovedIndicatorId(indicatorId)
+    movedIndicatorTimeoutRef.current = setTimeout(() => setMovedIndicatorId(null), 500)
+  }
 
   useEffect(() => {
     if (indicators.length === 0) return
@@ -87,7 +98,9 @@ export default function AdminManageIndicatorsPage() {
 
   async function handleMoveUp(globalIndex: number): Promise<void> {
     const sectionType = drafts[globalIndex].type
-    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const sectionDrafts = drafts
+      .filter((draft) => draft.type === sectionType)
+      .sort((a, b) => a.order - b.order)
     const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
 
     if (positionInSection <= 0) return
@@ -97,25 +110,27 @@ export default function AdminManageIndicatorsPage() {
     const currentOrder = drafts[globalIndex].order
     const previousOrder = previousDraft.order
 
-    setDrafts((previous) =>
-      previous.map((draft, i) => {
-        if (i === globalIndex) return { ...draft, order: previousOrder }
-        if (i === previousGlobalIndex) return { ...draft, order: currentOrder }
-        return draft
-      }),
-    )
+    const updatedDrafts = drafts.map((draft, i) => {
+      if (i === globalIndex) return { ...draft, order: previousOrder }
+      if (i === previousGlobalIndex) return { ...draft, order: currentOrder }
+      return draft
+    })
+    setDrafts(updatedDrafts)
+    flashMovedIndicator(drafts[globalIndex].id)
 
-    if (drafts[globalIndex].id && previousDraft.id) {
-      await Promise.all([
-        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: previousOrder } }),
-        updateIndicatorAsync({ id: previousDraft.id!, payload: { order: currentOrder } }),
-      ])
-    }
+    const orderedIds = updatedDrafts
+      .filter((draft) => draft.id !== null)
+      .sort((a, b) => a.order - b.order)
+      .map((draft) => draft.id!)
+
+    await reorderIndicatorsAsync(orderedIds)
   }
 
   async function handleMoveDown(globalIndex: number): Promise<void> {
     const sectionType = drafts[globalIndex].type
-    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const sectionDrafts = drafts
+      .filter((draft) => draft.type === sectionType)
+      .sort((a, b) => a.order - b.order)
     const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
 
     if (positionInSection >= sectionDrafts.length - 1) return
@@ -125,20 +140,20 @@ export default function AdminManageIndicatorsPage() {
     const currentOrder = drafts[globalIndex].order
     const nextOrder = nextDraft.order
 
-    setDrafts((previous) =>
-      previous.map((draft, i) => {
-        if (i === globalIndex) return { ...draft, order: nextOrder }
-        if (i === nextGlobalIndex) return { ...draft, order: currentOrder }
-        return draft
-      }),
-    )
+    const updatedDrafts = drafts.map((draft, i) => {
+      if (i === globalIndex) return { ...draft, order: nextOrder }
+      if (i === nextGlobalIndex) return { ...draft, order: currentOrder }
+      return draft
+    })
+    setDrafts(updatedDrafts)
+    flashMovedIndicator(drafts[globalIndex].id)
 
-    if (drafts[globalIndex].id && nextDraft.id) {
-      await Promise.all([
-        updateIndicatorAsync({ id: drafts[globalIndex].id!, payload: { order: nextOrder } }),
-        updateIndicatorAsync({ id: nextDraft.id!, payload: { order: currentOrder } }),
-      ])
-    }
+    const orderedIds = updatedDrafts
+      .filter((draft) => draft.id !== null)
+      .sort((a, b) => a.order - b.order)
+      .map((draft) => draft.id!)
+
+    await reorderIndicatorsAsync(orderedIds)
   }
 
   function validateDrafts(): string | null {
@@ -232,6 +247,7 @@ export default function AdminManageIndicatorsPage() {
           subtitle="cumulés vers le mois"
           drafts={dailyDrafts}
           allDrafts={drafts}
+          movedIndicatorId={movedIndicatorId}
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
@@ -244,6 +260,7 @@ export default function AdminManageIndicatorsPage() {
           subtitle="non cumulés depuis les ventes journalières"
           drafts={monthlyDrafts}
           allDrafts={drafts}
+          movedIndicatorId={movedIndicatorId}
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
@@ -283,26 +300,32 @@ export default function AdminManageIndicatorsPage() {
         </div>
       )}
 
-      {/* Barre actions fixe */}
-      <div
-        className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] px-5 py-4 bg-white border-t border-border-soft flex gap-3"
-        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-      >
-        <button
-          onClick={() => navigate('/objectives')}
-          className="flex-1 py-3 rounded-2xl border border-border-soft text-sm font-bold text-text-secondary"
+      {createPortal(
+        <div
+          className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 border-t border-border-soft flex gap-3 px-5 py-4"
+          style={{
+            position: 'fixed',
+            background: 'var(--color-card)',
+            paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+          }}
         >
-          Annuler
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isPendingAny}
-          className="flex-[2] py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-50"
-          style={{ background: '#FF7900' }}
-        >
-          {isPendingAny ? 'Enregistrement…' : 'Enregistrer'}
-        </button>
-      </div>
+          <button
+            onClick={() => navigate('/objectives')}
+            className="flex-1 py-3 rounded-2xl border border-border-soft text-sm font-bold text-text-secondary"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isPendingAny}
+            className="flex-[2] py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-50"
+            style={{ background: '#FF7900' }}
+          >
+            {isPendingAny ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </div>,
+        document.body,
+      )}
     </div>
   )
 }
@@ -312,6 +335,7 @@ interface IndicatorSectionProps {
   subtitle: string
   drafts: IndicatorDraft[]
   allDrafts: IndicatorDraft[]
+  movedIndicatorId: string | null
   onNameChange: (globalIndex: number, value: string) => void
   onTypeChange: (globalIndex: number, value: IndicatorType) => void
   onDelete: (globalIndex: number) => void
@@ -324,6 +348,7 @@ function IndicatorSection({
   subtitle,
   drafts,
   allDrafts,
+  movedIndicatorId,
   onNameChange,
   onTypeChange,
   onDelete,
@@ -353,6 +378,7 @@ function IndicatorSection({
               draft={draft}
               isFirstInSection={isFirst}
               isLastInSection={isLast}
+              isJustMoved={draft.id === movedIndicatorId}
               onNameChange={(value) => onNameChange(globalIndex, value)}
               onTypeChange={(value) => onTypeChange(globalIndex, value)}
               onDelete={() => onDelete(globalIndex)}
@@ -370,6 +396,7 @@ interface IndicatorRowProps {
   draft: IndicatorDraft
   isFirstInSection: boolean
   isLastInSection: boolean
+  isJustMoved: boolean
   onNameChange: (value: string) => void
   onTypeChange: (value: IndicatorType) => void
   onDelete: () => void
@@ -381,6 +408,7 @@ function IndicatorRow({
   draft,
   isFirstInSection,
   isLastInSection,
+  isJustMoved,
   onNameChange,
   onTypeChange,
   onDelete,
@@ -388,7 +416,15 @@ function IndicatorRow({
   onMoveDown,
 }: IndicatorRowProps) {
   return (
-    <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex flex-col gap-2">
+    <div
+      className="rounded-2xl px-4 py-3 flex flex-col gap-2 transition-all duration-300"
+      style={{
+        background: 'var(--color-card)',
+        boxShadow: isJustMoved
+          ? '0 0 0 2px rgba(255, 121, 0, 0.4), 0 4px 12px rgba(0,0,0,0.08)'
+          : '0 2px 8px rgba(0,0,0,0.05)',
+      }}
+    >
 
       {/* Ligne principale : nom + type + supprimer */}
       <div className="flex items-center gap-3">

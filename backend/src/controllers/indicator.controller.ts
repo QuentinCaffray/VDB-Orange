@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { CreateIndicatorInput, UpdateIndicatorInput } from '../types/indicator.types'
+import { CreateIndicatorInput, UpdateIndicatorInput, ReorderIndicatorsInput } from '../types/indicator.types'
 import * as indicatorService from '../services/indicator.service'
 
 export async function getAllIndicatorsHandler(
@@ -44,6 +44,19 @@ export async function updateIndicatorHandler(
     const indicatorId = request.params.id
     const updatedIndicator = await indicatorService.updateIndicator(indicatorId, request.body)
     response.json(updatedIndicator)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function reorderIndicatorsHandler(
+  request: Request<{}, {}, ReorderIndicatorsInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    await indicatorService.reorderIndicators(request.body.orderedIds)
+    response.status(204).send()
   } catch (error) {
     next(error)
   }

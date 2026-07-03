@@ -7,7 +7,7 @@ import {
   useDailySales,
   useMonthlyProgress,
   useSetMonthlyTarget,
-  useUpdateIndicator,
+  useReorderIndicators,
 } from '../../features/sales/hooks/useSales'
 import { MonthlyProgressEntry } from '../../types/sales.types'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
@@ -145,7 +145,7 @@ export default function ObjectivesPage() {
     viewYear,
     resolvedVendorId,
   )
-  const { mutateAsync: updateIndicatorOrder } = useUpdateIndicator()
+  const { mutateAsync: saveIndicatorOrder } = useReorderIndicators()
 
   const selectedVendor = allUsers.find((user) => user.id === resolvedVendorId)
 
@@ -208,9 +208,7 @@ export default function ObjectivesPage() {
     const originalOrder = monthlyProgress.map((entry) => entry.indicatorId)
     const orderChanged = reorderedEntryIds.some((id, index) => originalOrder[index] !== id)
     if (orderChanged) {
-      for (const [index, indicatorId] of reorderedEntryIds.entries()) {
-        await updateIndicatorOrder({ id: indicatorId, payload: { order: index } })
-      }
+      await saveIndicatorOrder(reorderedEntryIds)
     }
 
     setIsEditingTargets(false)
@@ -434,7 +432,7 @@ export default function ObjectivesPage() {
             {isEditingTargets && createPortal(
               <div
                 className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] z-30 px-5 py-4 bg-white dark:bg-[#1c1c1e] border-t border-border-soft flex gap-3"
-                style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+                style={{ position: 'fixed', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
               >
                 <button
                   onClick={handleCancelEdit}

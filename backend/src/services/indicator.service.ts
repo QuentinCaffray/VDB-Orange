@@ -6,6 +6,7 @@ import {
   createIndicator as createIndicatorInDatabase,
   updateIndicator as updateIndicatorInDatabase,
   hardDeleteIndicator,
+  reorderIndicators as reorderIndicatorsInDatabase,
 } from '../repositories/indicator.repository'
 import { IndicatorType, IndicatorResponse, UpdateIndicatorInput } from '../types/indicator.types'
 import { AppError } from '../types/error.types'
@@ -71,6 +72,10 @@ export async function updateIndicator(
 
   const updatedIndicator = await updateIndicatorInDatabase(indicatorId, data)
   return formatIndicatorResponse(updatedIndicator)
+}
+
+export async function reorderIndicators(orderedIds: string[]): Promise<void> {
+  await reorderIndicatorsInDatabase(orderedIds)
 }
 
 export async function deleteIndicator(indicatorId: string): Promise<void> {
