@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
@@ -334,6 +334,39 @@ function IndicatorSection({
   onMoveUp,
   onMoveDown,
 }: IndicatorSectionProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const savedPositionsRef = useRef<Map<string, number>>(new Map())
+
+  useLayoutEffect(() => {
+    if (!containerRef.current) return
+
+    const cards = containerRef.current.querySelectorAll<HTMLElement>('[data-indicator-id]')
+
+    // Applique la technique FLIP : anime depuis l'ancienne position vers la nouvelle
+    cards.forEach((card) => {
+      const indicatorId = card.getAttribute('data-indicator-id')!
+      const previousTop = savedPositionsRef.current.get(indicatorId)
+      if (previousTop === undefined) return
+      const currentTop = card.getBoundingClientRect().top
+      const delta = previousTop - currentTop
+      if (Math.abs(delta) < 1) return
+
+      card.style.transition = 'none'
+      card.style.transform = `translateY(${delta}px)`
+      void card.offsetHeight // Force le recalcul de layout avant d'animer
+      card.style.transition = 'transform 280ms cubic-bezier(0.4, 0, 0.2, 1)'
+      card.style.transform = ''
+    })
+
+    // Sauvegarde les positions actuelles pour la prochaine animation
+    cards.forEach((card) => {
+      savedPositionsRef.current.set(
+        card.getAttribute('data-indicator-id')!,
+        card.getBoundingClientRect().top,
+      )
+    })
+  }, [drafts])
+
   if (drafts.length === 0) return null
 
   return (
@@ -345,24 +378,28 @@ function IndicatorSection({
         <p className="text-xs text-text-tertiary m-0 mt-0.5">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div ref={containerRef} className="flex flex-col gap-2">
         {drafts.map((draft) => {
           const globalIndex = allDrafts.indexOf(draft)
           const positionInSection = drafts.indexOf(draft)
           const isFirst = positionInSection === 0
           const isLast = positionInSection === drafts.length - 1
           return (
-            <IndicatorRow
+            <div
               key={draft.id ?? `new-${globalIndex}`}
-              draft={draft}
-              isFirstInSection={isFirst}
-              isLastInSection={isLast}
-              onNameChange={(value) => onNameChange(globalIndex, value)}
-              onTypeChange={(value) => onTypeChange(globalIndex, value)}
-              onDelete={() => onDelete(globalIndex)}
-              onMoveUp={() => onMoveUp(globalIndex)}
-              onMoveDown={() => onMoveDown(globalIndex)}
-            />
+              data-indicator-id={draft.id ?? `new-${globalIndex}`}
+            >
+              <IndicatorRow
+                draft={draft}
+                isFirstInSection={isFirst}
+                isLastInSection={isLast}
+                onNameChange={(value) => onNameChange(globalIndex, value)}
+                onTypeChange={(value) => onTypeChange(globalIndex, value)}
+                onDelete={() => onDelete(globalIndex)}
+                onMoveUp={() => onMoveUp(globalIndex)}
+                onMoveDown={() => onMoveDown(globalIndex)}
+              />
+            </div>
           )
         })}
       </div>
