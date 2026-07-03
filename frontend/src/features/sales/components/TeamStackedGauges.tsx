@@ -53,11 +53,11 @@ export default function TeamStackedGauges({
             </div>
 
             {total === 0 ? (
-              <div className="h-8 rounded-full bg-surface flex items-center justify-center">
+              <div className="h-5 rounded-full bg-surface flex items-center justify-center">
                 <span className="text-xs text-text-tertiary">Aucune vente</span>
               </div>
             ) : (
-              <div className="flex h-8 rounded-full overflow-hidden">
+              <div className="flex h-5 rounded-full overflow-hidden">
                 {segments.map((segment) => {
                   const isCurrentUser = segment.userId === currentUserId
                   return (
