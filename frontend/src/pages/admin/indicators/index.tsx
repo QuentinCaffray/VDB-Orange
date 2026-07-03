@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
@@ -39,7 +39,15 @@ export default function AdminManageIndicatorsPage() {
   const [drafts, setDrafts] = useState<IndicatorDraft[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [movedIndicatorId, setMovedIndicatorId] = useState<string | null>(null)
   const hasInitialized = useRef(false)
+  const movedIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function flashMovedIndicator(indicatorId: string | null): void {
+    if (movedIndicatorTimeoutRef.current) clearTimeout(movedIndicatorTimeoutRef.current)
+    setMovedIndicatorId(indicatorId)
+    movedIndicatorTimeoutRef.current = setTimeout(() => setMovedIndicatorId(null), 500)
+  }
 
   useEffect(() => {
     if (indicators.length === 0) return
@@ -107,6 +115,7 @@ export default function AdminManageIndicatorsPage() {
       return draft
     })
     setDrafts(updatedDrafts)
+    flashMovedIndicator(drafts[globalIndex].id)
 
     const orderedIds = updatedDrafts
       .filter((draft) => draft.id !== null)
@@ -136,6 +145,7 @@ export default function AdminManageIndicatorsPage() {
       return draft
     })
     setDrafts(updatedDrafts)
+    flashMovedIndicator(drafts[globalIndex].id)
 
     const orderedIds = updatedDrafts
       .filter((draft) => draft.id !== null)
@@ -236,6 +246,7 @@ export default function AdminManageIndicatorsPage() {
           subtitle="cumulés vers le mois"
           drafts={dailyDrafts}
           allDrafts={drafts}
+          movedIndicatorId={movedIndicatorId}
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
@@ -248,6 +259,7 @@ export default function AdminManageIndicatorsPage() {
           subtitle="non cumulés depuis les ventes journalières"
           drafts={monthlyDrafts}
           allDrafts={drafts}
+          movedIndicatorId={movedIndicatorId}
           onNameChange={handleNameChange}
           onTypeChange={handleTypeChange}
           onDelete={handleDeleteIndicator}
@@ -316,6 +328,7 @@ interface IndicatorSectionProps {
   subtitle: string
   drafts: IndicatorDraft[]
   allDrafts: IndicatorDraft[]
+  movedIndicatorId: string | null
   onNameChange: (globalIndex: number, value: string) => void
   onTypeChange: (globalIndex: number, value: IndicatorType) => void
   onDelete: (globalIndex: number) => void
@@ -328,45 +341,13 @@ function IndicatorSection({
   subtitle,
   drafts,
   allDrafts,
+  movedIndicatorId,
   onNameChange,
   onTypeChange,
   onDelete,
   onMoveUp,
   onMoveDown,
 }: IndicatorSectionProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const savedPositionsRef = useRef<Map<string, number>>(new Map())
-
-  useLayoutEffect(() => {
-    if (!containerRef.current) return
-
-    const cards = containerRef.current.querySelectorAll<HTMLElement>('[data-indicator-id]')
-
-    // Applique la technique FLIP : anime depuis l'ancienne position vers la nouvelle
-    cards.forEach((card) => {
-      const indicatorId = card.getAttribute('data-indicator-id')!
-      const previousTop = savedPositionsRef.current.get(indicatorId)
-      if (previousTop === undefined) return
-      const currentTop = card.getBoundingClientRect().top
-      const delta = previousTop - currentTop
-      if (Math.abs(delta) < 1) return
-
-      card.style.transition = 'none'
-      card.style.transform = `translateY(${delta}px)`
-      void card.offsetHeight // Force le recalcul de layout avant d'animer
-      card.style.transition = 'transform 280ms cubic-bezier(0.4, 0, 0.2, 1)'
-      card.style.transform = ''
-    })
-
-    // Sauvegarde les positions actuelles pour la prochaine animation
-    cards.forEach((card) => {
-      savedPositionsRef.current.set(
-        card.getAttribute('data-indicator-id')!,
-        card.getBoundingClientRect().top,
-      )
-    })
-  }, [drafts])
-
   if (drafts.length === 0) return null
 
   return (
@@ -378,28 +359,25 @@ function IndicatorSection({
         <p className="text-xs text-text-tertiary m-0 mt-0.5">{subtitle}</p>
       </div>
 
-      <div ref={containerRef} className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {drafts.map((draft) => {
           const globalIndex = allDrafts.indexOf(draft)
           const positionInSection = drafts.indexOf(draft)
           const isFirst = positionInSection === 0
           const isLast = positionInSection === drafts.length - 1
           return (
-            <div
+            <IndicatorRow
               key={draft.id ?? `new-${globalIndex}`}
-              data-indicator-id={draft.id ?? `new-${globalIndex}`}
-            >
-              <IndicatorRow
-                draft={draft}
-                isFirstInSection={isFirst}
-                isLastInSection={isLast}
-                onNameChange={(value) => onNameChange(globalIndex, value)}
-                onTypeChange={(value) => onTypeChange(globalIndex, value)}
-                onDelete={() => onDelete(globalIndex)}
-                onMoveUp={() => onMoveUp(globalIndex)}
-                onMoveDown={() => onMoveDown(globalIndex)}
-              />
-            </div>
+              draft={draft}
+              isFirstInSection={isFirst}
+              isLastInSection={isLast}
+              isJustMoved={draft.id === movedIndicatorId}
+              onNameChange={(value) => onNameChange(globalIndex, value)}
+              onTypeChange={(value) => onTypeChange(globalIndex, value)}
+              onDelete={() => onDelete(globalIndex)}
+              onMoveUp={() => onMoveUp(globalIndex)}
+              onMoveDown={() => onMoveDown(globalIndex)}
+            />
           )
         })}
       </div>
@@ -411,6 +389,7 @@ interface IndicatorRowProps {
   draft: IndicatorDraft
   isFirstInSection: boolean
   isLastInSection: boolean
+  isJustMoved: boolean
   onNameChange: (value: string) => void
   onTypeChange: (value: IndicatorType) => void
   onDelete: () => void
@@ -422,6 +401,7 @@ function IndicatorRow({
   draft,
   isFirstInSection,
   isLastInSection,
+  isJustMoved,
   onNameChange,
   onTypeChange,
   onDelete,
@@ -429,7 +409,15 @@ function IndicatorRow({
   onMoveDown,
 }: IndicatorRowProps) {
   return (
-    <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex flex-col gap-2">
+    <div
+      className="rounded-2xl px-4 py-3 flex flex-col gap-2 transition-all duration-300"
+      style={{
+        background: isJustMoved ? 'rgba(255, 121, 0, 0.08)' : 'white',
+        boxShadow: isJustMoved
+          ? '0 0 0 2px rgba(255, 121, 0, 0.3), 0 2px 8px rgba(0,0,0,0.05)'
+          : '0 2px 8px rgba(0,0,0,0.05)',
+      }}
+    >
 
       {/* Ligne principale : nom + type + supprimer */}
       <div className="flex items-center gap-3">
