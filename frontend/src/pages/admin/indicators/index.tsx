@@ -89,7 +89,9 @@ export default function AdminManageIndicatorsPage() {
 
   async function handleMoveUp(globalIndex: number): Promise<void> {
     const sectionType = drafts[globalIndex].type
-    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const sectionDrafts = drafts
+      .filter((draft) => draft.type === sectionType)
+      .sort((a, b) => a.order - b.order)
     const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
 
     if (positionInSection <= 0) return
@@ -116,7 +118,9 @@ export default function AdminManageIndicatorsPage() {
 
   async function handleMoveDown(globalIndex: number): Promise<void> {
     const sectionType = drafts[globalIndex].type
-    const sectionDrafts = drafts.filter((draft) => draft.type === sectionType)
+    const sectionDrafts = drafts
+      .filter((draft) => draft.type === sectionType)
+      .sort((a, b) => a.order - b.order)
     const positionInSection = sectionDrafts.indexOf(drafts[globalIndex])
 
     if (positionInSection >= sectionDrafts.length - 1) return
