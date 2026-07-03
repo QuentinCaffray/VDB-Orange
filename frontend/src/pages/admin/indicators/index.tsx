@@ -412,9 +412,9 @@ function IndicatorRow({
     <div
       className="rounded-2xl px-4 py-3 flex flex-col gap-2 transition-all duration-300"
       style={{
-        background: isJustMoved ? 'rgba(255, 121, 0, 0.08)' : 'white',
+        background: 'var(--color-card)',
         boxShadow: isJustMoved
-          ? '0 0 0 2px rgba(255, 121, 0, 0.3), 0 2px 8px rgba(0,0,0,0.05)'
+          ? '0 0 0 2px rgba(255, 121, 0, 0.4), 0 4px 12px rgba(0,0,0,0.08)'
           : '0 2px 8px rgba(0,0,0,0.05)',
       }}
     >
