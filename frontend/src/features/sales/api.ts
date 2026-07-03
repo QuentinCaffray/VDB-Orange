@@ -6,6 +6,8 @@ import {
   MonthlyProgressEntry,
   IndicatorTeamBreakdown,
   SetMonthlyTargetPayload,
+  MonthlyWorkingDaysResponse,
+  SetMonthlyWorkingDaysPayload,
 } from '../../types/sales.types'
 
 export async function fetchIndicators(includeInactive?: boolean): Promise<Indicator[]> {
@@ -128,4 +130,21 @@ export async function setMonthlyAbsoluteTotal(
     indicatorId, month, year, total, preserveDailyHistory, userId: targetUserId,
   })
   return response.data
+}
+
+export async function fetchMonthlyWorkingDays(
+  userId: string,
+  month: number,
+  year: number,
+): Promise<MonthlyWorkingDaysResponse> {
+  const response = await api.get<MonthlyWorkingDaysResponse>('/sales/working-days', {
+    params: { userId, month, year },
+  })
+  return response.data
+}
+
+export async function setMonthlyWorkingDays(
+  payload: SetMonthlyWorkingDaysPayload,
+): Promise<void> {
+  await api.put('/sales/working-days', payload)
 }

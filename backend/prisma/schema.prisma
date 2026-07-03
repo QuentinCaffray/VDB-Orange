@@ -53,6 +53,7 @@ model User {
   tasksAssigned              Task[]                    @relation("TaskAssignee")
   dailySales                 DailySale[]
   monthlyTargets             MonthlyTarget[]
+  monthlyWorkingDays         MonthlyWorkingDays[]
   teamNote                   TeamNote?
   gamePawns                  GamePawn[]
   moveRequests               MoveRequest[]
@@ -125,6 +126,21 @@ model MonthlyTarget {
 
   @@unique([month, year, userId, indicatorId])
   @@map("monthly_targets")
+}
+
+model MonthlyWorkingDays {
+  id          String   @id @default(cuid())
+  month       Int
+  year        Int
+  userId      String
+  workingDays Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([month, year, userId])
+  @@map("monthly_working_days")
 }
 
 model TeamNote {

@@ -46,11 +46,19 @@ export const setMonthlyAbsoluteTotalSchema = z.object({
   userId: z.string().optional(),
 })
 
+export const setMonthlyWorkingDaysSchema = z.object({
+  userId: z.string().min(1, 'Utilisateur requis'),
+  month: z.number().int().min(1).max(12),
+  year: z.number().int().min(2024),
+  workingDays: z.number().int().min(1).max(31),
+})
+
 export type RecordSaleDeltaInput = z.infer<typeof recordSaleDeltaSchema>
 export type SetMonthlyTargetInput = z.infer<typeof setMonthlyTargetSchema>
 export type SetTargetForAllVendorsInput = z.infer<typeof setTargetForAllVendorsSchema>
 export type SetDailyCountInput = z.infer<typeof setDailyCountSchema>
 export type SetMonthlyAbsoluteTotalInput = z.infer<typeof setMonthlyAbsoluteTotalSchema>
+export type SetMonthlyWorkingDaysInput = z.infer<typeof setMonthlyWorkingDaysSchema>
 
 // Une vente journalière d'un vendeur pour un indicateur
 export interface DailySaleEntry {

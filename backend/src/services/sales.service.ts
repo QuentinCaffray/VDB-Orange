@@ -11,6 +11,8 @@ import {
   findMonthlyTargetsForAllUsers,
   findMonthlySalesPerUserAndIndicator,
   findAllMonthlyTargetsForMonth,
+  findMonthlyWorkingDays,
+  upsertMonthlyWorkingDays,
 } from '../repositories/sales.repository'
 import { AppError } from '../types/error.types'
 import { findAllActiveIndicators } from '../repositories/indicator.repository'
@@ -211,4 +213,21 @@ export async function setMonthlyTarget(
   target: number,
 ): Promise<void> {
   await upsertMonthlyTarget(userId, indicatorId, month, year, target)
+}
+
+export async function getMonthlyWorkingDays(
+  userId: string,
+  month: number,
+  year: number,
+): Promise<number | null> {
+  return findMonthlyWorkingDays(userId, month, year)
+}
+
+export async function setMonthlyWorkingDays(
+  userId: string,
+  month: number,
+  year: number,
+  workingDays: number,
+): Promise<void> {
+  await upsertMonthlyWorkingDays(userId, month, year, workingDays)
 }

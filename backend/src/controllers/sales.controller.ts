@@ -5,6 +5,7 @@ import {
   SetTargetForAllVendorsInput,
   SetDailyCountInput,
   SetMonthlyAbsoluteTotalInput,
+  SetMonthlyWorkingDaysInput,
 } from '../types/sales.types'
 import * as salesService from '../services/sales.service'
 import { eventBus } from '../lib/event-bus'
@@ -186,6 +187,38 @@ export async function setMonthlyTargetHandler(
     await salesService.setMonthlyTarget(userId, indicatorId, month, year, target)
     eventBus.publishEvent({ type: 'monthly.target.updated', userId, month, year })
     response.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getMonthlyWorkingDaysHandler(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { userId, month, year } = request.query as { userId: string; month: string; year: string }
+    const workingDays = await salesService.getMonthlyWorkingDays(
+      userId,
+      Number(month),
+      Number(year),
+    )
+    response.json({ workingDays })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function setMonthlyWorkingDaysHandler(
+  request: Request<{}, {}, SetMonthlyWorkingDaysInput>,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { userId, month, year, workingDays } = request.body
+    await salesService.setMonthlyWorkingDays(userId, month, year, workingDays)
+    response.status(204).end()
   } catch (error) {
     next(error)
   }

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Indicator, DailySaleEntry } from '../../../types/sales.types'
+import { Indicator, DailySaleEntry, SetMonthlyWorkingDaysPayload } from '../../../types/sales.types'
 import { useAuthContext } from '../../../context/AuthContext'
 import {
   fetchIndicators,
@@ -16,6 +16,8 @@ import {
   reorderIndicators,
   deleteIndicator,
   setTargetForAllVendors,
+  fetchMonthlyWorkingDays,
+  setMonthlyWorkingDays,
   CreateIndicatorPayload,
   UpdateIndicatorPayload,
   SetTargetForAllVendorsPayload,
@@ -214,5 +216,25 @@ export function useSetTargetForAllVendors() {
   return useMutation({
     mutationFn: (payload: SetTargetForAllVendorsPayload) => setTargetForAllVendors(payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sales'] }),
+  })
+}
+
+export function useMonthlyWorkingDays(userId: string, month: number, year: number) {
+  return useQuery({
+    queryKey: ['sales', 'working-days', userId, month, year],
+    queryFn: () => fetchMonthlyWorkingDays(userId, month, year),
+    enabled: userId.length > 0,
+  })
+}
+
+export function useSetMonthlyWorkingDays() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: SetMonthlyWorkingDaysPayload) => setMonthlyWorkingDays(payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['sales', 'working-days', variables.userId, variables.month, variables.year],
+      })
+    },
   })
 }
