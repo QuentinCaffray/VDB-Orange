@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
@@ -299,26 +300,35 @@ export default function AdminManageIndicatorsPage() {
         </div>
       )}
 
-      {/* Barre actions fixe */}
-      <div
-        className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-[240px] px-5 py-4 bg-white border-t border-border-soft flex gap-3"
-        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-      >
-        <button
-          onClick={() => navigate('/objectives')}
-          className="flex-1 py-3 rounded-2xl border border-border-soft text-sm font-bold text-text-secondary"
+      {createPortal(
+        <div
+          className="z-30 border-t border-border-soft flex gap-3 px-5 py-4"
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: 'var(--color-card)',
+            paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+          }}
         >
-          Annuler
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isPendingAny}
-          className="flex-[2] py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-50"
-          style={{ background: '#FF7900' }}
-        >
-          {isPendingAny ? 'Enregistrement…' : 'Enregistrer'}
-        </button>
-      </div>
+          <button
+            onClick={() => navigate('/objectives')}
+            className="flex-1 py-3 rounded-2xl border border-border-soft text-sm font-bold text-text-secondary"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isPendingAny}
+            className="flex-[2] py-3 rounded-2xl text-sm font-bold text-white disabled:opacity-50"
+            style={{ background: '#FF7900' }}
+          >
+            {isPendingAny ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </div>,
+        document.body,
+      )}
     </div>
   )
 }
