@@ -107,6 +107,11 @@ export default function MonthlyProgress({
             Modifiez les cibles pour ce vendeur
           </p>
         )}
+        {!isEditMode && workingDays != null && (
+          <span className="self-start mt-2 text-xs font-semibold text-white/70 bg-white/10 px-2.5 py-1 rounded-full">
+            {workingDays} j. travaillés ce mois
+          </span>
+        )}
       </div>
 
       {/* Barres de progression */}
