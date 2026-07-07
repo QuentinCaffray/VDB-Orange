@@ -29,11 +29,14 @@ async function createTask(overrides: {
 
 // Crée un template de tâche récurrente directement en base (pas d'endpoint public
 // de lecture/complétion — seule sa génération quotidienne via GET /api/tasks est testée ici)
-async function createRecurringTaskTemplate(overrides: { title?: string; isActive?: boolean } = {}) {
+async function createRecurringTaskTemplate(
+  overrides: { title?: string; isActive?: boolean; order?: number } = {},
+) {
   return prisma.recurringTask.create({
     data: {
       title: overrides.title ?? 'Tâche récurrente de test',
       isActive: overrides.isActive ?? true,
+      order: overrides.order ?? 0,
     },
   })
 }
@@ -593,5 +596,25 @@ describe('GET /api/tasks — génération quotidienne des instances de tâches r
     // Une instance fraîche du jour doit être créée en plus de celle d'hier, conservée à l'identique
     const instancesForTemplate = await prisma.task.findMany({ where: { recurringTaskId: template.id } })
     expect(instancesForTemplate.length).toBe(2)
+  })
+
+  it('applique l\'ordre configuré sur les templates dans la liste des tâches', async () => {
+    const secondTemplate = await createRecurringTaskTemplate({ title: 'Deuxième de la liste', order: 2 })
+    const firstTemplate = await createRecurringTaskTemplate({ title: 'Première de la liste', order: 1 })
+    createdRecurringTaskIds.push(secondTemplate.id, firstTemplate.id)
+
+    const response = await request(app)
+      .get('/api/tasks')
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    expect(response.status).toBe(200)
+
+    const titlesInResponse: string[] = response.body.map((task: { title: string }) => task.title)
+    const firstIndex = titlesInResponse.indexOf('Première de la liste')
+    const secondIndex = titlesInResponse.indexOf('Deuxième de la liste')
+
+    expect(firstIndex).toBeGreaterThanOrEqual(0)
+    expect(secondIndex).toBeGreaterThanOrEqual(0)
+    expect(firstIndex).toBeLessThan(secondIndex)
   })
 })
