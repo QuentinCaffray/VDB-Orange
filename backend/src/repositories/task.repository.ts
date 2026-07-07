@@ -131,3 +131,18 @@ export async function createMissingTaskInstancesForActiveRecurringTasks(
     skipDuplicates: true,
   })
 }
+
+// Supprime les instances de tâches récurrentes des jours précédents qui n'ont pas été terminées
+// (todo ou doing), pour reproduire le comportement de l'ancienne checklist : chaque matin, une
+// tâche non cochée la veille repart de zéro plutôt que de s'accumuler dans le Kanban. Les instances
+// déjà terminées (status done) sont préservées pour l'historique, tout comme les tâches manuelles
+// (recurringTaskId null), qui ne sont jamais concernées par ce nettoyage.
+export async function deleteUnfinishedRecurringTaskInstancesBefore(cutoffDueDate: Date): Promise<void> {
+  await prisma.task.deleteMany({
+    where: {
+      recurringTaskId: { not: null },
+      status: { not: TaskStatus.done },
+      dueDate: { lt: cutoffDueDate },
+    },
+  })
+}

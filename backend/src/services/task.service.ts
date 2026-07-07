@@ -11,6 +11,7 @@ import {
   findDoneTaskDatesInMonth,
   deleteTask as deleteTaskFromDatabase,
   createMissingTaskInstancesForActiveRecurringTasks,
+  deleteUnfinishedRecurringTaskInstancesBefore,
 } from '../repositories/task.repository'
 import { findActiveRecurringTasksForGeneration } from '../repositories/recurring-task.repository'
 import { TaskResponse } from '../types/task.types'
@@ -52,12 +53,16 @@ function getLocalTodayDateString(): string {
 }
 
 // Matérialise, pour chaque template de tâche récurrente actif, une instance Task du jour
-// si elle n'existe pas déjà. Appelée en tout début de getAllTasks() pour que la génération
-// paresseuse soit invisible pour l'appelant (le premier vendeur qui ouvre l'app le matin
-// déclenche la création, sans notion d'admin ni de tâche planifiée séparée).
+// si elle n'existe pas déjà, et repart de zéro sur les instances non terminées des jours
+// précédents (comme l'ancienne checklist, qui réinitialisait chaque case à cocher le matin).
+// Appelée en tout début de getAllTasks() pour que ça reste invisible pour l'appelant : le
+// premier vendeur qui ouvre l'app le matin déclenche le nettoyage et la création, sans notion
+// d'admin ni de tâche planifiée séparée.
 async function ensureTodayRecurringTaskInstancesExist(): Promise<void> {
-  const activeRecurringTasks = await findActiveRecurringTasksForGeneration()
   const todayDueDate = new Date(getLocalTodayDateString() + 'T12:00:00')
+  await deleteUnfinishedRecurringTaskInstancesBefore(todayDueDate)
+
+  const activeRecurringTasks = await findActiveRecurringTasksForGeneration()
   await createMissingTaskInstancesForActiveRecurringTasks(activeRecurringTasks, todayDueDate)
 }
 
