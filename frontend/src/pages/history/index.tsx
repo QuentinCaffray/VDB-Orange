@@ -10,10 +10,8 @@ import {
   useDeleteHistoryTask,
 } from '../../features/tasks/hooks/useTasks'
 import { useAllUsers } from '../../features/users/hooks/useUsers'
-import { useRecurringTasks } from '../../features/recurring-tasks/hooks/useRecurringTasks'
 import { useAuthContext } from '../../context/AuthContext'
 import { Task } from '../../types/task.types'
-import { RecurringTaskWithCompletion } from '../../types/recurring-task.types'
 import { UserSummary } from '../../features/users/api'
 
 function formatSelectedDateLabel(dateString: string, taskCount: number): string {
@@ -48,7 +46,6 @@ export default function HistoryPage() {
   const { data: historyTasks = [], isLoading: isLoadingHistory } = useTaskHistory(selectedDate)
   const { data: allTasks = [] } = useTasks()
   const { data: allUsers = [] } = useAllUsers()
-  const { data: checklistTasks = [], isLoading: isLoadingChecklist } = useRecurringTasks(selectedDate)
   const adminCompleteTask = useAdminCompleteTask(selectedDate)
   const adminCreateCompletedTask = useAdminCreateCompletedTask(selectedDate)
   const deleteHistoryTask = useDeleteHistoryTask(selectedDate)
@@ -196,12 +193,6 @@ export default function HistoryPage() {
           ))}
         </div>
       </div>
-
-      {/* Checklist récurrente du jour sélectionné — lecture seule */}
-      <HistoryChecklistSection
-        tasks={checklistTasks}
-        isLoading={isLoadingChecklist}
-      />
     </div>
   )
 }
@@ -364,111 +355,6 @@ function HistoryTaskCard({ task, onDelete, isDeleting }: HistoryTaskCardProps) {
             <TrashIcon />
           </button>
         )
-      )}
-    </div>
-  )
-}
-
-// ── Checklist récurrente en lecture seule ─────────────────────────────────────
-
-interface HistoryChecklistSectionProps {
-  tasks: RecurringTaskWithCompletion[]
-  isLoading: boolean
-}
-
-function formatChecklistCompletionTime(isoString: string): string {
-  return new Date(isoString).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-}
-
-function HistoryChecklistSection({ tasks, isLoading }: HistoryChecklistSectionProps) {
-  if (isLoading) return null
-
-  const completedCount = tasks.filter((task) => task.completion !== null).length
-
-  return (
-    <div className="px-5 pb-10">
-      <p className="text-sm font-bold text-text-primary mb-3 m-0">
-        Checklist · {completedCount}/{tasks.length} faites
-      </p>
-
-      {completedCount === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8 m-0">
-          Aucune tâche effectuée ce jour-là
-        </p>
-      ) : (
-        <div
-          className="rounded-2xl shadow-[0_4px_14px_rgba(0,0,0,0.05)] overflow-hidden"
-          style={{ background: 'var(--color-card)' }}
-        >
-          {tasks.map((task, index) => (
-            <HistoryChecklistRow
-              key={task.id}
-              task={task}
-              isLastRow={index === tasks.length - 1}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface HistoryChecklistRowProps {
-  task: RecurringTaskWithCompletion
-  isLastRow: boolean
-}
-
-function HistoryChecklistRow({ task, isLastRow }: HistoryChecklistRowProps) {
-  const isCompleted = task.completion !== null
-
-  return (
-    <div
-      className={`flex items-center gap-2.5 px-3 ${!isLastRow ? 'border-b border-border-soft' : ''}`}
-      style={{
-        minHeight: 40,
-        backgroundColor: isCompleted ? 'rgba(34,166,80,0.06)' : 'transparent',
-      }}
-    >
-      {/* Icône cochée/non-cochée (18px) — non interactive */}
-      <div
-        className="shrink-0 rounded-full border-2 flex items-center justify-center"
-        style={{
-          width: 18,
-          height: 18,
-          borderColor: isCompleted ? '#22A650' : 'var(--color-border-soft)',
-          backgroundColor: isCompleted ? '#22A650' : 'transparent',
-        }}
-        aria-label={isCompleted ? 'Tâche cochée' : 'Tâche non cochée'}
-      >
-        {isCompleted && (
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
-      </div>
-
-      {/* Titre */}
-      <span
-        className="flex-1 min-w-0 text-sm font-semibold leading-tight truncate"
-        style={{
-          color: isCompleted ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
-          textDecoration: isCompleted ? 'line-through' : 'none',
-        }}
-      >
-        {task.title}
-      </span>
-
-      {/* Info de complétion à droite */}
-      {isCompleted && task.completion && (
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: task.completion.userColor }}
-          />
-          <span className="text-xs text-text-tertiary whitespace-nowrap">
-            {task.completion.userName} · {formatChecklistCompletionTime(task.completion.completedAt)}
-          </span>
-        </div>
       )}
     </div>
   )

@@ -1,30 +1,5 @@
 import api from '../../lib/axios'
-import { RecurringTaskWithCompletion, RecurringTaskAdminItem } from '../../types/recurring-task.types'
-
-// ─── Checklist quotidienne ─────────────────────────────────────────────────────
-
-export async function fetchRecurringTasks(dateString: string): Promise<RecurringTaskWithCompletion[]> {
-  const response = await api.get<RecurringTaskWithCompletion[]>('/recurring-tasks', {
-    params: { date: dateString },
-  })
-  return response.data
-}
-
-export async function completeRecurringTask(
-  taskId: string,
-  dateString: string,
-): Promise<RecurringTaskWithCompletion> {
-  const response = await api.post<RecurringTaskWithCompletion>(
-    `/recurring-tasks/${taskId}/complete`,
-    { date: dateString },
-  )
-  return response.data
-}
-
-export async function uncompleteRecurringTask(taskId: string, dateString: string): Promise<void> {
-  // axios envoie le body dans { data } pour les requêtes DELETE
-  await api.delete(`/recurring-tasks/${taskId}/complete`, { data: { date: dateString } })
-}
+import { RecurringTaskAdminItem } from '../../types/recurring-task.types'
 
 // ─── Gestion admin ─────────────────────────────────────────────────────────────
 

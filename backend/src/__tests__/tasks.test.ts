@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import request from 'supertest'
 import { TaskStatus } from '@prisma/client'
 import app from '../app'
@@ -25,6 +25,24 @@ async function createTask(overrides: {
       assignee: { select: { id: true, name: true, color: true } },
     },
   })
+}
+
+// Crée un template de tâche récurrente directement en base (pas d'endpoint public
+// de lecture/complétion — seule sa génération quotidienne via GET /api/tasks est testée ici)
+async function createRecurringTaskTemplate(overrides: { title?: string; isActive?: boolean } = {}) {
+  return prisma.recurringTask.create({
+    data: {
+      title: overrides.title ?? 'Tâche récurrente de test',
+      isActive: overrides.isActive ?? true,
+    },
+  })
+}
+
+// Supprime un template et les instances Task générées à partir de lui.
+// Nécessaire car onDelete: SetNull ne supprime pas les tâches générées (voir schéma Prisma).
+async function deleteRecurringTaskTemplateAndItsGeneratedTasks(recurringTaskId: string): Promise<void> {
+  await prisma.task.deleteMany({ where: { recurringTaskId } })
+  await prisma.recurringTask.delete({ where: { id: recurringTaskId } })
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────────
@@ -432,5 +450,85 @@ describe('GET /api/tasks/history/active-dates', () => {
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual([])
+  })
+})
+
+// ────────────────────────────────────────────────────────────────────────────────
+
+describe('GET /api/tasks — génération quotidienne des instances de tâches récurrentes', () => {
+  const createdRecurringTaskIds: string[] = []
+
+  afterEach(async () => {
+    for (const recurringTaskId of createdRecurringTaskIds) {
+      await deleteRecurringTaskTemplateAndItsGeneratedTasks(recurringTaskId)
+    }
+    createdRecurringTaskIds.length = 0
+  })
+
+  it('crée une instance todo pour un template actif qui n\'en a pas encore pour aujourd\'hui', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Qualifs' })
+    createdRecurringTaskIds.push(template.id)
+
+    const response = await request(app)
+      .get('/api/tasks')
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    expect(response.status).toBe(200)
+
+    const generatedInstance = await prisma.task.findFirst({ where: { recurringTaskId: template.id } })
+    expect(generatedInstance).not.toBeNull()
+    expect(generatedInstance?.title).toBe('Qualifs')
+    expect(generatedInstance?.status).toBe(TaskStatus.todo)
+    expect(generatedInstance?.createdById).toBeNull()
+
+    // La tâche générée doit aussi apparaître dans la réponse, comme une tâche manuelle
+    const taskInResponse = response.body.find((task: { title: string }) => task.title === 'Qualifs')
+    expect(taskInResponse).toBeDefined()
+    expect(taskInResponse.status).toBe('todo')
+  })
+
+  it('ne crée pas d\'instance pour un template inactif', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Template inactif', isActive: false })
+    createdRecurringTaskIds.push(template.id)
+
+    await request(app).get('/api/tasks').set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    const generatedInstance = await prisma.task.findFirst({ where: { recurringTaskId: template.id } })
+    expect(generatedInstance).toBeNull()
+  })
+
+  it('ne crée pas de doublon si appelé deux fois de suite (idempotence)', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Collecte et SAVI' })
+    createdRecurringTaskIds.push(template.id)
+
+    await request(app).get('/api/tasks').set('Authorization', `Bearer ${makeVendorToken()}`)
+    await request(app).get('/api/tasks').set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    const generatedInstances = await prisma.task.findMany({ where: { recurringTaskId: template.id } })
+    expect(generatedInstances.length).toBe(1)
+  })
+
+  it('une instance générée peut être prise puis terminée exactement comme une tâche manuelle', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Rangement BO/reserve' })
+    createdRecurringTaskIds.push(template.id)
+
+    await request(app).get('/api/tasks').set('Authorization', `Bearer ${makeVendorToken()}`)
+    const generatedInstance = await prisma.task.findFirstOrThrow({ where: { recurringTaskId: template.id } })
+
+    const takeResponse = await request(app)
+      .patch(`/api/tasks/${generatedInstance.id}/take`)
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    expect(takeResponse.status).toBe(200)
+    expect(takeResponse.body.status).toBe('doing')
+    expect(takeResponse.body.assignee).toMatchObject({ id: TEST_VENDOR_ID })
+
+    const completeResponse = await request(app)
+      .patch(`/api/tasks/${generatedInstance.id}/done`)
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    expect(completeResponse.status).toBe(200)
+    expect(completeResponse.body.status).toBe('done')
+    expect(completeResponse.body.doneAt).not.toBeNull()
   })
 })

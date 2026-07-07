@@ -4,7 +4,6 @@ import { useAuthContext } from '../../context/AuthContext'
 import { useTasks } from '../../features/tasks/hooks/useTasks'
 import TaskCard from '../../features/tasks/components/TaskCard'
 import CreateTaskSheet from '../../features/tasks/components/CreateTaskSheet'
-import DailyChecklistSection from '../../features/recurring-tasks/components/DailyChecklistSection'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { TaskStatus, Task, TaskAssignee } from '../../types/task.types'
 import { getLocalDateString } from '../../lib/date'
@@ -157,14 +156,6 @@ export default function TasksPage() {
           </div>
         )}
       </div>
-
-      {/* Checklist quotidienne — visible uniquement dans l'onglet "À faire" */}
-      {activeTab === 'todo' && (
-        <>
-          <DailyChecklistSection currentUserId={currentUser.id} currentUserRole={currentUser.role} />
-          <div className="mx-5 border-t border-border-soft mb-1" />
-        </>
-      )}
 
       {/* Liste des tâches kanban */}
       <div className="px-5 py-4 flex flex-col gap-3">

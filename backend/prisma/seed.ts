@@ -120,8 +120,6 @@ async function main(): Promise<void> {
   console.log('🌱 Démarrage du seed...\n')
 
   // Nettoyage dans l'ordre des dépendances
-  // Les completions référencent les users → supprimer avant les users
-  await prisma.recurringTaskCompletion.deleteMany()
   await prisma.recurringTask.deleteMany()
   await prisma.teamNote.deleteMany()
   await prisma.monthlyTarget.deleteMany()

@@ -1,9 +1,6 @@
 import { prisma } from '../lib/prisma'
 
-// Champs utilisateur inclus dans chaque completion pour l'affichage
-const COMPLETION_USER_SELECT = { id: true, name: true, color: true }
-
-// Sélection commune aux réponses admin (sans les completions)
+// Sélection commune aux réponses admin
 const ADMIN_TASK_SELECT = {
   id: true,
   title: true,
@@ -12,68 +9,22 @@ const ADMIN_TASK_SELECT = {
   createdAt: true,
 }
 
-// Convertit une chaîne YYYY-MM-DD en objet Date local.
-// Même logique que parseDateString dans sales.repository.ts — on évite toISOString()
-// qui donnerait une date UTC et décalerait d'un jour en heure locale UTC+1/+2.
-function parseDateStringToLocalDate(dateString: string): Date {
-  const [year, month, day] = dateString.split('-').map(Number)
-  const localDate = new Date(year, month - 1, day)
-  if (isNaN(localDate.getTime())) {
-    throw new Error(`Date invalide : "${dateString}"`)
-  }
-  return localDate
-}
-
-// ─── Requêtes utilisateur (checklist quotidienne) ─────────────────────────────
-
-export async function findActiveRecurringTasksWithCompletionsForDate(dateString: string) {
-  const date = parseDateStringToLocalDate(dateString)
-
-  return prisma.recurringTask.findMany({
-    where: { isActive: true },
-    orderBy: { order: 'asc' },
-    include: {
-      completions: {
-        where: { date },
-        include: { user: { select: COMPLETION_USER_SELECT } },
-      },
-    },
-  })
+// Sélection minimale utilisée pour générer les instances quotidiennes de tâches
+const ACTIVE_RECURRING_TASK_FOR_GENERATION_SELECT = {
+  id: true,
+  title: true,
 }
 
 export async function findRecurringTaskById(recurringTaskId: string) {
   return prisma.recurringTask.findUnique({ where: { id: recurringTaskId } })
 }
 
-export async function findRecurringTaskCompletionByTaskAndDate(
-  recurringTaskId: string,
-  dateString: string,
-) {
-  const date = parseDateStringToLocalDate(dateString)
-  return prisma.recurringTaskCompletion.findUnique({
-    where: { recurringTaskId_date: { recurringTaskId, date } },
-  })
-}
-
-export async function createRecurringTaskCompletion(
-  recurringTaskId: string,
-  userId: string,
-  dateString: string,
-) {
-  const date = parseDateStringToLocalDate(dateString)
-  return prisma.recurringTaskCompletion.create({
-    data: { recurringTaskId, userId, date },
-    include: { user: { select: COMPLETION_USER_SELECT } },
-  })
-}
-
-export async function deleteRecurringTaskCompletion(
-  recurringTaskId: string,
-  dateString: string,
-): Promise<void> {
-  const date = parseDateStringToLocalDate(dateString)
-  await prisma.recurringTaskCompletion.delete({
-    where: { recurringTaskId_date: { recurringTaskId, date } },
+// Retourne les templates actifs, seulement les champs nécessaires à la génération
+// quotidienne des instances Task (voir task.service.ts)
+export async function findActiveRecurringTasksForGeneration() {
+  return prisma.recurringTask.findMany({
+    where: { isActive: true },
+    select: ACTIVE_RECURRING_TASK_FOR_GENERATION_SELECT,
   })
 }
 
@@ -112,7 +63,8 @@ export async function updateRecurringTaskById(
 }
 
 export async function deleteRecurringTaskById(recurringTaskId: string): Promise<void> {
-  // Les completions associées sont supprimées en cascade (onDelete: Cascade dans le schéma)
+  // Les tâches déjà générées à partir de ce template survivent, juste détachées
+  // (onDelete: SetNull sur Task.recurringTaskId dans le schéma)
   await prisma.recurringTask.delete({ where: { id: recurringTaskId } })
 }
 

@@ -103,3 +103,31 @@ export async function createAndMarkTaskDone(
 export async function deleteTask(taskId: string) {
   return prisma.task.delete({ where: { id: taskId } })
 }
+
+// Représente le sous-ensemble de champs d'un template récurrent nécessaire pour
+// générer son instance du jour (voir ensureTodayRecurringTaskInstancesExist dans task.service.ts)
+interface ActiveRecurringTaskForGeneration {
+  id: string
+  title: string
+}
+
+// Crée une instance Task (statut todo) pour chaque template récurrent actif qui n'en a pas
+// encore pour la date donnée. skipDuplicates + la contrainte unique (recurringTaskId, dueDate)
+// gèrent nativement la concurrence : si plusieurs vendeurs ouvrent l'app en même temps le matin,
+// aucun doublon n'est créé même en cas d'appels simultanés.
+export async function createMissingTaskInstancesForActiveRecurringTasks(
+  activeRecurringTasks: ActiveRecurringTaskForGeneration[],
+  instanceDueDate: Date,
+): Promise<void> {
+  if (activeRecurringTasks.length === 0) return
+
+  await prisma.task.createMany({
+    data: activeRecurringTasks.map((recurringTask) => ({
+      title: recurringTask.title,
+      status: TaskStatus.todo,
+      recurringTaskId: recurringTask.id,
+      dueDate: instanceDueDate,
+    })),
+    skipDuplicates: true,
+  })
+}

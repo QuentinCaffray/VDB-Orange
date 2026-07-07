@@ -10,7 +10,9 @@ import {
   findTasksDoneOnDate,
   findDoneTaskDatesInMonth,
   deleteTask as deleteTaskFromDatabase,
+  createMissingTaskInstancesForActiveRecurringTasks,
 } from '../repositories/task.repository'
+import { findActiveRecurringTasksForGeneration } from '../repositories/recurring-task.repository'
 import { TaskResponse } from '../types/task.types'
 import { AppError } from '../types/error.types'
 import { Role, TaskStatus } from '@prisma/client'
@@ -38,7 +40,29 @@ function formatTaskResponse(task: {
   }
 }
 
+// Retourne la date du jour au format YYYY-MM-DD en heure locale.
+// On évite toISOString(), qui donne une date UTC et décalerait d'un jour
+// en heure locale UTC+1/+2 une fois passé minuit.
+function getLocalTodayDateString(): string {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Matérialise, pour chaque template de tâche récurrente actif, une instance Task du jour
+// si elle n'existe pas déjà. Appelée en tout début de getAllTasks() pour que la génération
+// paresseuse soit invisible pour l'appelant (le premier vendeur qui ouvre l'app le matin
+// déclenche la création, sans notion d'admin ni de tâche planifiée séparée).
+async function ensureTodayRecurringTaskInstancesExist(): Promise<void> {
+  const activeRecurringTasks = await findActiveRecurringTasksForGeneration()
+  const todayDueDate = new Date(getLocalTodayDateString() + 'T12:00:00')
+  await createMissingTaskInstancesForActiveRecurringTasks(activeRecurringTasks, todayDueDate)
+}
+
 export async function getAllTasks(): Promise<TaskResponse[]> {
+  await ensureTodayRecurringTaskInstancesExist()
   const tasks = await findAllTasks()
   return tasks.map(formatTaskResponse)
 }
