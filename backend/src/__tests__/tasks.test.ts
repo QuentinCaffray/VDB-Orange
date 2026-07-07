@@ -531,4 +531,67 @@ describe('GET /api/tasks — génération quotidienne des instances de tâches r
     expect(completeResponse.body.status).toBe('done')
     expect(completeResponse.body.doneAt).not.toBeNull()
   })
+
+  it('supprime une instance non terminée de la veille et la remplace par une instance todo du jour', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Ménage réserve' })
+    createdRecurringTaskIds.push(template.id)
+
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const unfinishedInstanceFromYesterday = await prisma.task.create({
+      data: {
+        title: template.title,
+        status: TaskStatus.doing,
+        assigneeId: TEST_VENDOR_ID,
+        recurringTaskId: template.id,
+        dueDate: yesterday,
+      },
+    })
+
+    const response = await request(app)
+      .get('/api/tasks')
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    expect(response.status).toBe(200)
+
+    const staleInstanceStillExists = await prisma.task.findUnique({
+      where: { id: unfinishedInstanceFromYesterday.id },
+    })
+    expect(staleInstanceStillExists).toBeNull()
+
+    const instancesForTemplate = await prisma.task.findMany({ where: { recurringTaskId: template.id } })
+    expect(instancesForTemplate.length).toBe(1)
+    expect(instancesForTemplate[0].status).toBe(TaskStatus.todo)
+    expect(instancesForTemplate[0].assigneeId).toBeNull()
+  })
+
+  it('conserve une instance de la veille déjà terminée (historique)', async () => {
+    const template = await createRecurringTaskTemplate({ title: 'Vitrine' })
+    createdRecurringTaskIds.push(template.id)
+
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const finishedInstanceFromYesterday = await prisma.task.create({
+      data: {
+        title: template.title,
+        status: TaskStatus.done,
+        assigneeId: TEST_VENDOR_ID,
+        doneAt: yesterday,
+        recurringTaskId: template.id,
+        dueDate: yesterday,
+      },
+    })
+
+    await request(app).get('/api/tasks').set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    const finishedInstanceStillExists = await prisma.task.findUnique({
+      where: { id: finishedInstanceFromYesterday.id },
+    })
+    expect(finishedInstanceStillExists).not.toBeNull()
+    expect(finishedInstanceStillExists?.status).toBe(TaskStatus.done)
+
+    // Une instance fraîche du jour doit être créée en plus de celle d'hier, conservée à l'identique
+    const instancesForTemplate = await prisma.task.findMany({ where: { recurringTaskId: template.id } })
+    expect(instancesForTemplate.length).toBe(2)
+  })
 })
