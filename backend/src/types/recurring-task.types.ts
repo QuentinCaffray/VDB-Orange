@@ -2,14 +2,6 @@ import { z } from 'zod'
 
 // ─── Schémas de validation Zod ────────────────────────────────────────────────
 
-export const recurringTaskDateSchema = z.object({
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format de date invalide — attendu : YYYY-MM-DD'),
-})
-
-export type RecurringTaskDateInput = z.infer<typeof recurringTaskDateSchema>
-
 export const createRecurringTaskSchema = z.object({
   title: z
     .string()
@@ -41,20 +33,6 @@ export const reorderRecurringTasksSchema = z.object({
 export type ReorderRecurringTasksInput = z.infer<typeof reorderRecurringTasksSchema>
 
 // ─── Types de réponse API ─────────────────────────────────────────────────────
-
-export interface RecurringTaskCompletionInfo {
-  completedAt: string  // ISO 8601
-  userId: string
-  userName: string
-  userColor: string
-}
-
-export interface RecurringTaskResponse {
-  id: string
-  title: string
-  order: number
-  completion: RecurringTaskCompletionInfo | null
-}
 
 // Réponse des endpoints admin — inclut isActive et createdAt
 export interface RecurringTaskAdminResponse {

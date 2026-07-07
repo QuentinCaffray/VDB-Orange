@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import {
-  getRecurringTasksWithCompletions,
-  completeRecurringTask,
-  uncompleteRecurringTask,
   getAllRecurringTasksForAdmin,
   createNewRecurringTask,
   updateRecurringTaskForAdmin,
@@ -10,75 +7,10 @@ import {
   reorderRecurringTasksForAdmin,
 } from '../services/recurring-task.service'
 import {
-  RecurringTaskDateInput,
   CreateRecurringTaskInput,
   UpdateRecurringTaskInput,
   ReorderRecurringTasksInput,
 } from '../types/recurring-task.types'
-
-const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
-
-// ─── Endpoints checklist quotidienne ─────────────────────────────────────────
-
-// GET /api/recurring-tasks?date=YYYY-MM-DD
-// Si la date est absente, le service utilise la date locale du serveur.
-export async function getRecurringTasksHandler(
-  request: Request,
-  response: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const dateParam = request.query.date as string | undefined
-
-    if (dateParam !== undefined && !DATE_REGEX.test(dateParam)) {
-      response.status(400).json({ error: 'Paramètre date invalide — format attendu : YYYY-MM-DD' })
-      return
-    }
-
-    const tasks = await getRecurringTasksWithCompletions(dateParam)
-    response.json(tasks)
-  } catch (error) {
-    next(error)
-  }
-}
-
-// POST /api/recurring-tasks/:taskId/complete
-// Body validé par le middleware validateBody avant d'arriver ici.
-export async function completeRecurringTaskHandler(
-  request: Request<{ taskId: string }, unknown, RecurringTaskDateInput>,
-  response: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const { taskId } = request.params
-    const { date } = request.body
-    const currentUserId = request.authenticatedUser!.userId
-
-    const updatedTask = await completeRecurringTask(taskId, currentUserId, date)
-    response.status(201).json(updatedTask)
-  } catch (error) {
-    next(error)
-  }
-}
-
-// DELETE /api/recurring-tasks/:taskId/complete
-// Réservé aux admins (middleware requireAdmin dans les routes).
-// Body validé par le middleware validateBody avant d'arriver ici.
-export async function uncompleteRecurringTaskHandler(
-  request: Request<{ taskId: string }, unknown, RecurringTaskDateInput>,
-  response: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const { taskId } = request.params
-    const { date } = request.body
-
-    await uncompleteRecurringTask(taskId, date)
-    response.status(204).send()
-  } catch (error) {
-    next(error)
-  }
-}
 
 // ─── Endpoints admin ──────────────────────────────────────────────────────────
 

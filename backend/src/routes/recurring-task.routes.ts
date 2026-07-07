@@ -2,15 +2,11 @@ import { Router } from 'express'
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware'
 import { validateBody } from '../middlewares/validate.middleware'
 import {
-  recurringTaskDateSchema,
   createRecurringTaskSchema,
   updateRecurringTaskSchema,
   reorderRecurringTasksSchema,
 } from '../types/recurring-task.types'
 import {
-  getRecurringTasksHandler,
-  completeRecurringTaskHandler,
-  uncompleteRecurringTaskHandler,
   getAdminRecurringTasksHandler,
   createAdminRecurringTaskHandler,
   reorderAdminRecurringTasksHandler,
@@ -20,30 +16,12 @@ import {
 
 const recurringTaskRouter = Router()
 
-// Toutes les routes de la checklist nécessitent d'être connecté
+// Toutes les routes de gestion des tâches récurrentes nécessitent d'être connecté
 recurringTaskRouter.use(requireAuth)
 
-// ─── Checklist quotidienne (tous les utilisateurs connectés) ──────────────────
-
-// GET /recurring-tasks?date=YYYY-MM-DD — liste les tâches actives avec statut du jour
-recurringTaskRouter.get('/', getRecurringTasksHandler)
-
-// POST /recurring-tasks/:taskId/complete — coche une tâche
-recurringTaskRouter.post(
-  '/:taskId/complete',
-  validateBody(recurringTaskDateSchema),
-  completeRecurringTaskHandler,
-)
-
-// DELETE /recurring-tasks/:taskId/complete — décoche une tâche (admin uniquement)
-recurringTaskRouter.delete(
-  '/:taskId/complete',
-  requireAdmin,
-  validateBody(recurringTaskDateSchema),
-  uncompleteRecurringTaskHandler,
-)
-
 // ─── Gestion admin des tâches récurrentes ─────────────────────────────────────
+// (les instances quotidiennes générées à partir de ces templates sont consultées
+// et traitées via /api/tasks, exactement comme des tâches manuelles)
 
 // GET /recurring-tasks/admin — liste toutes les tâches (actives + inactives)
 recurringTaskRouter.get('/admin', requireAdmin, getAdminRecurringTasksHandler)
@@ -74,7 +52,8 @@ recurringTaskRouter.patch(
   updateAdminRecurringTaskHandler,
 )
 
-// DELETE /recurring-tasks/admin/:taskId — supprime une tâche (cascade sur les completions)
+// DELETE /recurring-tasks/admin/:taskId — supprime le template (les tâches déjà
+// générées survivent, détachées — voir onDelete: SetNull dans le schéma)
 recurringTaskRouter.delete(
   '/admin/:taskId',
   requireAdmin,

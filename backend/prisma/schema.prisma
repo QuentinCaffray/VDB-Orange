@@ -58,26 +58,32 @@ model User {
   gamePawns                  GamePawn[]
   moveRequests               MoveRequest[]
   gameWins                   Game[]                    @relation("GameWinner")
-  recurringTaskCompletions   RecurringTaskCompletion[]
 
   @@map("users")
 }
 
 model Task {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  status      TaskStatus @default(todo)
-  createdById String
-  assigneeId  String?
-  dueDate     DateTime?
-  doneAt      DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  title           String
+  description     String?
+  status          TaskStatus @default(todo)
+  createdById     String?
+  assigneeId      String?
+  recurringTaskId String?
+  dueDate         DateTime?
+  doneAt          DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  createdBy User  @relation("TaskCreatedBy", fields: [createdById], references: [id])
-  assignee  User? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  // createdBy est optionnel : une tâche générée depuis un template récurrent n'a pas de créateur humain
+  createdBy     User?          @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  assignee      User?          @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  // Si le template est supprimé par un admin, les tâches déjà générées survivent, juste détachées
+  recurringTask RecurringTask? @relation(fields: [recurringTaskId], references: [id], onDelete: SetNull)
 
+  // Empêche de générer deux fois la même tâche pour le même jour pour le même template.
+  // Postgres traite les NULL comme distincts, donc aucun impact sur les tâches manuelles (recurringTaskId = null).
+  @@unique([recurringTaskId, dueDate])
   @@map("tasks")
 }
 
@@ -205,27 +211,14 @@ model MoveRequest {
 }
 
 model RecurringTask {
-  id          String                    @id @default(cuid())
-  title       String
-  order       Int                       @default(0)
-  isActive    Boolean                   @default(true)
-  completions RecurringTaskCompletion[]
-  createdAt   DateTime                  @default(now())
+  id             String   @id @default(cuid())
+  title          String
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  generatedTasks Task[]
+  createdAt      DateTime @default(now())
 
   @@map("recurring_tasks")
-}
-
-model RecurringTaskCompletion {
-  id              String        @id @default(cuid())
-  recurringTaskId String
-  recurringTask   RecurringTask @relation(fields: [recurringTaskId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  date            DateTime      @db.Date
-  completedAt     DateTime      @default(now())
-
-  @@unique([recurringTaskId, date])
-  @@map("recurring_task_completions")
 }
 
 model TeamChallenge {
