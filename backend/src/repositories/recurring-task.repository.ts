@@ -9,10 +9,13 @@ const ADMIN_TASK_SELECT = {
   createdAt: true,
 }
 
-// Sélection minimale utilisée pour générer les instances quotidiennes de tâches
+// Sélection minimale utilisée pour générer les instances quotidiennes de tâches.
+// order est repris tel quel sur l'instance générée pour que le tri configuré par
+// l'admin (page /admin/recurring-tasks) s'applique dans la liste des tâches des vendeurs.
 const ACTIVE_RECURRING_TASK_FOR_GENERATION_SELECT = {
   id: true,
   title: true,
+  order: true,
 }
 
 export async function findRecurringTaskById(recurringTaskId: string) {

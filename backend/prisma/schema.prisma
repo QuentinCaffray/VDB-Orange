@@ -70,6 +70,9 @@ model Task {
   createdById     String?
   assigneeId      String?
   recurringTaskId String?
+  // Ordre d'affichage repris du template récurrent au moment de la génération (voir
+  // ensureTodayRecurringTaskInstancesExist) — null pour les tâches manuelles, qui n'ont pas d'ordre.
+  order           Int?
   dueDate         DateTime?
   doneAt          DateTime?
   createdAt       DateTime   @default(now())

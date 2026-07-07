@@ -8,10 +8,13 @@ const ASSIGNEE_SELECT = {
   color: true,
 }
 
+// Les tâches générées depuis un template récurrent (order défini) apparaissent d'abord,
+// triées selon l'ordre configuré par l'admin dans /admin/recurring-tasks ; les tâches
+// manuelles (order null) suivent, triées par date de création la plus récente.
 export async function findAllTasks() {
   return prisma.task.findMany({
     include: { assignee: { select: ASSIGNEE_SELECT } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ order: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
   })
 }
 
@@ -109,6 +112,7 @@ export async function deleteTask(taskId: string) {
 interface ActiveRecurringTaskForGeneration {
   id: string
   title: string
+  order: number
 }
 
 // Crée une instance Task (statut todo) pour chaque template récurrent actif qui n'en a pas
@@ -126,6 +130,7 @@ export async function createMissingTaskInstancesForActiveRecurringTasks(
       title: recurringTask.title,
       status: TaskStatus.todo,
       recurringTaskId: recurringTask.id,
+      order: recurringTask.order,
       dueDate: instanceDueDate,
     })),
     skipDuplicates: true,
