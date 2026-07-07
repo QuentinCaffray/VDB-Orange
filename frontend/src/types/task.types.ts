@@ -15,6 +15,9 @@ export interface Task {
   doneAt: string | null
   dueDate: string | null
   createdAt: string
+  // Ordre configuré sur le template récurrent d'origine — null pour une tâche manuelle,
+  // qui n'a pas d'ordre (voir compareTasksForDisplay dans hooks/useTasks.ts)
+  order: number | null
 }
 
 export interface CreateTaskInput {

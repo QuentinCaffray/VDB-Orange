@@ -1,7 +1,23 @@
 import { Request, Response, NextFunction } from 'express'
-import { CreateTaskInput } from '../types/task.types'
+import { CreateTaskInput, RecurringTaskInstanceSyncResult } from '../types/task.types'
 import * as taskService from '../services/task.service'
 import { eventBus } from '../lib/event-bus'
+
+// Traduit le résultat d'une synchronisation des instances récurrentes (voir
+// syncTaskInstancesWithRecurringTemplates) en événements temps réel — réutilisé par
+// recurring-task.controller.ts après chaque mutation admin (créer, renommer, activer/
+// désactiver, réordonner), en plus de son usage ici à chaque chargement de la liste.
+export function publishTaskSyncEvents(syncResult: RecurringTaskInstanceSyncResult): void {
+  for (const createdTask of syncResult.createdTasks) {
+    eventBus.publishEvent({ type: 'task.created', task: createdTask })
+  }
+  for (const updatedTask of syncResult.updatedTasks) {
+    eventBus.publishEvent({ type: 'task.updated', task: updatedTask })
+  }
+  for (const deletedTaskId of syncResult.deletedTaskIds) {
+    eventBus.publishEvent({ type: 'task.deleted', taskId: deletedTaskId })
+  }
+}
 
 export async function getAllTasksHandler(
   request: Request,
@@ -9,6 +25,9 @@ export async function getAllTasksHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const syncResult = await taskService.syncTaskInstancesWithRecurringTemplates()
+    publishTaskSyncEvents(syncResult)
+
     const tasks = await taskService.getAllTasks()
     response.json(tasks)
   } catch (error) {

@@ -17,10 +17,29 @@ import { CreateTaskInput, Task, TaskStatus } from '../../../types/task.types'
 const TASKS_QUERY_KEY = ['tasks']
 
 export function useTasks() {
-  return useQuery<Task[]>({
+  return useQuery<Task[], Error, Task[]>({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchAllTasks,
+    select: sortTasksForDisplay,
   })
+}
+
+// Trie comme le backend (findAllTasks) : tâches issues d'un template récurrent d'abord,
+// selon l'ordre configuré par l'admin, puis tâches manuelles par date de création la plus
+// récente. Nécessaire car les mises à jour temps réel (SSE, voir useAppEventStream) ne
+// font que patcher ou ajouter un élément dans le cache sans jamais re-trier le tableau —
+// ce tri au moment de la lecture garantit un ordre correct même sans recharger la page.
+function sortTasksForDisplay(tasks: Task[]): Task[] {
+  return [...tasks].sort(compareTasksForDisplay)
+}
+
+function compareTasksForDisplay(taskA: Task, taskB: Task): number {
+  if (taskA.order !== null && taskB.order !== null) {
+    return taskA.order - taskB.order
+  }
+  if (taskA.order !== null) return -1
+  if (taskB.order !== null) return 1
+  return new Date(taskB.createdAt).getTime() - new Date(taskA.createdAt).getTime()
 }
 
 export function useTasksByStatus(status: TaskStatus) {

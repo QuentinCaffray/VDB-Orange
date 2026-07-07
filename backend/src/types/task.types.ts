@@ -28,4 +28,15 @@ export interface TaskResponse {
   dueDate: string | null
   doneAt: string | null
   createdAt: string
+  // Ordre configuré sur le template récurrent d'origine — null pour une tâche manuelle
+  order: number | null
+}
+
+// Résultat de la synchronisation des instances du jour avec l'état courant des templates
+// récurrents (voir syncTaskInstancesWithRecurringTemplates dans task.service.ts) — permet
+// au controller de notifier les clients connectés (SSE) des changements en temps réel.
+export interface RecurringTaskInstanceSyncResult {
+  createdTasks: TaskResponse[]
+  updatedTasks: TaskResponse[]
+  deletedTaskIds: string[]
 }

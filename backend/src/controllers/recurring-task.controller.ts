@@ -6,11 +6,21 @@ import {
   deleteRecurringTaskForAdmin,
   reorderRecurringTasksForAdmin,
 } from '../services/recurring-task.service'
+import { syncTaskInstancesWithRecurringTemplates } from '../services/task.service'
+import { publishTaskSyncEvents } from './task.controller'
 import {
   CreateRecurringTaskInput,
   UpdateRecurringTaskInput,
   ReorderRecurringTasksInput,
 } from '../types/recurring-task.types'
+
+// Répercute immédiatement une mutation admin (créer, renommer, activer/désactiver,
+// réordonner) sur les instances du jour déjà générées, et notifie les clients connectés
+// en temps réel — pour que le vendeur voie la liste des tâches changer sans recharger.
+async function syncAndNotifyTaskInstances(): Promise<void> {
+  const syncResult = await syncTaskInstancesWithRecurringTemplates()
+  publishTaskSyncEvents(syncResult)
+}
 
 // ─── Endpoints admin ──────────────────────────────────────────────────────────
 
@@ -38,6 +48,7 @@ export async function createAdminRecurringTaskHandler(
   try {
     const { title } = request.body
     const newTask = await createNewRecurringTask(title)
+    await syncAndNotifyTaskInstances()
     response.status(201).json(newTask)
   } catch (error) {
     next(error)
@@ -56,6 +67,7 @@ export async function reorderAdminRecurringTasksHandler(
   try {
     const { orderedIds } = request.body
     await reorderRecurringTasksForAdmin(orderedIds)
+    await syncAndNotifyTaskInstances()
     response.status(204).send()
   } catch (error) {
     next(error)
@@ -72,6 +84,7 @@ export async function updateAdminRecurringTaskHandler(
   try {
     const { taskId } = request.params
     const updatedTask = await updateRecurringTaskForAdmin(taskId, request.body)
+    await syncAndNotifyTaskInstances()
     response.json(updatedTask)
   } catch (error) {
     next(error)
@@ -87,6 +100,7 @@ export async function deleteAdminRecurringTaskHandler(
   try {
     const { taskId } = request.params
     await deleteRecurringTaskForAdmin(taskId)
+    await syncAndNotifyTaskInstances()
     response.status(204).send()
   } catch (error) {
     next(error)

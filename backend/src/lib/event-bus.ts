@@ -8,6 +8,9 @@ export type AppEvent =
   | { type: 'task.taken'; task: TaskResponse }
   | { type: 'task.completed'; task: TaskResponse }
   | { type: 'task.released'; task: TaskResponse }
+  // Titre ou ordre resynchronisés en direct avec le template récurrent (admin) sans
+  // changement de statut — voir syncTaskInstancesWithRecurringTemplates
+  | { type: 'task.updated'; task: TaskResponse }
   | { type: 'task.deleted'; taskId: string }
   | { type: 'sale.updated'; sale: DailySaleEntry }
   | { type: 'sale.monthly.corrected'; userId: string; month: number; year: number }

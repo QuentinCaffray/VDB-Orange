@@ -618,3 +618,146 @@ describe('GET /api/tasks — génération quotidienne des instances de tâches r
     expect(firstIndex).toBeLessThan(secondIndex)
   })
 })
+
+// ────────────────────────────────────────────────────────────────────────────────
+
+describe('Synchronisation en direct des instances après une mutation admin sur les tâches récurrentes', () => {
+  const createdRecurringTaskIds: string[] = []
+
+  afterEach(async () => {
+    for (const recurringTaskId of createdRecurringTaskIds) {
+      await deleteRecurringTaskTemplateAndItsGeneratedTasks(recurringTaskId)
+    }
+    createdRecurringTaskIds.length = 0
+  })
+
+  it('crée l\'instance du jour dès la création du template, sans attendre un appel GET /tasks', async () => {
+    const createResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Template créé en direct' })
+
+    expect(createResponse.status).toBe(201)
+    createdRecurringTaskIds.push(createResponse.body.id)
+
+    const instance = await prisma.task.findFirst({ where: { recurringTaskId: createResponse.body.id } })
+    expect(instance).not.toBeNull()
+    expect(instance?.status).toBe(TaskStatus.todo)
+  })
+
+  it('désactiver un template supprime immédiatement son instance non réclamée du jour', async () => {
+    const createResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Template à désactiver' })
+    const recurringTaskId = createResponse.body.id
+    createdRecurringTaskIds.push(recurringTaskId)
+
+    const instanceBeforeDeactivation = await prisma.task.findFirst({ where: { recurringTaskId } })
+    expect(instanceBeforeDeactivation).not.toBeNull()
+
+    const deactivateResponse = await request(app)
+      .patch(`/api/recurring-tasks/admin/${recurringTaskId}`)
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ isActive: false })
+
+    expect(deactivateResponse.status).toBe(200)
+
+    const instanceAfterDeactivation = await prisma.task.findFirst({ where: { recurringTaskId } })
+    expect(instanceAfterDeactivation).toBeNull()
+  })
+
+  it('réactiver un template recrée immédiatement son instance du jour', async () => {
+    const createResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Template à réactiver' })
+    const recurringTaskId = createResponse.body.id
+    createdRecurringTaskIds.push(recurringTaskId)
+
+    await request(app)
+      .patch(`/api/recurring-tasks/admin/${recurringTaskId}`)
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ isActive: false })
+
+    const reactivateResponse = await request(app)
+      .patch(`/api/recurring-tasks/admin/${recurringTaskId}`)
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ isActive: true })
+
+    expect(reactivateResponse.status).toBe(200)
+
+    const instanceAfterReactivation = await prisma.task.findFirst({ where: { recurringTaskId } })
+    expect(instanceAfterReactivation).not.toBeNull()
+    expect(instanceAfterReactivation?.status).toBe(TaskStatus.todo)
+  })
+
+  it('renommer un template met à jour immédiatement le titre de son instance non réclamée', async () => {
+    const createResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Ancien titre' })
+    const recurringTaskId = createResponse.body.id
+    createdRecurringTaskIds.push(recurringTaskId)
+
+    await request(app)
+      .patch(`/api/recurring-tasks/admin/${recurringTaskId}`)
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Nouveau titre' })
+
+    const instance = await prisma.task.findFirst({ where: { recurringTaskId } })
+    expect(instance?.title).toBe('Nouveau titre')
+  })
+
+  it('ne touche pas à une instance déjà prise ou terminée', async () => {
+    const createResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Template avec tâche déjà prise' })
+    const recurringTaskId = createResponse.body.id
+    createdRecurringTaskIds.push(recurringTaskId)
+
+    const instance = await prisma.task.findFirstOrThrow({ where: { recurringTaskId } })
+    await request(app)
+      .patch(`/api/tasks/${instance.id}/take`)
+      .set('Authorization', `Bearer ${makeVendorToken()}`)
+
+    await request(app)
+      .patch(`/api/recurring-tasks/admin/${recurringTaskId}`)
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ isActive: false })
+
+    const instanceAfterDeactivation = await prisma.task.findUnique({ where: { id: instance.id } })
+    expect(instanceAfterDeactivation).not.toBeNull()
+    expect(instanceAfterDeactivation?.status).toBe(TaskStatus.doing)
+    expect(instanceAfterDeactivation?.assigneeId).toBe(TEST_VENDOR_ID)
+  })
+
+  it('réordonner les templates met à jour immédiatement l\'ordre des instances du jour', async () => {
+    const firstCreateResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Sera en second' })
+    const secondCreateResponse = await request(app)
+      .post('/api/recurring-tasks/admin')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ title: 'Sera en premier' })
+
+    const firstTemplateId = firstCreateResponse.body.id
+    const secondTemplateId = secondCreateResponse.body.id
+    createdRecurringTaskIds.push(firstTemplateId, secondTemplateId)
+
+    // Inverse l'ordre : le template créé en second passe devant celui créé en premier
+    const reorderResponse = await request(app)
+      .patch('/api/recurring-tasks/admin/reorder')
+      .set('Authorization', `Bearer ${makeAdminToken()}`)
+      .send({ orderedIds: [secondTemplateId, firstTemplateId] })
+
+    expect(reorderResponse.status).toBe(204)
+
+    const firstInstance = await prisma.task.findFirstOrThrow({ where: { recurringTaskId: firstTemplateId } })
+    const secondInstance = await prisma.task.findFirstOrThrow({ where: { recurringTaskId: secondTemplateId } })
+
+    expect(secondInstance.order as number).toBeLessThan(firstInstance.order as number)
+  })
+})
