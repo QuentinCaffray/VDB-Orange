@@ -10,6 +10,7 @@ type AppEvent =
   | { type: 'task.taken'; task: Task }
   | { type: 'task.completed'; task: Task }
   | { type: 'task.released'; task: Task }
+  | { type: 'task.updated'; task: Task }
   | { type: 'task.deleted'; taskId: string }
   | { type: 'sale.updated'; sale: DailySaleEntry }
   | { type: 'sale.monthly.corrected'; userId: string; month: number; year: number }
@@ -156,7 +157,8 @@ function dispatchAppEvent(
   if (
     event.type === 'task.taken' ||
     event.type === 'task.completed' ||
-    event.type === 'task.released'
+    event.type === 'task.released' ||
+    event.type === 'task.updated'
   ) {
     queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (previous = []) =>
       previous.map((task) => (task.id === event.task.id ? event.task : task)),

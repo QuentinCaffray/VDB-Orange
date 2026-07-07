@@ -119,13 +119,15 @@ interface ActiveRecurringTaskForGeneration {
 // encore pour la date donnée. skipDuplicates + la contrainte unique (recurringTaskId, dueDate)
 // gèrent nativement la concurrence : si plusieurs vendeurs ouvrent l'app en même temps le matin,
 // aucun doublon n'est créé même en cas d'appels simultanés.
+// createManyAndReturn (et non createMany) pour connaître précisément les tâches nouvellement
+// créées : le controller en a besoin pour notifier les clients connectés en temps réel (SSE).
 export async function createMissingTaskInstancesForActiveRecurringTasks(
   activeRecurringTasks: ActiveRecurringTaskForGeneration[],
   instanceDueDate: Date,
-): Promise<void> {
-  if (activeRecurringTasks.length === 0) return
+) {
+  if (activeRecurringTasks.length === 0) return []
 
-  await prisma.task.createMany({
+  return prisma.task.createManyAndReturn({
     data: activeRecurringTasks.map((recurringTask) => ({
       title: recurringTask.title,
       status: TaskStatus.todo,
@@ -149,5 +151,37 @@ export async function deleteUnfinishedRecurringTaskInstancesBefore(cutoffDueDate
       status: { not: TaskStatus.done },
       dueDate: { lt: cutoffDueDate },
     },
+  })
+}
+
+// Sélection des champs du template nécessaires pour détecter un décalage titre/ordre
+// sur une instance déjà générée (voir findTodayUnclaimedRecurringTaskInstances)
+const RECURRING_TASK_LIVE_STATE_SELECT = { title: true, order: true, isActive: true }
+
+// Renvoie les instances du jour non réclamées (todo, sans assigné) générées depuis un template
+// récurrent, avec l'état courant de leur template (titre, ordre, actif). Utilisé pour détecter
+// et corriger immédiatement un décalage après une modification admin (voir
+// syncTaskInstancesWithRecurringTemplates dans task.service.ts).
+export async function findTodayUnclaimedRecurringTaskInstances(todayDueDate: Date) {
+  return prisma.task.findMany({
+    where: {
+      recurringTaskId: { not: null },
+      status: TaskStatus.todo,
+      assigneeId: null,
+      dueDate: todayDueDate,
+    },
+    include: { recurringTask: { select: RECURRING_TASK_LIVE_STATE_SELECT } },
+  })
+}
+
+// Aligne le titre et l'ordre d'une instance non réclamée sur ceux, à jour, de son template
+export async function updateTaskTitleAndOrder(
+  taskId: string,
+  data: { title: string; order: number },
+) {
+  return prisma.task.update({
+    where: { id: taskId },
+    data,
+    include: { assignee: { select: ASSIGNEE_SELECT } },
   })
 }

@@ -12,9 +12,11 @@ import {
   deleteTask as deleteTaskFromDatabase,
   createMissingTaskInstancesForActiveRecurringTasks,
   deleteUnfinishedRecurringTaskInstancesBefore,
+  findTodayUnclaimedRecurringTaskInstances,
+  updateTaskTitleAndOrder,
 } from '../repositories/task.repository'
 import { findActiveRecurringTasksForGeneration } from '../repositories/recurring-task.repository'
-import { TaskResponse } from '../types/task.types'
+import { TaskResponse, RecurringTaskInstanceSyncResult } from '../types/task.types'
 import { AppError } from '../types/error.types'
 import { Role, TaskStatus } from '@prisma/client'
 
@@ -28,6 +30,7 @@ function formatTaskResponse(task: {
   dueDate: Date | null
   doneAt: Date | null
   createdAt: Date
+  order: number | null
 }): TaskResponse {
   return {
     id: task.id,
@@ -38,6 +41,7 @@ function formatTaskResponse(task: {
     dueDate: task.dueDate?.toISOString().split('T')[0] ?? null,
     doneAt: task.doneAt?.toISOString() ?? null,
     createdAt: task.createdAt.toISOString(),
+    order: task.order,
   }
 }
 
@@ -52,22 +56,57 @@ function getLocalTodayDateString(): string {
   return `${year}-${month}-${day}`
 }
 
-// Matérialise, pour chaque template de tâche récurrente actif, une instance Task du jour
-// si elle n'existe pas déjà, et repart de zéro sur les instances non terminées des jours
-// précédents (comme l'ancienne checklist, qui réinitialisait chaque case à cocher le matin).
-// Appelée en tout début de getAllTasks() pour que ça reste invisible pour l'appelant : le
-// premier vendeur qui ouvre l'app le matin déclenche le nettoyage et la création, sans notion
-// d'admin ni de tâche planifiée séparée.
-async function ensureTodayRecurringTaskInstancesExist(): Promise<void> {
+// Aligne les instances Task du jour sur l'état courant des templates récurrents :
+// - repart de zéro sur les instances non terminées des jours précédents (comme l'ancienne
+//   checklist, qui réinitialisait chaque case à cocher le matin) ;
+// - supprime l'instance du jour d'un template désactivé entre-temps (disparaît de la liste) ;
+// - corrige le titre/ordre d'une instance déjà générée si le template a été modifié depuis
+//   (renommage, réordonnancement) — pour que ce soit visible immédiatement, sans attendre
+//   le prochain reset du lendemain ;
+// - matérialise l'instance du jour d'un template actif qui n'en a pas encore (nouveau
+//   template, ou réactivation).
+// N'agit que sur les instances non réclamées (todo, sans assigné) : une tâche déjà prise ou
+// terminée reste la responsabilité du vendeur qui s'en occupe, elle n'est jamais modifiée
+// ou supprimée sous ses pieds par une action admin.
+// Appelée à la fois par getAllTasksHandler (génération paresseuse) et par chaque mutation
+// admin sur les tâches récurrentes (le controller publie ensuite les événements temps réel
+// correspondants à partir du résultat renvoyé — voir publishTaskSyncEvents).
+export async function syncTaskInstancesWithRecurringTemplates(): Promise<RecurringTaskInstanceSyncResult> {
   const todayDueDate = new Date(getLocalTodayDateString() + 'T12:00:00')
   await deleteUnfinishedRecurringTaskInstancesBefore(todayDueDate)
 
+  const unclaimedInstances = await findTodayUnclaimedRecurringTaskInstances(todayDueDate)
+  const deletedTaskIds: string[] = []
+  const updatedTasks: TaskResponse[] = []
+
+  for (const instance of unclaimedInstances) {
+    if (!instance.recurringTask) continue
+
+    if (!instance.recurringTask.isActive) {
+      await deleteTaskFromDatabase(instance.id)
+      deletedTaskIds.push(instance.id)
+      continue
+    }
+
+    const hasTitleDrifted = instance.title !== instance.recurringTask.title
+    const hasOrderDrifted = instance.order !== instance.recurringTask.order
+    if (hasTitleDrifted || hasOrderDrifted) {
+      const updatedInstance = await updateTaskTitleAndOrder(instance.id, {
+        title: instance.recurringTask.title,
+        order: instance.recurringTask.order,
+      })
+      updatedTasks.push(formatTaskResponse(updatedInstance))
+    }
+  }
+
   const activeRecurringTasks = await findActiveRecurringTasksForGeneration()
-  await createMissingTaskInstancesForActiveRecurringTasks(activeRecurringTasks, todayDueDate)
+  const createdInstances = await createMissingTaskInstancesForActiveRecurringTasks(activeRecurringTasks, todayDueDate)
+  const createdTasks = createdInstances.map((instance) => formatTaskResponse({ ...instance, assignee: null }))
+
+  return { createdTasks, updatedTasks, deletedTaskIds }
 }
 
 export async function getAllTasks(): Promise<TaskResponse[]> {
-  await ensureTodayRecurringTaskInstancesExist()
   const tasks = await findAllTasks()
   return tasks.map(formatTaskResponse)
 }
