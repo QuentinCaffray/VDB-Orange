@@ -5,7 +5,7 @@ des ventes par vendeur, objectifs du mois, et un espace d'encadrement réservé 
 la direction. En service pour une équipe d'une dizaine de vendeurs.
 
 Conçu, développé et déployé seul. Présentation détaillée :
-**[portfolio-eslabs.up.railway.app/projets/the-crew](https://portfolio-eslabs.up.railway.app/projets/the-crew)**
+**[www.portfolio.eslabs.fr/projets/the-crew](https://www.portfolio.eslabs.fr/projets/the-crew)**
 
 ## Ce qu'il fait
 
